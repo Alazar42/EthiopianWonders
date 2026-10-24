@@ -2,7 +2,7 @@ extends RigidBody3D
 
 const MOVE_SPEED := 20.0
 const SENSITIVITY := 0.003
-const PLANET_RADIUS := 6.0
+const PLANET_RADIUS := 8.4
 const PLAYER_SURFACE_OFFSET := 0.5
 
 @onready var head: Node3D = $PlayerHead
@@ -24,8 +24,8 @@ func _input(event: InputEvent) -> void:
 		pending_mouse_turn -= event.relative.x * SENSITIVITY
 		camera.rotation.x = clamp(
 			camera.rotation.x - event.relative.y * SENSITIVITY,
-			deg_to_rad(-30),
-			deg_to_rad(15)
+			deg_to_rad(-40),
+			deg_to_rad(10)
 		)
 	elif event is InputEventMouseButton and event.pressed:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
