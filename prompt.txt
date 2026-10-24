@@ -1,2 +1,6 @@
-finally work on the UI play full game UI not web ui, and best font and sound too, and make the spaceship smaller and the obstacles can also
-kick and losess a half-heart the obstacles non other than the stones and the things those are in the way of the spaceship path that's it, anf we call it a game best game
+https://kenney.nl/assets/ui-pack-adventure use this kenny asset and the font change it to 
+other this one is so bad, also the target when hit the pop up message is being shown on front while the spaceship going without giving a chance to even read it so stop the space shipppp to allow readers,
+and the use the splash from the file path
+res://assets/ui/ the images techawach and melkam 
+
+then make the main menu so simple and minimal don't use amharic it is no use

@@ -1,10 +1,10 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://vi3bl3n8w3p1"]
 
-[ext_resource type="Script" path="res://scripts/ui/discovery_popup.gd" id="1_popup"]
+[ext_resource type="Script" uid="uid://f5ywrlkdjum3" path="res://scripts/ui/discovery_popup.gd" id="1_popup"]
 [ext_resource type="Theme" path="res://assets/ui/game_theme.tres" id="2_theme"]
-[ext_resource type="Texture2D" path="res://assets/ui/kenney/icons/star.png" id="3_star"]
+[ext_resource type="Texture2D" uid="uid://cq85wrjpcq2s0" path="res://assets/ui/kenney/icons/star.png" id="3_star"]
 
-[node name="DiscoveryPopup" type="Control"]
+[node name="DiscoveryPopup" type="Control" unique_id=404146911]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -15,7 +15,7 @@ mouse_filter = 2
 theme = ExtResource("2_theme")
 script = ExtResource("1_popup")
 
-[node name="Panel" type="PanelContainer" parent="."]
+[node name="Panel" type="PanelContainer" parent="." unique_id=161209293]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -28,10 +28,10 @@ offset_right = 350.0
 grow_horizontal = 2
 theme_type_variation = &"CardYellow"
 
-[node name="Content" type="VBoxContainer" parent="Panel"]
+[node name="Content" type="VBoxContainer" parent="Panel" unique_id=336508855]
 layout_mode = 2
 
-[node name="Header" type="Label" parent="Panel/Content"]
+[node name="Header" type="Label" parent="Panel/Content" unique_id=1609145676]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
@@ -40,10 +40,10 @@ text = "ACHIEVEMENT UNLOCKED"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Row" type="HBoxContainer" parent="Panel/Content"]
+[node name="Row" type="HBoxContainer" parent="Panel/Content" unique_id=1159096526]
 layout_mode = 2
 
-[node name="StarIcon" type="TextureRect" parent="Panel/Content/Row"]
+[node name="StarIcon" type="TextureRect" parent="Panel/Content/Row" unique_id=2089167444]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(84, 84)
 layout_mode = 2
@@ -52,17 +52,17 @@ texture = ExtResource("3_star")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Text" type="VBoxContainer" parent="Panel/Content/Row"]
+[node name="Text" type="VBoxContainer" parent="Panel/Content/Row" unique_id=1082722743]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TitleLabel" type="Label" parent="Panel/Content/Row/Text"]
+[node name="TitleLabel" type="Label" parent="Panel/Content/Row/Text" unique_id=1874732288]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"HintLabel"
 text = "Achievement"
 
-[node name="WonderLabel" type="Label" parent="Panel/Content/Row/Text"]
+[node name="WonderLabel" type="Label" parent="Panel/Content/Row/Text" unique_id=159761133]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(500, 0)
 layout_mode = 2
@@ -70,31 +70,31 @@ theme_type_variation = &"StatLabel"
 text = "Wonder"
 autowrap_mode = 3
 
-[node name="FactLabel" type="Label" parent="Panel/Content/Row/Text"]
+[node name="FactLabel" type="Label" parent="Panel/Content/Row/Text" unique_id=1362003573]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(500, 0)
 layout_mode = 2
 text = "Fact"
 autowrap_mode = 3
 
-[node name="Footer" type="HBoxContainer" parent="Panel/Content"]
+[node name="Footer" type="HBoxContainer" parent="Panel/Content" unique_id=859803269]
 layout_mode = 2
 
-[node name="CountLabel" type="Label" parent="Panel/Content/Footer"]
+[node name="CountLabel" type="Label" parent="Panel/Content/Footer" unique_id=871053220]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"HintLabel"
 text = "Wonders discovered: 1"
 
-[node name="CloseButton" type="Button" parent="Panel/Content/Footer"]
+[node name="CloseButton" type="Button" parent="Panel/Content/Footer" unique_id=1549439630]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
 theme_type_variation = &"GreenButton"
 text = "OK"
 
-[node name="CloseTimer" type="Timer" parent="."]
+[node name="CloseTimer" type="Timer" parent="." unique_id=705672204]
 unique_name_in_owner = true
 wait_time = 6.0
 one_shot = true
