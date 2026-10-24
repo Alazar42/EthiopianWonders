@@ -6,15 +6,19 @@ extends Node3D
 @export var player: PlayerController
 @export var gameplay_camera: GameplayCamera
 @export var route: RouteGenerator
+@export var world_environment: WorldEnvironment
 @export var discovery_manager: DiscoveryManager
 @export var game_hud: GameHUD
 @export var discovery_popup: DiscoveryPopup
 @export var pause_menu: PauseMenu
 @export var game_over_screen: GameOverScreen
 @export_file("*.tscn") var main_menu_scene: String = "res://scenes/menus/main_menu.tscn"
+## Seconds the sky and fog take to blend into the next world's mood during a flight.
+@export var mood_blend_time: float = 4.0
 
 var state: GameState.State = GameState.State.MAIN_MENU
 var _state_before_pause: GameState.State = GameState.State.RUNNING
+var _mood_tween: Tween
 
 func _ready() -> void:
 	route.target_spawned.connect(_on_target_spawned)
@@ -53,6 +57,7 @@ func start_new_run() -> void:
 		return
 	discovery_manager.reset_run()
 	route.begin_run()
+	apply_mood(route.start_planet, true)
 	player.begin_run(route)
 	gameplay_camera.snap()
 	pause_menu.hide_pause()
@@ -143,7 +148,24 @@ func _on_popup_closed() -> void:
 	if state == GameState.State.DISCOVERY_FEEDBACK:
 		set_state(GameState.State.RUNNING)
 
+## Tints the ambient light and fog to a world's mood, instantly or as a slow blend.
+func apply_mood(planet: PlanetController, instant: bool = false) -> void:
+	if planet == null or world_environment == null or world_environment.environment == null:
+		return
+	var env: Environment = world_environment.environment
+	if _mood_tween:
+		_mood_tween.kill()
+	if instant:
+		env.ambient_light_color = planet.ambient_color
+		env.fog_light_color = planet.fog_color
+		return
+	_mood_tween = create_tween().set_parallel(true)
+	_mood_tween.tween_property(env, "ambient_light_color", planet.ambient_color, mood_blend_time)
+	_mood_tween.tween_property(env, "fog_light_color", planet.fog_color, mood_blend_time)
+
 func _on_segment_entered(segment: RouteSegment) -> void:
+	if segment.type == RouteTypes.SegmentType.PLANET_TRANSITION and segment.destination_planet is PlanetController:
+		apply_mood(segment.destination_planet as PlanetController)
 	if segment.type == RouteTypes.SegmentType.PLANET_ARRIVAL and segment.planet is PlanetController:
 		game_hud.show_toast("Arrived at %s" % (segment.planet as PlanetController).planet_name)
 

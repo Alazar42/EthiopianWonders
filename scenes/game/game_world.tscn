@@ -10,6 +10,8 @@
 [ext_resource type="PackedScene" path="res://scenes/planets/planet_rift.tscn" id="8_rift"]
 [ext_resource type="PackedScene" path="res://scenes/planets/planet_simien.tscn" id="9_simien"]
 [ext_resource type="PackedScene" path="res://scenes/planets/planet_danakil.tscn" id="10_danakil"]
+[ext_resource type="PackedScene" path="res://scenes/planets/planet_bale.tscn" id="17_bale"]
+[ext_resource type="PackedScene" path="res://scenes/game/space_backdrop.tscn" id="18_backdrop"]
 [ext_resource type="PackedScene" path="res://scenes/landmarks/landmark_target.tscn" id="11_target"]
 [ext_resource type="PackedScene" path="res://scenes/planets/planet_transition.tscn" id="12_gate"]
 [ext_resource type="PackedScene" path="res://scenes/ui/game_hud.tscn" id="13_hud"]
@@ -30,12 +32,17 @@ ambient_light_source = 2
 ambient_light_color = Color(0.62, 0.68, 0.8, 1)
 ambient_light_energy = 0.35
 tonemap_mode = 0
+fog_enabled = true
+fog_light_color = Color(0.72, 0.84, 0.96, 1)
+fog_density = 0.00028
+fog_sky_affect = 0.3
 
-[node name="GameWorld" type="Node3D" node_paths=PackedStringArray("player", "gameplay_camera", "route", "discovery_manager", "game_hud", "discovery_popup", "pause_menu", "game_over_screen")]
+[node name="GameWorld" type="Node3D" node_paths=PackedStringArray("player", "gameplay_camera", "route", "world_environment", "discovery_manager", "game_hud", "discovery_popup", "pause_menu", "game_over_screen")]
 script = ExtResource("1_manager")
 player = NodePath("Player")
 gameplay_camera = NodePath("GameplayCamera")
 route = NodePath("Route")
+world_environment = NodePath("WorldEnvironment")
 discovery_manager = NodePath("DiscoveryManager")
 game_hud = NodePath("UI/GameHUD")
 discovery_popup = NodePath("UI/DiscoveryPopup")
@@ -45,12 +52,14 @@ game_over_screen = NodePath("UI/GameOverScreen")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_world")
 
+[node name="SpaceBackdrop" parent="." instance=ExtResource("18_backdrop")]
+
 [node name="StartPlanet" parent="." instance=ExtResource("7_highland")]
 
 [node name="Route" type="Node3D" parent="." node_paths=PackedStringArray("start_planet")]
 script = ExtResource("2_route")
 start_planet = NodePath("../StartPlanet")
-planet_scenes = Array[PackedScene]([ExtResource("7_highland"), ExtResource("8_rift"), ExtResource("9_simien"), ExtResource("10_danakil")])
+planet_scenes = Array[PackedScene]([ExtResource("7_highland"), ExtResource("8_rift"), ExtResource("9_simien"), ExtResource("10_danakil"), ExtResource("17_bale")])
 target_scene = ExtResource("11_target")
 gate_scene = ExtResource("12_gate")
 
@@ -58,7 +67,8 @@ gate_scene = ExtResource("12_gate")
 
 [node name="GameplayCamera" type="Camera3D" parent="." node_paths=PackedStringArray("player")]
 fov = 65.0
-far = 3000.0
+near = 0.3
+far = 9000.0
 script = ExtResource("3_camera")
 player = NodePath("../Player")
 

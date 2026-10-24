@@ -1,17 +1,18 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
-[ext_resource type="PackedScene" path="res://assets/kenney_mini-forest_1.0/Models/GLB format/rocks-high.glb" id="ext_0"]
-[ext_resource type="PackedScene" path="res://assets/kenney_mini-forest_1.0/Models/GLB format/tree-high.glb" id="ext_1"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/landmarks/simien_crag.res" id="ext_0"]
+[ext_resource type="Material" path="res://assets/materials/terrain.tres" id="ext_1"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/props/lobelia.res" id="ext_2"]
 
 [sub_resource type="StandardMaterial3D" id="mat_1"]
-albedo_color = Color(0.400000, 0.440000, 0.460000, 1)
-roughness = 0.9
+albedo_color = Color(0.500000, 0.440000, 0.320000, 1)
+roughness = 0.95
 
 [sub_resource type="CylinderMesh" id="cyl_2"]
 material = SubResource("mat_1")
 top_radius = 9.000000
 bottom_radius = 9.360000
-height = 1.800000
+height = 1.8
 radial_segments = 24
 rings = 1
 
@@ -22,32 +23,17 @@ metadata/graybox = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.6, 0)
 mesh = SubResource("cyl_2")
 
-[node name="Rocks0" parent="." instance=ExtResource("ext_0")]
-transform = Transform3D(6, 0, 0, 0, 6, 0, 0, 0, 6, 3, 2.4, 0)
+[node name="ModelSimienCrag" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+material_override = ExtResource("ext_1")
+mesh = ExtResource("ext_0")
 
-[node name="Rocks1" parent="." instance=ExtResource("ext_0")]
-transform = Transform3D(4.2499995, 0, 7.3612165, 0, 8.5, 0, -7.3612165, 0, 4.2499995, 1.5, 3.4, 2.598076)
+[node name="Lobelia_01" type="MeshInstance3D" parent="."]
+transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, -3, 0.3, 6.5)
+material_override = ExtResource("ext_1")
+mesh = ExtResource("ext_2")
 
-[node name="Rocks2" parent="." instance=ExtResource("ext_0")]
-transform = Transform3D(-5.5000005, 0, 9.526279, 0, 11, 0, -9.526279, 0, -5.5000005, -1.5, 4.4, 2.598076)
-
-[node name="Rocks3" parent="." instance=ExtResource("ext_0")]
-transform = Transform3D(-6, 0, -5.2453663e-07, 0, 6, 0, 5.2453663e-07, 0, -6, -3, 2.4, 3.673819e-16)
-
-[node name="Rocks4" parent="." instance=ExtResource("ext_0")]
-transform = Transform3D(-4.249999, 0, -7.3612165, 0, 8.5, 0, 7.3612165, 0, -4.249999, -1.5, 3.4, -2.598076)
-
-[node name="Rocks5" parent="." instance=ExtResource("ext_0")]
-transform = Transform3D(5.499999, 0, -9.526279, 0, 11, 0, 9.526279, 0, 5.499999, 1.5, 4.4, -2.598076)
-
-[node name="Tree0" parent="." instance=ExtResource("ext_1")]
-transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 5.9868965, 0.2, 2.5312192)
-
-[node name="Tree1" parent="." instance=ExtResource("ext_1")]
-transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, -2.5312192, 0.2, 5.9868965)
-
-[node name="Tree2" parent="." instance=ExtResource("ext_1")]
-transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, -5.9868965, 0.2, -2.5312192)
-
-[node name="Tree3" parent="." instance=ExtResource("ext_1")]
-transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 2.5312192, 0.2, -5.9868965)
+[node name="Lobelia_02" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.7, 0, 0, 0, 1.7, 0, 0, 0, 1.7, 3.5, 0.3, 7)
+material_override = ExtResource("ext_1")
+mesh = ExtResource("ext_2")

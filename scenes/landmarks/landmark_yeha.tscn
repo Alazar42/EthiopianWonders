@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/meshes/landmarks/yeha_temple.res" id="ext_0"]
+[ext_resource type="Material" path="res://assets/materials/terrain.tres" id="ext_1"]
+
+[sub_resource type="StandardMaterial3D" id="mat_1"]
+albedo_color = Color(0.660000, 0.540000, 0.360000, 1)
+roughness = 0.95
+
+[sub_resource type="CylinderMesh" id="cyl_2"]
+material = SubResource("mat_1")
+top_radius = 8.500000
+bottom_radius = 8.840000
+height = 1.8
+radial_segments = 24
+rings = 1
+
+[node name="LandmarkYeha" type="Node3D"]
+metadata/graybox = true
+
+[node name="Plinth" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.6, 0)
+mesh = SubResource("cyl_2")
+
+[node name="ModelYehaTemple" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+material_override = ExtResource("ext_1")
+mesh = ExtResource("ext_0")

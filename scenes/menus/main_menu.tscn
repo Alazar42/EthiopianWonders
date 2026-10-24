@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" path="res://scenes/planets/planet_highland.tscn" id="3_highland"]
 [ext_resource type="PackedScene" path="res://scenes/planets/planet_rift.tscn" id="4_rift"]
 [ext_resource type="PackedScene" path="res://scenes/planets/planet_simien.tscn" id="5_simien"]
+[ext_resource type="PackedScene" path="res://scenes/game/space_backdrop.tscn" id="6_backdrop"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_menu"]
 panorama = ExtResource("2_sky")
@@ -57,7 +58,10 @@ light_energy = 0.95
 [node name="Camera3D" type="Camera3D" parent="BackgroundContainer/SubViewport/World"]
 transform = Transform3D(1, 0, 0, 0, 0.9659, 0.2588, 0, -0.2588, 0.9659, 0, 14, 28)
 fov = 60.0
-far = 1000.0
+near = 0.3
+far = 9000.0
+
+[node name="SpaceBackdrop" parent="BackgroundContainer/SubViewport/World" instance=ExtResource("6_backdrop")]
 
 [node name="MenuPlanet" parent="BackgroundContainer/SubViewport/World" instance=ExtResource("3_highland")]
 unique_name_in_owner = true

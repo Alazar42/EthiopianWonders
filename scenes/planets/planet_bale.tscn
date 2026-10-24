@@ -1,0 +1,1226 @@
+[gd_scene load_steps=22 format=3]
+
+[ext_resource type="Script" path="res://scripts/planets/planet_controller.gd" id="1_script"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/terrain_bale.res" id="2_terrain"]
+[ext_resource type="Material" path="res://assets/materials/terrain.tres" id="3_terrain_mat"]
+[ext_resource type="Shader" path="res://assets/shaders/atmosphere.gdshader" id="4_atmo_shader"]
+[ext_resource type="Material" path="res://assets/materials/grass_bale.tres" id="6_grass_mat"]
+[ext_resource type="MultiMesh" path="res://assets/meshes/grass_bale.res" id="mm_grass"]
+[ext_resource type="MultiMesh" path="res://assets/meshes/helichrysum_bale.res" id="mm_helichrysum"]
+[ext_resource type="MultiMesh" path="res://assets/meshes/stones_bale.res" id="mm_stones"]
+[ext_resource type="MultiMesh" path="res://assets/meshes/plant_bale.res" id="mm_plant"]
+[ext_resource type="PackedScene" path="res://assets/kenney_mini-forest_1.0/Models/GLB format/rocks-high.glb" id="m_rocks"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/props/amba.res" id="p_amba"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/props/lobelia_spike.res" id="p_lobelia_spike"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/props/lobelia.res" id="p_lobelia"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/props/cloud_0.res" id="cloud_0"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/props/cloud_1.res" id="cloud_1"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/props/cloud_2.res" id="cloud_2"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_atmo"]
+render_priority = 1
+shader = ExtResource("4_atmo_shader")
+shader_parameter/glow_color = Color(0.750000, 0.880000, 0.950000, 1)
+shader_parameter/rim_power = 3.5
+shader_parameter/strength = 0.45
+
+[sub_resource type="SphereMesh" id="SphereMesh_atmo"]
+radius = 1.0
+height = 2.0
+radial_segments = 40
+rings = 20
+
+[sub_resource type="Animation" id="Animation_drift"]
+resource_name = "drift"
+length = 420.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Clouds/Spin:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 420),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 6.28319, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_drift"]
+_data = {
+&"drift": SubResource("Animation_drift")
+}
+
+[node name="PlanetBale" type="Node3D"]
+script = ExtResource("1_script")
+planet_name = "Bale Afro-alpine Moor"
+radius = 41.0
+ambient_color = Color(0.620000, 0.740000, 0.800000, 1)
+fog_color = Color(0.800000, 0.900000, 0.950000, 1)
+
+[node name="Terrain" type="MeshInstance3D" parent="."]
+transform = Transform3D(41, 0, 0, 0, 41, 0, 0, 0, 41, 0, 0, 0)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("2_terrain")
+
+[node name="Atmosphere" type="MeshInstance3D" parent="."]
+transform = Transform3D(42.844997, 0, 0, 0, 42.844997, 0, 0, 0, 42.844997, 0, 0, 0)
+cast_shadow = 0
+material_override = SubResource("ShaderMaterial_atmo")
+mesh = SubResource("SphereMesh_atmo")
+
+[node name="Scatter" type="Node3D" parent="."]
+
+[node name="Grass" type="MultiMeshInstance3D" parent="Scatter"]
+material_override = ExtResource("6_grass_mat")
+cast_shadow = 0
+multimesh = ExtResource("mm_grass")
+
+[node name="Helichrysum" type="MultiMeshInstance3D" parent="Scatter"]
+material_override = ExtResource("3_terrain_mat")
+cast_shadow = 0
+multimesh = ExtResource("mm_helichrysum")
+
+[node name="Stones" type="MultiMeshInstance3D" parent="Scatter"]
+multimesh = ExtResource("mm_stones")
+
+[node name="Plant" type="MultiMeshInstance3D" parent="Scatter"]
+multimesh = ExtResource("mm_plant")
+
+[node name="Decorations" type="Node3D" parent="."]
+
+[node name="Amba_001" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(5.549139, -2.8804057, -4.6406403, -2.0654428, 7.427624, -4.8671103, 4.6458325, 6.7426248, 3.3791194, -11.315276, 29.178394, 26.487467)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_amba")
+metadata/clearance = 9.0
+
+[node name="Amba_002" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-6.3345494, 9.69466, 0.2784961, -0.841173, -0.4132463, -9.964426, -7.6988378, -7.931546, 0.8595659, 31.715714, -1.3519195, -25.947752)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_amba")
+metadata/clearance = 10.0
+
+[node name="Rocks_001" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-3.3574605, -2.263176, 1.4937093, -1.3388814, 3.4508834, 2.2191157, -2.3580773, 1.2629781, -3.3867435, -20.59511, 31.403358, 11.493217)
+metadata/clearance = 3.6
+
+[node name="Rocks_002" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-2.4791162, -1.7459425, 0.7523262, 1.883646, -2.4231029, 0.5837618, 0.2572696, 0.91683424, 2.9754925, -22.214605, -30.830494, 11.665396)
+metadata/clearance = 2.6
+
+[node name="Rocks_003" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-0.3831824, -2.3162982, -1.6345456, 2.709817, 0.18538393, -0.8979612, 0.83299017, -1.6685922, 2.1692703, -32.270622, 2.5827646, -23.246798)
+metadata/clearance = 2.4
+
+[node name="Rocks_004" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-0.16297251, -1.3195052, -2.1061132, 2.4777625, -0.2507141, -0.034655605, -0.19364536, -2.0974786, 1.3290797, -21.193268, -4.026851, -33.68871)
+metadata/clearance = 2.1
+
+[node name="Rocks_005" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(2.2257054, -0.12083565, -3.639297, -3.200543, -2.0990558, -1.8876796, -1.7365491, 3.7137873, -1.1853403, -1.1125525, -19.326336, 34.19342)
+metadata/clearance = 3.5
+
+[node name="Rocks_006" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-2.301521, 1.0086578, 0.97781736, -0.14799409, -2.0404499, 1.7564673, 1.3970025, 1.4455758, 1.7970006, 14.933702, -30.209919, 21.402498)
+metadata/clearance = 2.2
+
+[node name="Rocks_007" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-2.5047479, -3.1207788, -1.2842009, -1.1103475, 2.2723486, -3.3564494, 3.1867793, -1.6611342, -2.1788223, -29.197287, 21.259567, -15.541187)
+metadata/clearance = 3.5
+
+[node name="Rocks_008" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-1.6245257, -0.7492413, -1.1687961, 0.75393945, 1.0345418, -1.7110901, 1.1657711, -1.7131523, -0.5221274, -14.075455, 19.435186, -32.18375)
+metadata/clearance = 1.8
+
+[node name="Rocks_009" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(1.9591602, -0.28823012, 0.01877242, 0.05461204, 0.24325629, -1.9645816, 0.283631, 1.9440904, 0.24860348, -5.852092, 4.938964, 39.471916)
+metadata/clearance = 1.6
+
+[node name="Rocks_010" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-1.8589481, -0.07104458, 1.9381124, 1.8743076, 0.6239581, 1.8206215, -0.4982956, 2.612019, -0.38219443, -1.0558482, 9.273125, 38.81924)
+metadata/clearance = 2.2
+
+[node name="Rocks_011" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-0.50529397, -1.4912547, 1.2574542, -1.9505731, 0.39772707, -0.312139, -0.017193127, -1.2955022, -1.5432861, -29.746168, 7.933492, -25.841476)
+metadata/clearance = 1.7
+
+[node name="Rocks_012" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(2.1897516, -2.261533, -0.35072288, 1.5594283, 1.8297454, -2.0622234, 1.6750288, 1.2530162, 2.3783982, -28.369324, 22.952854, 15.7182)
+metadata/clearance = 2.6
+
+[node name="Rocks_013" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(1.3318095, 1.118153, 1.354198, 0.43418548, 1.437157, -1.6136594, -1.7016466, 1.2418324, 0.6481405, 20.352758, 26.159311, 22.603987)
+metadata/clearance = 1.8
+
+[node name="Rocks_014" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-0.4277839, 0.36793134, -4.427157, -3.9493, -2.068122, 0.20973277, -2.0342367, 3.9377131, 0.52381754, 3.2329068, -18.171991, 34.599545)
+metadata/clearance = 3.7
+
+[node name="Rocks_015" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(2.265102, 2.500053, -1.6551535, -0.45302388, -1.7651938, -3.2862353, -2.9638772, 2.1804378, -0.76263225, 26.277712, -18.55371, 22.918282)
+metadata/clearance = 3.1
+
+[node name="Rocks_016" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(3.1237602, 1.7758852, -2.2119362, -1.8899152, 3.7566051, 0.3470525, 2.115337, 0.7337958, 3.576479, 16.54549, 34.99938, 6.8365965)
+metadata/clearance = 3.5
+
+[node name="Rocks_017" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(0.41436023, 1.2807581, -1.522191, 1.7147006, -1.0182438, -0.3899775, -1.0085675, -1.2049643, -1.2883916, 25.329523, -20.137785, -23.830551)
+metadata/clearance = 1.7
+
+[node name="Rocks_018" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-2.297816, 2.780568, 1.2169007, 0.5746465, -1.1001453, 3.5988648, 2.9803, 2.3559468, 0.24431725, 28.834389, -11.408466, 24.431084)
+metadata/clearance = 3.1
+
+[node name="Rocks_019" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(2.521875, 1.1361092, -1.6221564, 1.9802496, -1.4103595, 2.0908096, 0.027307916, -2.6461537, -1.8108321, 14.072203, -17.469152, -32.77609)
+metadata/clearance = 2.6
+
+[node name="Rocks_020" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-2.046805, 3.4202025, -1.4581319, -0.67599046, 1.2944121, 3.9850817, 3.656087, 2.1540782, -0.079492845, 31.671804, 11.986534, 19.947222)
+metadata/clearance = 3.5
+
+[node name="Rocks_021" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(1.0027657, -2.0327246, -1.7429963, 1.7901763, 1.8930401, -1.1778002, 1.9912996, -0.6782145, 1.9365678, -28.334597, 26.3875, -9.453781)
+metadata/clearance = 2.4
+
+[node name="Rocks_022" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(2.7266996, 2.39649, 2.2074606, -0.8545669, -2.251686, 3.5000808, 3.1441634, -2.6902945, -0.96306354, 22.167887, -20.828428, -24.885622)
+metadata/clearance = 3.5
+
+[node name="Rocks_023" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-0.15921134, 1.8159688, 1.7254996, -1.1448987, 1.4850821, -1.6685857, -2.2280705, -0.89287615, 0.734107, 28.936049, 23.663626, -14.227285)
+metadata/clearance = 2.1
+
+[node name="Rocks_024" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-0.83892953, -1.8389385, -0.28162837, 1.662812, -0.6026491, -1.0181761, 0.8343058, -0.6480209, 1.7460855, -36.20923, -11.866334, -12.759719)
+metadata/clearance = 1.7
+
+[node name="Rocks_025" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(0.8000665, 1.6700408, 0.020257114, 0.5093019, -0.22256377, -1.7665305, -1.5906157, 0.7687536, -0.55543923, 36.305622, -4.838394, 16.712212)
+metadata/clearance = 1.5
+
+[node name="Rocks_026" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-1.0803262, -0.535204, 2.210009, 1.1048653, -2.2620568, -0.007713526, 1.9874245, 0.9666144, 1.205607, -8.50233, -35.93537, 15.355782)
+metadata/clearance = 2.1
+
+[node name="Rocks_027" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-1.5721291, 1.9927508, -2.7198875, 2.396183, 2.7716234, 0.64563113, 2.3721604, -1.4790132, -2.454752, 21.164398, 29.436571, -15.708152)
+metadata/clearance = 3.1
+
+[node name="Rocks_028" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(0.06069419, 2.8747835, -0.09139657, 2.8686314, -0.053859845, 0.21088171, 0.20901722, -0.09558366, -2.8676805, 39.820263, -0.7460433, -1.3239837)
+metadata/clearance = 2.4
+
+[node name="Rocks_029" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(2.10137, 1.4958293, 0.27353954, -0.8978953, 1.597134, -1.8360373, -1.2272377, 1.3927469, 1.8116921, 23.045622, 24.606382, 21.457478)
+metadata/clearance = 2.1
+
+[node name="Rocks_030" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-0.5403559, -1.2171236, 1.2769545, -1.3347726, -0.59112245, -1.1282481, 1.1534232, -1.2542614, -0.70741147, -26.560493, -12.89968, -27.370926)
+metadata/clearance = 1.5
+
+[node name="Rocks_031" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(1.1249933, -3.6836033, 0.71361697, -0.07363776, 0.72318393, 3.8490744, -3.7513673, -1.1188674, 0.13844994, -37.082417, 7.280211, -11.26351)
+metadata/clearance = 3.2
+
+[node name="Rocks_032" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(0.96641576, -2.0354104, 2.5837276, 1.444886, 2.68191, 1.5723125, -2.9548013, 0.6457295, 1.6139047, -23.528643, 31.001957, 7.4644094)
+metadata/clearance = 2.8
+
+[node name="Rocks_033" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(0.35324967, -2.151798, 0.5146917, -1.5754879, -0.61058116, -1.471379, 1.5533768, -0.12993707, -1.6093673, -38.515736, -10.928992, -2.3257859)
+metadata/clearance = 1.8
+
+[node name="Rocks_034" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-1.3546921, 0.57933354, -1.8810799, -1.789932, 0.5872122, 1.4698998, 0.81867707, 2.242506, 0.10106083, 9.709079, 9.841117, 37.582268)
+metadata/clearance = 2.0
+
+[node name="Rocks_035" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-0.89786875, 1.9711078, 1.9082338, 2.7186878, 0.370009, 0.89700603, 0.3679107, 2.0762029, -1.9715008, 27.207752, 5.1073384, 28.658405)
+metadata/clearance = 2.4
+
+[node name="Rocks_036" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(0.57656896, -2.2013524, 1.3769649, -2.3527017, -1.0396671, -0.6769807, 1.0985348, -1.0712407, -2.172575, -33.052917, -15.610417, -16.084488)
+metadata/clearance = 2.2
+
+[node name="Rocks_037" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(0.178968, 1.9608517, 1.558883, 2.4119675, -0.55686736, 0.42355287, 0.6763645, 1.4669847, -1.9229074, 31.227768, -8.868454, 23.362633)
+metadata/clearance = 2.1
+
+[node name="Rocks_038" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-0.5712115, -1.5012767, 1.2598567, 1.551967, 0.45489815, 1.2457206, -1.1968583, 1.3063649, 1.0140488, -29.551374, 8.9542885, 25.714695)
+metadata/clearance = 1.7
+
+[node name="Rocks_039" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(3.3281553, 0.13067001, -0.54601413, -0.3359266, -2.1665943, -2.5660958, -0.44984362, 2.5846894, -2.1234045, 1.5350466, -25.452085, 30.36366)
+metadata/clearance = 2.8
+
+[node name="Rocks_040" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-1.5103483, -0.72747105, -1.4553511, -1.240394, -0.7702545, 1.6722869, -1.0529406, 1.9508734, 0.11756829, -13.144269, -13.9173, 35.24925)
+metadata/clearance = 1.8
+
+[node name="Rocks_041" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-0.2922297, 2.0511303, -1.586837, -2.0533178, -1.1583943, -1.1191926, -1.5840049, 1.1231977, 1.7435422, 31.40395, -17.735664, 17.196785)
+metadata/clearance = 2.2
+
+[node name="Rocks_042" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-1.6865206, -0.90570647, 0.58991396, 0.7958761, -1.7803048, -0.45798513, 0.7313575, -0.1512125, 1.8587375, -18.175398, -35.726532, -3.0344787)
+metadata/clearance = 1.7
+
+[node name="Rocks_043" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-1.2459282, 1.0154703, 1.2563171, 1.486865, 0.10069726, 1.3931769, 0.6314624, 1.7665023, -0.8016078, 20.00216, 1.9834777, 34.795563)
+metadata/clearance = 1.7
+
+[node name="Rocks_044" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(1.3690375, -1.6964301, 0.5187374, 0.21229349, -0.49386653, -2.1753745, 1.7612196, 1.3782047, -0.14101204, -30.36094, -8.838711, 24.66567)
+metadata/clearance = 1.8
+
+[node name="Rocks_045" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(1.4902258, 1.5975293, -0.8336898, -0.66168565, -0.5211465, -2.1813962, -1.6760995, 1.6261051, 0.11992878, 27.37156, -8.929157, 27.861172)
+metadata/clearance = 1.9
+
+[node name="Rocks_046" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-1.1900285, 2.6745825, -2.916848, -1.1995445, 2.6587982, 2.9273612, 3.771271, 1.6896626, 0.01070398, 25.465645, 25.315361, 16.087877)
+metadata/clearance = 3.4
+
+[node name="Rocks_047" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-3.575331, -2.342398, 0.44858393, -0.08462259, 0.9324511, 4.19457, -2.3834624, 3.4806259, -0.8218263, -21.408989, 8.522393, 31.812136)
+metadata/clearance = 3.5
+
+[node name="Rocks_048" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(0.630358, -3.9403336, 0.5593185, -2.852619, -0.052455828, 2.8453875, -2.775181, -0.8410926, -2.79774, -38.517162, -0.51276106, -8.2217655)
+metadata/clearance = 3.3
+
+[node name="Rocks_049" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-2.0955102, 1.2717636, 0.20446844, -0.51164585, -1.1801356, 2.0966287, 1.1821203, 1.7436314, 1.269919, 20.689539, -19.1989, 28.366064)
+metadata/clearance = 2.0
+
+[node name="Rocks_050" parent="Decorations" instance=ExtResource("m_rocks")]
+transform = Transform3D(-1.9554194, -1.0825225, 0.614514, -1.2329588, 1.5270288, -1.2333463, 0.17115761, -1.3672879, -1.8639679, -18.714241, 26.398699, -23.637156)
+metadata/clearance = 1.9
+
+[node name="LobeliaSpike_001" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.37098905, -0.8410626, 1.5707281, 0.72319967, -1.3952239, -0.9178989, 1.6283597, 0.8112768, 0.04980555, -18.947569, -31.431787, 18.276552)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.0
+
+[node name="LobeliaSpike_002" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.8986952, 1.5219944, -0.59590745, -0.8537743, 1.0170159, 1.3099517, 1.3937871, -0.35838103, 1.1866534, 33.454582, 22.354778, -7.8774853)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.0
+
+[node name="LobeliaSpike_003" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.6168376, -1.4325545, 0.20287786, -1.3940374, 0.64749354, 0.33357581, -0.38733965, -0.048992015, -1.5236233, -37.342846, 16.878414, -1.2770908)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.9
+
+[node name="LobeliaSpike_004" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.53270215, 0.61132914, -1.9842277, -1.447957, 1.577532, 0.097298145, 1.4880538, 1.3161775, 0.80500185, 11.693178, 30.174194, 25.175137)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.2
+
+[node name="LobeliaSpike_005" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.06555583, -1.3653065, -1.3803879, -1.9380102, -0.037093457, 0.128726, -0.11682784, 1.3814455, -1.3608046, -28.81528, -0.7828707, 29.155903)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.1
+
+[node name="LobeliaSpike_006" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.436127, -1.4761341, 0.54998595, 1.5661392, -1.4179469, 0.28381646, 0.16930573, 0.59529155, 2.0398235, -28.3919, -27.27273, 11.449812)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.2
+
+[node name="LobeliaSpike_007" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.0668089, -1.1869994, 1.4465048, 1.79748, -0.18734863, 1.1719179, -0.52000946, 1.7875565, 1.0833547, -22.594475, -3.5661721, 34.02605)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.2
+
+[node name="LobeliaSpike_008" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.2739666, -0.92748374, 0.44897395, -0.96317035, -1.325545, -0.0052883606, 0.36620542, -0.25980616, -1.5758139, -23.207832, -33.168266, -6.5009627)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.9
+
+[node name="LobeliaSpike_009" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.1849215, -1.8160509, -0.3033817, -1.4563702, 0.7037038, 1.4757732, -1.1265285, 1.0004401, -1.5887645, -34.006145, 13.177084, 18.733568)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.2
+
+[node name="LobeliaSpike_010" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.21158238, 1.7360797, 0.5043655, 1.7298952, -0.04690048, -0.5642582, -0.52518564, 0.54493296, -1.655401, 39.105213, -1.0564334, 12.27462)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.0
+
+[node name="LobeliaSpike_011" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.06815926, 0.79784757, -1.2829331, 1.3875247, 0.54113597, 0.26281288, 0.59770656, -1.1652187, -0.75639653, 21.630121, 14.670519, -31.589771)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.8
+
+[node name="LobeliaSpike_012" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.84072477, 1.5187135, -1.0645026, 0.7318765, 0.80223984, 1.7225688, 1.7041166, -1.0937984, -0.21462943, 30.578783, 16.152828, -22.023264)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.1
+
+[node name="LobeliaSpike_013" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.35505676, -0.45153266, 1.3282118, -1.2575556, -0.7096754, 0.09491111, 0.62175715, -1.1775281, -0.56651473, -12.7930765, -20.106922, -33.36239)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.8
+
+[node name="LobeliaSpike_014" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.7894025, -1.757373, 0.63259065, 1.2028967, 0.047025993, 1.6317214, -1.4288354, 1.0105027, 1.0242075, -35.53348, 0.95084953, 20.43202)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.1
+
+[node name="LobeliaSpike_015" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.25998807, -1.747515, -0.9356514, 1.8427126, -0.5608434, 0.53545517, -0.730523, -0.79277486, 1.6836541, -35.83819, -11.501827, -16.258293)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.1
+
+[node name="LobeliaSpike_016" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.32245803, -1.1117575, 1.7614186, -1.5527055, -1.0597956, -0.9531624, 1.3884187, -1.4434016, -0.65686023, -21.626005, -20.61524, -28.077175)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.2
+
+[node name="LobeliaSpike_017" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.21571387, -1.3334774, -0.63525385, 0.9567822, 0.615246, -0.9665825, 1.1252897, -0.2674928, 0.9436167, -36.625904, 16.89863, -7.3470793)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.8
+
+[node name="LobeliaSpike_018" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.3342687, -1.3177159, -0.3595319, 1.2508687, -1.3806947, 0.41823488, -0.54860383, 0.05672419, 1.8280392, -28.294538, -29.646849, 1.2180036)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.1
+
+[node name="LobeliaSpike_019" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.20697825, 0.34404808, 1.3796016, 0.68004346, 1.2483001, -0.2092786, -1.2486835, 0.6228061, -0.3426537, 9.817357, 35.62004, 17.771671)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.8
+
+[node name="LobeliaSpike_020" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.35165572, 0.05429691, -1.6189437, -1.6197239, -0.032768235, 0.3507262, -0.020515732, 1.6563717, 0.060008455, 1.3430219, -0.81051487, 40.969982)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.9
+
+[node name="LobeliaSpike_021" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.5228944, 0.5555755, 0.5859385, 0.58919555, 1.6198835, -0.0045826747, -0.55212027, 0.1962351, -1.6210645, 13.214824, 38.53027, 4.6676145)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.0
+
+[node name="LobeliaSpike_022" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.6033265, 1.4176949, -0.47647157, -1.4777149, -0.6443092, -0.045940287, -0.23074234, 0.41939664, 1.540049, 36.04175, -16.380138, 10.662232)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.9
+
+[node name="LobeliaSpike_023" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.89599746, -1.6073934, 0.45865518, -1.1561623, 0.22011524, -1.4871881, 1.2072147, -0.9822042, -1.0838805, -34.749012, 4.758505, -21.233526)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.1
+
+[node name="LobeliaSpike_024" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.4436086, -1.5743052, 0.45266983, 0.6307616, -1.0910711, -1.7829907, 1.5117825, -1.0480837, 1.1761745, -29.562021, -20.48794, -19.68073)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.2
+
+[node name="LobeliaSpike_025" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.46165743, 2.0078883, 0.60158294, 1.0074071, 0.7527362, -1.7392999, -1.8381099, -0.091749035, -1.1043454, 38.3558, 14.379185, -1.7526407)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.2
+
+[node name="LobeliaSpike_026" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.46244693, -1.4839283, 0.9026803, 1.4091595, -0.8666552, -0.7027876, 1.0154529, 0.5268756, 1.3863586, -33.849037, -19.768772, 12.018254)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.0
+
+[node name="LobeliaSpike_027" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.834944, 0.029799022, -0.16472076, -0.10053781, -1.6458726, 0.82221454, -0.13383977, 0.8278023, 1.6406925, 0.6630752, -36.623306, 18.41993)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.0
+
+[node name="LobeliaSpike_028" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.81381315, 0.8775045, 0.82235765, -0.22978328, -1.0881176, 0.9336903, 1.18046, 0.39314625, 0.7486843, 24.77641, -30.72309, 11.100514)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.8
+
+[node name="LobeliaSpike_029" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.2402605, -1.1338382, 0.16341686, -0.2613077, 0.5145167, 1.586673, -1.1153532, 1.1402735, -0.55344737, -27.53413, 12.494524, 27.690403)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.9
+
+[node name="LobeliaSpike_030" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.5401075, -1.9123677, -0.09080901, 0.5984194, 0.25825638, -1.8794444, 1.818596, 0.4829762, 0.6454114, -39.41541, 5.322869, 9.95452)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.1
+
+[node name="LobeliaSpike_031" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.633439, 0.57109046, 1.8714699, 0.6391331, -1.9195851, 0.3694449, 1.8493383, 0.4677995, -0.76869994, 11.384905, -38.267662, 9.325762)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.1
+
+[node name="LobeliaSpike_032" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.5822376, -1.9549551, 0.490756, -1.128806, 0.106941506, 1.765234, -1.6698763, -0.7539268, -1.0221536, -38.204178, 2.0898757, -14.73341)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.2
+
+[node name="LobeliaSpike_033" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.113382965, -0.87765354, 1.2693759, -0.80855715, -1.1179, -0.7007006, 1.3144681, -0.61193967, -0.54050916, -23.25436, -29.619947, -16.21399)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.9
+
+[node name="LobeliaSpike_034" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.36086255, 0.80886155, 1.098651, 1.3386221, -0.429335, -0.123593405, 0.26340476, 1.0737445, -0.8770425, 23.499926, -12.473507, 31.195597)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.8
+
+[node name="LobeliaSpike_035" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.2543542, -1.684143, -0.42452633, 1.7357483, -0.2313829, -0.12204872, 0.061138302, -0.43747067, 1.6988637, -39.33679, -5.4044476, -10.218071)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.0
+
+[node name="LobeliaSpike_036" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.3593364, -0.20406282, 2.020079, 1.7151983, -1.1282943, 0.19112635, 1.0864873, 1.7137074, 0.36638096, -4.0576773, -22.435516, 34.076134)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.1
+
+[node name="LobeliaSpike_037" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.116713, -1.2261841, -0.4900906, 0.5439442, -0.15771507, 1.6340181, -1.2032629, -1.2092819, 0.28383145, -29.07023, -3.7390897, -28.66951)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.0
+
+[node name="LobeliaSpike_038" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.1691339, -1.6060736, -0.34775963, -0.75295156, -0.23499778, 1.4515013, -1.4606415, 0.30711403, -0.70797116, -39.86083, -5.832365, 7.6222024)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.9
+
+[node name="LobeliaSpike_039" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.5583383, 0.91411865, -1.4245468, 1.5480692, -0.8823404, 0.040561937, -0.68441814, -1.25002, -1.0703783, 21.028059, -20.29704, -28.755014)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.0
+
+[node name="LobeliaSpike_040" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.8461347, -1.2517784, 0.23497325, -1.2736262, 0.8329677, -0.14881718, -0.006173002, -0.27806628, -1.503578, -33.564426, 22.334696, -7.4559026)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.8
+
+[node name="LobeliaSpike_041" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.08409933, 1.1102101, 1.2167177, -0.09026262, -1.2133657, 1.1133902, 1.6446339, -0.12336452, -0.0011112567, 27.599504, -30.163921, -3.0668068)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.9
+
+[node name="LobeliaSpike_042" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.6225523, 0.7456005, -0.326242, -0.70378405, 1.650867, 0.27268368, 0.4087077, -0.11725255, 1.7647208, 16.84071, 37.287754, -2.6483576)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.0
+
+[node name="LobeliaSpike_043" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.99821424, 1.0069963, 0.80832684, 0.9195496, 0.16294646, -1.3385599, -0.9065663, 1.274077, -0.46768644, 25.296217, 4.0932903, 32.005413)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 0.9
+
+[node name="LobeliaSpike_044" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.6988402, -1.564674, -0.86517364, -1.6182781, -0.15858203, -1.0203601, 0.7602009, 1.1007975, -1.3767523, -33.418167, -3.386981, 23.510733)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.1
+
+[node name="LobeliaSpike_045" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.35882688, -1.5156817, -0.7060347, 1.4070183, -0.11642745, 0.96502733, -0.90336937, -0.78338146, 1.222608, -36.338215, -2.7913291, -18.78144)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.0
+
+[node name="LobeliaSpike_046" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.95976293, -1.063991, -1.4764049, 1.4211413, 0.60442054, -1.3594213, 1.1367521, -1.6539625, 0.45298424, -21.203032, 12.044793, -32.959892)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.1
+
+[node name="LobeliaSpike_047" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.4462378, -1.1047903, 0.5735338, 0.5705983, 0.192996, 1.8106011, -1.1063093, 1.5437933, 0.18408924, -23.73816, 4.146824, 33.170826)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.1
+
+[node name="LobeliaSpike_048" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.59835804, -1.6962771, -0.9132307, -1.02206, 1.0901077, -1.3551521, 1.6330154, 0.060730856, -1.1827726, -34.47598, 22.155888, 1.2343237)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.1
+
+[node name="LobeliaSpike_049" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.87407786, 0.24650097, -1.795663, -1.5112981, -1.1996443, 0.57097495, -1.0005733, 1.5966439, 0.7062312, 5.022488, -24.442904, 32.531815)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.1
+
+[node name="LobeliaSpike_050" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.5374808, 0.64522946, -1.2782916, -1.1245944, -1.7051338, 0.4919378, -0.8863618, 1.0442197, 1.5931622, 12.591346, -33.27488, 20.37745)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia_spike")
+metadata/clearance = 1.2
+
+[node name="Lobelia_001" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.4778577, 0.6652866, 0.066827886, 0.18266378, 0.55766755, -1.5122093, -0.6432, -1.3702322, -0.5830035, 16.815935, 14.09573, -34.6343)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_002" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.3066208, -0.7040726, -1.5636455, -0.16887894, 2.009096, -0.7635292, 1.7065127, -0.34026238, -1.2727922, -13.389674, 38.2079, -6.470928)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_003" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.2650831, 0.27440226, 1.806861, 1.3706539, 1.3111085, -1.1587843, -1.2088637, 1.7737466, 0.5770188, 5.06159, 24.184547, 32.71831)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_004" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.530155, 1.0579969, -1.2413954, 1.6107197, 1.2482464, -0.92155135, 0.25690886, -1.5245713, -1.6160055, 19.395695, 22.883438, -27.949154)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_005" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.2265285, -1.5646904, 0.121955104, -0.6852306, -0.39464682, 1.8281724, -1.4119446, -1.1676897, -0.78128994, -32.207256, -8.123325, -24.035479)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_006" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.5916309, 1.5426292, -0.514477, -1.5982969, -1.6166966, 0.09705996, -0.29973218, 0.42926463, 2.2144012, 27.795712, -29.130285, 7.7346597)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_007" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.1316787, -0.7538756, 0.9441956, -1.0296426, 1.2786392, -0.21318647, -0.6321944, -0.7329966, -1.3429729, -18.670942, 31.667555, -18.153837)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_008" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.2703364, -1.6941324, 0.21571985, -1.4408209, -1.207494, -0.998182, 0.9168723, 0.4497194, -1.8674773, -32.63354, -23.259577, 8.662802)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_009" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.2959766, 1.5611615, 0.96628255, 1.0884539, -0.9374145, 1.1811228, 1.4785784, 0.3775689, -1.0629091, 34.418026, -20.666637, 8.324044)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_010" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.7837048, 0.46563494, 0.052561697, -0.3265426, -1.3835123, 1.1749234, 0.3360781, 1.1270578, 1.420554, 10.351766, -30.757568, 25.056196)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_011" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.48136675, 1.5767007, 1.3479797, 1.5096314, 1.2153337, -0.88245475, -1.4226904, 0.75612664, -1.3924701, 30.356838, 23.399294, 14.558003)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_012" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.5354066, 0.9891955, -0.030743675, -0.7512638, 1.2019092, 1.1523643, 0.6442483, -0.9559458, 1.4170525, 22.202034, 26.97629, -21.455757)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_013" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.1034379, -0.6498605, 1.0703043, -1.2517122, 0.6100328, -0.9200659, -0.03295828, -1.4110231, -0.8907146, -15.96455, 14.986139, -34.663364)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_014" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.32472152, -1.2923958, 1.5313354, -1.9359479, 0.60266066, 0.098105356, -0.5170885, -1.4447256, -1.3289493, -26.10315, 12.172232, -29.179829)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_015" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.4304916, 0.9111332, -1.5285285, -0.8744038, 1.3481741, 1.6219478, 1.5498328, 1.601603, -0.49573737, 16.361658, 24.20981, 28.760757)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_016" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.23637192, -1.4744694, 1.4523329, 2.057326, 0.32649863, -0.0033613322, -0.22525753, 1.4347618, 1.4932916, -29.021152, 6.426289, 28.239609)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_017" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.0434613, 0.6016643, 1.2284507, 1.3484374, -0.19287854, -1.0509125, -0.22979906, 1.600219, -0.58855283, 14.338356, -4.596518, 38.135067)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_018" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.98561716, 1.7399375, 0.19474846, 0.40941846, -0.011761803, -1.9669744, -1.702259, 1.0046042, -0.36032605, 35.50598, -0.24001688, 20.500427)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_019" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.76262766, 1.0907335, 1.9350742, 2.0295577, 1.1737053, 0.1382877, -0.9028329, 1.7171282, -1.3236983, 19.041351, 20.489824, 29.97656)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_020" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.6871145, -0.6475325, -0.89891106, 0.9115225, -0.119433925, 1.7968185, -0.6296557, -1.9079129, 0.1926047, -13.1538, -2.4261487, -38.756824)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_021" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.5037898, -0.97058135, -1.2336218, 1.4066653, -0.29574773, 0.8071444, -0.6965231, -1.2992923, 0.73780125, -24.138966, -7.3554306, -32.314205)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_022" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.24550878, -0.61610425, -2.2030923, 1.9773982, 1.1712728, -0.107193686, 1.1502589, -1.882023, 0.6544986, -10.979122, 20.872356, -33.538094)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_023" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.08956227, 1.5952946, 0.26483244, -1.0278276, -0.14861518, 1.242822, 1.2484677, -0.23679349, 1.0041814, 40.38457, -3.762164, -5.9943805)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_024" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.502373, -1.3767564, -1.2259351, -1.0633224, -0.8215539, 1.3583624, -1.5058954, 1.0393962, -0.5501713, -29.542667, -17.62904, 22.303537)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_025" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.1565998, 1.6857088, 1.1159672, 1.2646958, -1.6063657, 1.1157299, 1.577194, 0.051910907, -1.7130336, 29.674114, -28.277409, 0.9138063)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_026" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.404734, 0.40745902, -1.7302293, -0.73603445, -2.1406808, 0.0934518, -1.6180141, 0.6200461, 1.4596461, 7.373648, -38.739178, 11.220764)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_027" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.9336771, -1.4097095, -0.115593724, -0.3547686, 0.67291456, -2.2717996, 1.3692266, -1.8164953, -0.7518727, -24.12498, 11.515883, -31.086489)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.6
+
+[node name="Lobelia_028" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.1631844, -0.60879624, 2.0075731, -0.53828734, 2.1320517, 0.95842713, -2.0276165, -0.91526115, 0.8972448, -10.405707, 36.441597, -15.6438875)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.6
+
+[node name="Lobelia_029" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.5933757, -0.8862172, -1.2732067, 1.3425436, 1.7022083, 0.49532393, 0.7771829, -1.1235603, 1.7546741, -16.339113, 31.383474, -20.714993)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_030" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.8865175, 0.8925828, 1.1490725, -0.8430994, -1.4117678, 0.4461837, 1.1858562, -0.33644065, 1.1762387, 21.4788, -33.972282, -8.095991)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_031" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.1847745, -1.9999355, -0.45449847, 1.7537934, 0.7158216, 1.4219033, -1.0632585, -1.0477878, 1.8389189, -34.619305, 12.391025, -18.137428)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_032" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.0836664, 0.149118, -1.3343318, -0.84151185, -1.2607025, -0.8243164, -1.0462005, 1.1685048, -0.7190768, 3.5434291, -29.957546, 27.766697)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_033" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.5769058, 1.013911, 0.7013646, -1.2316893, -1.3451127, -0.8247261, 0.053563833, -1.0813031, 1.6835897, 20.768152, -27.552227, -22.14856)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_034" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.4444516, 1.1965326, 0.67751914, -1.3712806, 1.3260734, 0.58161956, -0.10154692, -0.88713115, 1.7832131, 24.599241, 27.262442, -18.238329)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_035" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.7357514, -0.838186, -1.2707356, 0.6735955, 1.4449427, -0.5630847, 1.365135, -0.26122725, 0.9627156, -20.3256, 35.039154, -6.3346324)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_036" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.76265013, -0.9362228, -1.9900188, 1.2756788, 1.9040501, -0.40688995, 1.7914608, -0.95728934, 1.136921, -16.49038, 33.53743, -16.861439)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_037" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.64572686, -1.5938327, -0.90628463, 0.2692535, 1.032863, -1.6245966, 1.8136035, 0.4141361, 0.5638721, -33.617092, 21.785126, 8.734951)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_038" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.4841047, 1.5856601, 0.083609015, -0.8265733, 0.32628623, -1.4021342, -1.3557601, 0.3672671, 0.88470095, 39.16343, 8.058781, 9.070947)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_039" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.8388495, -0.43207425, -0.2472893, -0.47588918, -1.803461, -0.38764086, -0.14618371, 0.43594474, -1.8487267, -9.299002, -38.81367, 9.3823)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_040" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.4582248, 0.59241277, 0.9262705, -1.0348707, -0.21973173, -1.4886605, -0.37144646, -1.7135094, 0.51113844, 13.299569, -4.9329424, -38.468006)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_041" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.15195629, -1.8108711, -0.34486508, -1.7436843, 0.02892179, 0.6164444, -0.59812164, 0.3757475, -1.7094853, -40.13999, 0.64108443, 8.328867)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_042" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.4351964, 1.0287375, 1.1065208, 1.4217224, -0.4031168, -1.4692446, -0.51126724, 1.7668259, -0.97949463, 20.240427, -7.9313293, 34.762325)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_043" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.4463942, 1.7179428, -0.22685759, 1.4355482, 1.3534296, 1.0964841, 0.9705632, 0.5583449, -1.9598739, 31.205198, 24.584078, 10.141933)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_044" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.640094, 0.5181449, -0.85114783, -0.23621581, 1.7946645, 0.63735104, 0.9680541, -0.43993217, 1.5975502, 11.069905, 38.34211, -9.39893)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_045" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.7681706, -0.3338564, -0.5768423, -0.1597613, -1.3754585, 1.2857779, -0.64705765, 1.2519138, 1.258834, -7.2438755, -29.84411, 27.16349)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_046" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.2603639, 1.1787131, 1.0830969, 0.8288364, 0.8395192, -1.1128747, -1.3694866, 0.7321857, -0.4676145, 29.798418, 21.22344, 18.509996)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_047" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(2.1029468, 0.36870965, -0.29392657, -0.2459599, -0.28842202, -2.1215656, -0.40229765, 2.1037085, -0.23935476, 7.0143657, -5.486967, 40.02114)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_048" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.0933142, -0.65753543, 1.2645485, -0.1824955, 1.6452062, 0.6976848, -1.4135528, 0.29616868, -1.0681409, -15.007863, 37.550873, 6.7598777)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_049" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.8281696, -0.7029211, -1.087294, 0.3778777, -1.5097072, 1.6113669, -1.2383515, -1.4983984, -1.1134626, -12.864798, -27.630526, -27.42355)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_050" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.28478953, 0.8710694, 1.8984565, 1.8101321, -1.0589973, 0.21436007, 1.0422668, 1.6011767, -0.89102, 16.941402, -20.596407, 31.141241)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_051" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.4548932, 0.65277374, -0.90109724, -1.1007835, 0.6279355, -1.3224128, -0.16237354, 1.5919762, 0.8910954, 14.612107, 14.056116, 35.635822)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_052" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.93681824, 1.2140888, -0.9739601, -0.9955927, 0.40638247, 1.4642013, 1.1964132, 1.288829, 0.45580006, 27.4007, 9.171623, 29.087507)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_053" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.9187975, 1.0852989, 0.53935283, 0.0291435, 1.0510311, -2.0112293, -1.2115799, -1.6935227, -0.9025598, 19.60677, 18.987694, -30.594805)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_054" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.4055933, -1.056324, 1.3510782, 1.7129229, -0.3178588, 0.26570508, 0.084424034, 1.3743666, 1.099876, -24.575287, -7.394956, 31.97452)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_055" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.8238821, 0.82254994, 0.8777253, -0.8590269, -2.0066137, 0.09544658, 0.84205866, -0.26542243, 1.9985055, 15.435688, -37.655422, -4.9808264)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_056" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.9419757, 0.7846411, -1.2227591, -1.1415728, -1.3011345, 0.04449824, -0.8986726, 0.8303657, 1.225153, 18.579348, -30.809278, 19.66205)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_057" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.8356181, -0.21919528, -0.27558896, -0.34192786, -0.7599623, -1.673031, 0.084149815, 1.693488, -0.7864528, -4.808232, -16.670404, 37.148064)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_058" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.668442, -1.4725958, -0.39197698, -0.3180975, 0.55343753, -1.536724, 1.4903016, -0.542372, -0.5038187, -36.283234, 13.63613, -13.363484)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_059" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(2.3000207, -0.5276826, -0.16355899, -0.53108346, -1.9190634, -1.2768869, 0.15215403, 1.2782964, -1.9844657, -9.146293, -33.263023, 22.15664)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_060" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.8169523, 1.7077385, 0.35877553, -0.09376233, -0.4385326, 1.8738728, 1.7424979, 0.7770586, 0.2690397, 36.33891, -9.331521, 16.535006)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_061" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.5498954, 1.1436844, -1.6819489, -1.9687359, -0.13838196, -0.73775375, -0.51092595, 1.764139, 1.0325302, 22.25514, -2.6927981, 34.32867)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_062" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.27034932, 1.5178263, 1.1588101, 1.9073412, 0.2717525, 0.08903552, -0.09320942, 1.1584818, -1.5391423, 32.266396, 5.7769938, 24.627344)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_063" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.2444093, 1.1412039, -1.3300633, 0.2602123, -1.492863, -1.5243424, -1.73312, -1.0435437, 0.72614175, 21.768452, -28.476347, -19.905584)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_064" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.2861919, -0.6730209, -1.3623495, 1.0352087, 1.6946821, 0.14014083, 1.1123383, -0.7989616, 1.4448555, -13.860763, 34.901707, -16.454487)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_065" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.608826, 1.4023768, 0.6257499, -1.5348623, 0.5772738, 0.19961421, -0.049211692, -0.654971, 1.5157454, 34.8061, 14.327567, -16.255962)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_066" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.30112514, -2.2243888, -0.09823025, 2.1013238, 0.31668672, -0.7296435, 0.7362024, 0.005919656, 2.122782, -40.59055, 5.778885, 0.108021736)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_067" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.0633492, 0.77659845, -1.848909, 1.9782221, 0.7494903, -0.8229112, 0.3289482, -1.9968578, -1.0279269, 14.027511, 13.537861, -36.06876)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_068" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.5773176, 0.56749433, 1.1203519, -1.2333847, -0.36105862, -1.5535661, -0.23664366, -1.9007251, 0.6296133, 11.540006, -7.3421335, -38.65128)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_069" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.0822378, 0.71601456, -1.158074, 0.5546988, 1.1191452, 1.21032, 1.2434313, -1.1224476, 0.4680182, 16.878714, 26.38177, -26.459618)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_070" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.7413516, 0.289081, -0.83873254, -0.7412112, 0.54120195, 1.7254133, 0.48748946, 1.8554993, -0.37258735, 6.0646944, 11.353997, 38.926933)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_071" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.0119481, -0.87823266, 1.5043311, -0.24575038, 1.7943335, 0.88222307, -1.7245032, 0.25965023, -1.0084711, -17.873886, 36.518475, 5.284431)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_072" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.2955189, -0.30406335, 1.4096376, 0.61129534, -1.8320631, 0.16662553, 1.3060819, 0.5558701, 1.3202498, -6.4309506, -38.748207, 11.756675)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_073" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.0910852, 0.8275614, 1.2365788, 0.5438276, -1.2055299, 1.286624, 1.3850043, 1.1252964, 0.46895987, 18.389097, -26.787872, 25.005018)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_074" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.0159092, -0.92740786, -1.8576133, -0.4116336, -1.9370453, 1.1921821, -2.0350356, 0.8547836, 0.6861916, -16.450031, -34.35862, 15.161848)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_075" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.0152774, 1.0358126, -1.822378, 0.46614885, 2.0857477, 0.9258084, 2.0436919, 0.03883583, -1.1165012, 18.233702, 36.716, 0.68363816)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_076" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.20563056, 1.6960466, 0.00039843892, -1.5317544, 0.18588391, -0.7335078, -0.72821873, 0.087927565, 1.5429921, 40.701942, 4.460866, 2.1100967)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.1
+
+[node name="Lobelia_077" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.4717882, 0.9158189, -1.911942, 1.967835, 0.9177931, -0.04595813, 0.7885885, -1.7423441, -1.0291723, 17.288937, 17.326206, -32.892178)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_078" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.6098117, 1.7198961, 0.042449422, -0.2069163, 0.118030466, -1.8096879, -1.7079316, 0.59978426, 0.23440045, 38.632442, 2.6512096, 13.472402)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_079" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.681498, 0.5593471, -0.9539796, 0.99469984, 0.0063534393, -1.7495466, -0.48323768, -1.9332542, -0.281764, 11.395077, 0.12943292, -39.384457)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_080" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.05685309, -1.9621423, -0.45031276, -1.0082785, -0.4176706, 1.6926142, -1.7424577, 0.1776654, -0.9941291, -39.94519, -8.502917, 3.6169028)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_081" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.164996, 1.7963319, -0.48310244, -0.2086446, 0.44024217, 2.1401088, 1.8484218, 1.181859, -0.06291316, 33.555485, 8.223726, 22.07713)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_082" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.386622, -1.3243088, 0.12610826, -1.2862227, 1.3811431, 0.36123732, -0.33959973, 0.17626056, -1.8830886, -28.256456, 29.469116, 3.7608283)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_083" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.7514068, 0.9748581, -0.37904868, 0.03818308, -0.79836786, -1.8768598, -1.04526, 1.6042794, -0.703684, 19.593088, -16.045914, 32.243443)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_084" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.9283695, -0.3367223, -0.63983804, -0.6210362, -0.16190292, 1.956907, -0.37025484, 2.0252874, 0.050057713, -6.7035046, -3.2231812, 40.31965)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_085" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(1.8094189, -0.12850337, -0.45009068, -0.46384248, -0.25110582, -1.793011, 0.06280836, 1.8475728, -0.27499527, -2.8189893, -5.5085287, 40.530354)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.2
+
+[node name="Lobelia_086" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.4800011, 0.7645815, 1.9381559, 0.6577314, -1.9428263, 0.60353106, 1.976973, 0.46073356, -0.6713689, 14.661601, -37.255604, 8.835018)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_087" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.73035246, -2.0692878, 0.26317486, 0.037571676, -0.2918445, -2.1904435, 2.0856175, -0.71937644, 0.13162002, -38.38743, -5.414017, -13.345178)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.4
+
+[node name="Lobelia_088" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(0.2557372, 0.58217555, -1.9668065, -1.9291861, -0.605026, -0.42993337, -0.6967766, 1.8888288, 0.46849453, 11.547521, -12.000761, 37.465137)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Lobelia_089" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-0.9553794, 1.5182586, 1.405417, 2.0506861, 0.8998411, 0.42193314, -0.2738461, 1.4416076, -1.7435112, 27.316063, 16.189676, 25.936981)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.5
+
+[node name="Lobelia_090" type="MeshInstance3D" parent="Decorations"]
+transform = Transform3D(-1.6801604, 0.3989324, -1.1208006, -1.1214741, 0.1161756, 1.7225211, 0.3970349, 2.0163424, 0.12250343, 7.9448977, 2.313683, 40.156265)
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("p_lobelia")
+metadata/clearance = 1.3
+
+[node name="Clouds" type="Node3D" parent="."]
+transform = Transform3D(0.98492354, 0.16573839, 0.049561724, -0.17299011, 0.94363564, 0.28218094, 0, -0.28650033, 0.9580801, 0, 0, 0)
+
+[node name="Spin" type="Node3D" parent="Clouds"]
+
+[node name="Cloud_01" type="MeshInstance3D" parent="Clouds/Spin"]
+transform = Transform3D(0.58839697, 0.9402869, -0.43831447, 0.91356105, -0.23084535, 0.73115444, 0.4915948, -0.69644874, -0.83412445, 65.10316, -15.9831705, -48.2204)
+cast_shadow = 0
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("cloud_0")
+
+[node name="Cloud_02" type="MeshInstance3D" parent="Clouds/Spin"]
+transform = Transform3D(0.1239026, 0.9082691, 0.7048214, 0.8903303, -0.5243031, 0.5191301, 0.7273499, 0.48706412, -0.7555186, 63.458908, -36.63199, 34.030178)
+cast_shadow = 0
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("cloud_1")
+
+[node name="Cloud_03" type="MeshInstance3D" parent="Clouds/Spin"]
+transform = Transform3D(-0.29773566, 0.9213654, -0.117066495, 0.0048612603, 0.124478854, 0.96734, 0.92876005, 0.29471365, -0.042591583, 64.75097, 8.748022, 20.711643)
+cast_shadow = 0
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("cloud_2")
+
+[node name="Cloud_04" type="MeshInstance3D" parent="Clouds/Spin"]
+transform = Transform3D(1.0532049, -0.682001, -0.10893253, -0.3284033, -0.31977803, -1.1730838, 0.6075714, 1.0093805, -0.4452419, -39.788902, -18.656301, 58.88868)
+cast_shadow = 0
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("cloud_0")
+
+[node name="Cloud_05" type="MeshInstance3D" parent="Clouds/Spin"]
+transform = Transform3D(-0.2031027, -0.07871168, 0.954202, -0.8741205, -0.38275054, -0.21763021, 0.39065355, -0.8973595, 0.009128193, -5.797474, -28.191328, -66.09463)
+cast_shadow = 0
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("cloud_1")
+
+[node name="Cloud_06" type="MeshInstance3D" parent="Clouds/Spin"]
+transform = Transform3D(-0.6307724, -0.69658333, -0.8103667, -0.92270446, 0.8296913, 0.0050192447, 0.5390166, 0.6051285, -0.93972176, -43.007847, 51.226074, 37.361317)
+cast_shadow = 0
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("cloud_2")
+
+[node name="Cloud_07" type="MeshInstance3D" parent="Clouds/Spin"]
+transform = Transform3D(-0.29380685, -0.28935775, -1.1439385, 0.6440223, 0.9484693, -0.40532348, 0.98871547, -0.7037926, -0.0759163, -16.083849, 52.720333, -39.12006)
+cast_shadow = 0
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("cloud_0")
+
+[node name="Cloud_08" type="MeshInstance3D" parent="Clouds/Spin"]
+transform = Transform3D(-0.81716025, -0.21014017, -0.036981635, 0.20723818, -0.8165055, 0.060402792, -0.050782528, 0.049368776, 0.84158254, -18.97583, -73.73112, 4.4580398)
+cast_shadow = 0
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("cloud_1")
+
+[node name="Cloud_09" type="MeshInstance3D" parent="Clouds/Spin"]
+transform = Transform3D(0.24880719, -0.9636939, 0.2694628, -0.9809091, -0.28977984, -0.1306369, 0.19782144, -0.22481745, -0.9866837, -69.23252, -20.818008, -16.15106)
+cast_shadow = 0
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("cloud_2")
+
+[node name="Cloud_10" type="MeshInstance3D" parent="Clouds/Spin"]
+transform = Transform3D(0.6724132, 0.49417445, 0.35490057, -0.49061954, 0.12760499, 0.7518722, 0.3597991, -0.7495404, 0.36198914, 37.048447, 9.566591, -56.193317)
+cast_shadow = 0
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("cloud_0")
+
+[node name="Cloud_11" type="MeshInstance3D" parent="Clouds/Spin"]
+transform = Transform3D(-0.453321, 0.29364175, 1.0914906, -0.760871, 0.79037464, -0.52864015, -0.83585435, -0.87872624, -0.110747315, 17.916592, 48.22482, -53.615604)
+cast_shadow = 0
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("cloud_1")
+
+[node name="Cloud_12" type="MeshInstance3D" parent="Clouds/Spin"]
+transform = Transform3D(0.43460587, 0.5544844, 0.7834209, 0.52067935, 0.5862408, -0.7037744, -0.8062843, 0.6774603, -0.03219888, 39.71266, 41.987076, 48.5203)
+cast_shadow = 0
+material_override = ExtResource("3_terrain_mat")
+mesh = ExtResource("cloud_2")
+
+[node name="CloudPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_drift")
+}
+autoplay = "drift"

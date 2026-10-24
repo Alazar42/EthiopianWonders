@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/meshes/landmarks/abuna_yemata.res" id="ext_0"]
+[ext_resource type="Material" path="res://assets/materials/terrain.tres" id="ext_1"]
+
+[sub_resource type="StandardMaterial3D" id="mat_1"]
+albedo_color = Color(0.780000, 0.560000, 0.400000, 1)
+roughness = 0.95
+
+[sub_resource type="CylinderMesh" id="cyl_2"]
+material = SubResource("mat_1")
+top_radius = 9.000000
+bottom_radius = 9.360000
+height = 1.8
+radial_segments = 24
+rings = 1
+
+[node name="LandmarkAbuna Yemata" type="Node3D"]
+metadata/graybox = true
+
+[node name="Plinth" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.6, 0)
+mesh = SubResource("cyl_2")
+
+[node name="ModelAbunaYemata" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+material_override = ExtResource("ext_1")
+mesh = ExtResource("ext_0")

@@ -33,6 +33,7 @@ func _run() -> void:
 	await _test_input_pipeline()
 	await _test_missing_and_game_over()
 	await _test_restart_and_popup()
+	await _test_worlds_and_backdrop()
 	_test_resources_load()
 	await _test_return_to_menu()
 	print("\n%d passed, %d failed" % [_passed, _failed])
@@ -491,6 +492,76 @@ func _test_restart_and_popup() -> void:
 	check("no simulation while paused", world.player.distance == frozen)
 	world.toggle_pause()
 	check("resume continues the run", not paused and world.state != GameState.State.PAUSED)
+	await _free_world(world)
+
+func _test_worlds_and_backdrop() -> void:
+	print("worlds, backdrop and mood")
+	var biomes: Array[String] = ["highland", "rift", "simien", "danakil", "bale"]
+	var world := await _new_world()
+	var route_scene_paths: Array[String] = []
+	for scene in world.route.planet_scenes:
+		route_scene_paths.append(scene.resource_path)
+	var problems: Array[String] = []
+	for biome in biomes:
+		var path: String = "res://scenes/planets/planet_%s.tscn" % biome
+		if not route_scene_paths.has(path):
+			problems.append(biome + " is not in the route's planet list")
+		var planet := (load(path) as PackedScene).instantiate() as PlanetController
+		world.add_child(planet)
+		planet.global_position = Vector3(5000, 0, 0)
+		await process_frame
+		var terrain := planet.get_node_or_null("Terrain") as MeshInstance3D
+		if terrain == null or terrain.mesh == null or planet.get_node_or_null("Clouds") == null:
+			problems.append(biome + " is missing terrain or clouds")
+		if planet.decorations == null or planet.decorations.get_child_count() < 40:
+			problems.append(biome + " has too little scenery")
+		else:
+			for child in planet.decorations.get_children():
+				if not child.has_meta("clearance"):
+					problems.append("%s/%s has no clearance" % [biome, child.name])
+					break
+		if planet.radius < 35.0:
+			problems.append(biome + " is too small")
+		planet.queue_free()
+	check("all five worlds are complete and in the route", problems.is_empty(), "
+    ".join(problems))
+
+	# Scenery clearing respects each object's own size.
+	var test_planet := (load("res://scenes/planets/planet_simien.tscn") as PackedScene).instantiate() as PlanetController
+	world.add_child(test_planet)
+	test_planet.global_position = Vector3(8000, 0, 0)
+	await process_frame
+	var big: Node3D = null
+	for child in test_planet.decorations.get_children():
+		if (child as Node3D).get_meta("clearance", 0.0) > 8.0:
+			big = child
+			break
+	check("worlds contain large landmarks such as mountains", big != null)
+	if big != null:
+		var near_point := PackedVector3Array([big.global_position + Vector3(10.0, 0, 0)])
+		test_planet.clear_decorations_near(near_point, 2.0)
+		check("a large object is cleared from farther away than a small one", big.is_queued_for_deletion())
+	test_planet.queue_free()
+
+	var backdrop := world.get_node_or_null("SpaceBackdrop") as Node3D
+	check("the space backdrop is part of the world", backdrop != null and backdrop.get_child_count() >= 15)
+	world.gameplay_camera.global_position += Vector3(123, 45, -67)
+	await process_frame
+	await process_frame
+	check("the backdrop follows the camera so space never gets closer",
+		backdrop.global_position.distance_to(world.gameplay_camera.global_position) < 0.01)
+
+	var rift := (load("res://scenes/planets/planet_rift.tscn") as PackedScene).instantiate() as PlanetController
+	world.add_child(rift)
+	world.apply_mood(rift, true)
+	var env: Environment = world.world_environment.environment
+	check("a world's mood tints the sky light and fog", env.ambient_light_color.is_equal_approx(rift.ambient_color) 		and env.fog_light_color.is_equal_approx(rift.fog_color))
+	rift.queue_free()
+	var ids: Dictionary = {}
+	for landmark in LandmarkCatalog.get_all():
+		ids[landmark.id] = true
+	check("the catalog holds 15 unique wonders", LandmarkCatalog.get_all().size() == 15 and ids.size() == 15,
+		"%d wonders, %d ids" % [LandmarkCatalog.get_all().size(), ids.size()])
 	await _free_world(world)
 
 func _test_resources_load() -> void:

@@ -1,97 +1,13 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=3 format=3]
 
-[ext_resource type="PackedScene" path="res://assets/kenney_mini-forest_1.0/Models/GLB format/tent.glb" id="ext_0"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/landmarks/harar_gate.res" id="ext_0"]
+[ext_resource type="Material" path="res://assets/materials/terrain.tres" id="ext_1"]
 
-[sub_resource type="StandardMaterial3D" id="mat_1"]
-albedo_color = Color(0.700000, 0.620000, 0.460000, 1)
-roughness = 0.9
-
-[sub_resource type="CylinderMesh" id="cyl_2"]
-material = SubResource("mat_1")
-top_radius = 9.000000
-bottom_radius = 9.360000
-height = 1.800000
-radial_segments = 24
-rings = 1
-
-[sub_resource type="StandardMaterial3D" id="mat_3"]
-albedo_color = Color(0.840000, 0.740000, 0.550000, 1)
-roughness = 0.9
-
-[sub_resource type="BoxMesh" id="box_4"]
-material = SubResource("mat_3")
-size = Vector3(14.000000, 4.000000, 1.400000)
-
-[sub_resource type="BoxMesh" id="box_5"]
-material = SubResource("mat_3")
-size = Vector3(2.200000, 6.400000, 2.200000)
-
-[sub_resource type="BoxMesh" id="box_6"]
-material = SubResource("mat_3")
-size = Vector3(8.600000, 1.400000, 2.000000)
-
-[sub_resource type="BoxMesh" id="box_7"]
-material = SubResource("mat_3")
-size = Vector3(1.400000, 1.000000, 1.400000)
-
-[sub_resource type="BoxMesh" id="box_8"]
-material = SubResource("mat_3")
-size = Vector3(1.400000, 1.000000, 1.400000)
-
-[sub_resource type="BoxMesh" id="box_9"]
-material = SubResource("mat_3")
-size = Vector3(1.400000, 1.000000, 1.400000)
-
-[sub_resource type="BoxMesh" id="box_10"]
-material = SubResource("mat_3")
-size = Vector3(1.400000, 1.000000, 1.400000)
-
-[sub_resource type="BoxMesh" id="box_11"]
-material = SubResource("mat_3")
-size = Vector3(1.400000, 1.000000, 1.400000)
 
 [node name="LandmarkHarar" type="Node3D"]
 metadata/graybox = true
 
-[node name="Plinth" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.6, 0)
-mesh = SubResource("cyl_2")
-
-[node name="Wall" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
-mesh = SubResource("box_4")
-
-[node name="PillarLeft" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.2, 3.5, 0)
-mesh = SubResource("box_5")
-
-[node name="PillarRight" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 3.5, 0)
-mesh = SubResource("box_5")
-
-[node name="Lintel" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.6, 0)
-mesh = SubResource("box_6")
-
-[node name="Merlon0" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 4.8, 0)
-mesh = SubResource("box_7")
-
-[node name="Merlon1" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 4.8, 0)
-mesh = SubResource("box_8")
-
-[node name="Merlon2" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.8, 0)
-mesh = SubResource("box_9")
-
-[node name="Merlon3" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 4.8, 0)
-mesh = SubResource("box_10")
-
-[node name="Merlon4" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 4.8, 0)
-mesh = SubResource("box_11")
-
-[node name="Tent" parent="." instance=ExtResource("ext_0")]
-transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0.3, -5)
+[node name="ModelHararGate" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+material_override = ExtResource("ext_1")
+mesh = ExtResource("ext_0")

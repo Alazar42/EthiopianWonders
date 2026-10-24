@@ -25,6 +25,28 @@ The mouse never moves the camera or the runner; it only clicks targets and menus
 - A wonder appears beside the route with a floating target. The target's click window is measured in **route distance**: it opens shortly before you reach the landmark and closes just after you pass it. Click it inside the window to unlock the achievement and read a short fact. Let the window close and you lose a heart.
 - Three hearts. Game over shows wonders found, distance and time, with Restart and Main Menu.
 
+## The worlds
+
+Five planets, each modelled on a real Ethiopian environment (reference photographs, not copied assets):
+
+| World | Inspired by | What you see |
+|---|---|---|
+| Highland Farmland | the northern highlands | patchwork fields in gold, green and tilled earth, Meskel daisies, eucalyptus, tukul huts, flat-topped *ambas* |
+| Rift Valley Lakes | the Rift Valley and Lake Tana | terracotta earth, turquoise lakes with sandy shores, flat-topped acacias, huts |
+| Simien Escarpment | the Simien Mountains | tawny slopes, basalt columns, jagged crags, mist, giant lobelia |
+| Danakil Salt and Fire | Dallol and Erta Ale | sulfur-yellow ground, white salt, glowing acid pools, black lava, volcanoes with glowing craters and steam |
+| Bale Afro-alpine Moor | the Bale Mountains | silver cushion plants, giant lobelia and dead flower spikes, small cold lakes |
+
+Each world drifts its own clouds and has its own mood: the sky light and fog blend to the next world's colours while you fly there.
+
+The universe never runs out: a backdrop of 18 far-away planets (one ringed, some with moons) and drifting dust travels with the camera, so there is always more beyond the next world (`scenes/game/space_backdrop.tscn`).
+
+## The wonders
+
+Fifteen wonders appear as scenery beside the route, each with a clickable target. Three use your supplied FBX models; the rest are low-poly models built in the game's own style from photographs of the real places:
+
+Lalibela, Aksum, Fasil Ghebbi (Gondar), Fasilides' Bath, Yeha, Debre Damo, Abuna Yemata Guh, Ura Kidane Mehret, Konso, Harar, Tiya, Simien, Bale, the Blue Nile Falls, and Erta Ale / Danakil.
+
 ## Project layout
 
 ```
@@ -32,8 +54,9 @@ scenes/
   menus/main_menu.tscn         3D planet backdrop + Play / Quit
   game/game_world.tscn         the whole game wired together (start planet, route, player, camera, UI)
   game/game_over.tscn
+  game/space_backdrop.tscn     far-away planets and dust that follow the camera
   player/player.tscn           capsule runner (placeholder)
-  planets/planet_*.tscn        four authored planets (terrain, atmosphere, grass, scenery)
+  planets/planet_*.tscn        five authored planets (terrain, atmosphere, grass, scenery, clouds)
   planets/planet_transition.tscn  launch / landing gate
   landmarks/landmark_target.tscn  clickable target (animations live in the scene)
   landmarks/landmark_<id>.tscn    one scenery scene per wonder
@@ -45,9 +68,11 @@ scripts/
   planets/    planet_controller, planetary_gravity (radial gravity math)
   landmarks/  landmark_data (resource), landmark_target
   camera/     gameplay_camera (smoothed follow frame + mouse picking ray)
+  world/      space_backdrop (keeps the distant universe centred on the camera)
   ui/         one small script per screen
 data/landmarks/landmark_catalog.gd   curated wonders
-tools/build_content.gd               generates planet meshes / scenes and graybox landmark scenes
+tools/build_content.gd               generates planets, scenery, landmark scenes and the space backdrop
+tools/prop_meshes.gd, landmark_meshes.gd   the procedural low-poly models it uses
 tests/test_suite.gd                  headless gameplay tests
 assets/                              meshes (generated), materials, shaders, Kenney models, wonder FBX models
 ```
@@ -62,22 +87,22 @@ godot --headless --path . --script res://tests/test_suite.gd
 
 Exits with the number of failures. It covers: launch into the menu, spawning on the first planet, radial gravity, automatic running, lane changes and clamping, lane-frame stability over a long run, sharp-turn geometry, generation ahead and cleanup behind, planet flights (upright landing, never upside-down, planets and flight arcs keep clear of each other), clicking (active, empty space, repeat, late), missed targets and game over, popup content, restart, pause, real keyboard and mouse events, returning to the menu, and that every scene, script and resource loads with no missing references.
 
-## Regenerating the planets
+## Regenerating the content
 
-`tools/build_content.gd` writes `assets/meshes/*.res` and the `planet_*.tscn` / `landmark_*.tscn` scenes. The output is ordinary scene data; you can edit it by hand in the editor. To re-run it (needs a real renderer, so not `--headless`):
+`tools/build_content.gd` writes `assets/meshes/*`, the `planet_*.tscn` and `landmark_*.tscn` scenes and `space_backdrop.tscn`. It colours the terrain (farmland, lakes, salt, glowing pools), places scenery so it never stands in water, and writes each object's own `clearance` so the route can clear mountains earlier than bushes. The output is ordinary scene data; you can edit it by hand in the editor. To re-run it (needs a real renderer, so not `--headless`):
 
 ```
 godot --path . --rendering-driver opengl3 --script res://tools/build_content.gd
 ```
 
-This **overwrites** the generated scenes. Hand edits to those files are lost if you re-run it.
+This **overwrites** the generated files; hand edits to them are lost if you re-run it. Colours, counts and moods per world live in the `BIOMES` table at the top of the script.
 
 ## Replacing placeholders
 
 - **Runner:** open `scenes/player/player.tscn` and replace the `Body` and `Visor` meshes under `Visuals` with your model. Keep the root `Node3D` and the `Visuals` node. The root's origin is the middle of the capsule and the ground is `body_height` (0.9) below it, so position the model's feet there or change `body_height` in the Inspector.
-- **Wonders:** each wonder is `scenes/landmarks/landmark_<id>.tscn`, referenced by `scene_path` in `data/landmarks/landmark_catalog.gd`. Swap the contents of that scene for the final model, or point `scene_path` somewhere else. Lalibela, Aksum and Gondar already use the supplied FBX models (with `assets/materials/artifact_*.tres` as material overrides); Simien, Danakil, Harar, Tiya and Bale are **graybox blockouts** made from primitives and Kenney pieces.
+- **Wonders:** each wonder is `scenes/landmarks/landmark_<id>.tscn`, referenced by `scene_path` in `data/landmarks/landmark_catalog.gd`. Swap the contents of that scene for the final model, or point `scene_path` somewhere else. Lalibela, Aksum and Gondar use the supplied FBX models (with `assets/materials/artifact_*.tres` as material overrides); the other twelve are low-poly blockouts from `tools/landmark_meshes.gd`. They are stylised, not survey-accurate, so swap in final models when you have them.
 - **Add a wonder:** add an `_add(...)` line to the catalog and a scene at `landmark_<id>.tscn`.
-- **Add a planet:** make a scene whose root is a `PlanetController` (set `radius`, `planet_name`) with a mesh of that radius, then add it to `Route > Planet Scenes` in `game_world.tscn`.
+- **Add a planet:** add an entry to `BIOMES` in the tool and re-run it, or make a scene whose root is a `PlanetController` (set `radius`, `planet_name`, `ambient_color`, `fog_color`) with a mesh of that radius, then add it to `Route > Planet Scenes` in `game_world.tscn`. Give scenery nodes a `clearance` metadata value (their radius) so the route can clear them.
 - **Tuning:** `Route` (lookahead, corridor clearance, window size, transition spacing), `Player` (speed, lane width, gravity) and `GameplayCamera` (distance, height, smoothing) all expose their values in the Inspector.
 
 ## Content and AI
@@ -88,6 +113,8 @@ All wonder text is local and curated in `data/landmarks/landmark_catalog.gd`; no
 
 - No audio.
 - Turn variety is gradual: the first planet has only straights and gentle curves, 60 degree turns arrive from the second planet, and sharp 90 degree turns from the third.
+- Landmark text is curated from public sources (UNESCO and Wikipedia summaries) but not independently verified.
+- The reference photographs used for inspiration came from Wikimedia Commons; none are shipped in the game.
 - The wonder FBX files reference texture files that are not in the project, so Godot logs missing-texture warnings on import. The scenes override the material, so nothing renders without a texture.
 - Performance was measured at roughly 50 FPS average on an Intel HD 620 integrated GPU (Compatibility renderer); expect more on anything newer.
 - `downloaded/` holds the original source archives and is ignored by Godot (`.gdignore`).
