@@ -1,66 +1,66 @@
 class_name GameplayCamera
 extends Camera3D
+## Third-person follow camera. The player cannot move it. It tracks a smoothed copy of the
+## runner's local frame, so turns and planet changes blend instead of snapping, and it never
+## flips because the frame always comes from the planet's own up direction.
 
-@export var target_node: Node3D
-@export var follow_distance: float = 6.5
+@export var player: PlayerController
+@export var follow_distance: float = 7.0
 @export var follow_height: float = 4.2
-@export var look_ahead_distance: float = 4.0
-@export var follow_speed: float = 8.0
-@export var rotation_speed: float = 7.0
+@export var look_ahead: float = 8.0
+@export var look_height: float = 0.8
+@export var frame_follow_speed: float = 6.0
+@export var flight_follow_speed: float = 2.6
+@export_range(0.0, 1.0) var lateral_follow: float = 0.55
+@export var flight_extra_distance: float = 4.0
+@export var flight_extra_height: float = 3.0
 
-var _is_initialized: bool = false
+var _frame_rotation := Quaternion.IDENTITY
+var _flight_blend: float = 0.0
+var _initialized: bool = false
 
 func _ready() -> void:
 	current = true
 
-func _physics_process(delta: float) -> void:
-	if not target_node or not is_instance_valid(target_node):
-		return
-	
-	var target_pos = target_node.global_position
-	var target_up = target_node.global_basis.y
-	var target_fwd = -target_node.global_basis.z
-	
-	# Desired camera position behind and above the target
-	var desired_pos = target_pos - target_fwd * follow_distance + target_up * follow_height
-	var look_target = target_pos + target_fwd * look_ahead_distance + target_up * 1.0
-	
-	if not _is_initialized:
-		global_position = desired_pos
-		look_at(look_target, target_up)
-		_is_initialized = true
-		return
-	
-	# Smooth position tracking
-	global_position = global_position.lerp(desired_pos, delta * follow_speed)
-	
-	# Smooth orientation tracking without mouse orbit
-	var look_dir = (look_target - global_position).normalized()
-	if look_dir.length_squared() > 0.001 and target_up.length_squared() > 0.001:
-		var target_right = look_dir.cross(target_up)
-		if target_right.length_squared() > 0.001:
-			target_right = target_right.normalized()
-			var real_up = target_right.cross(look_dir).normalized()
-			var desired_basis = Basis(target_right, real_up, -look_dir).orthonormalized()
-			global_basis = global_basis.orthonormalized().slerp(desired_basis, delta * rotation_speed).orthonormalized()
+func snap() -> void:
+	_initialized = false
+	_flight_blend = 0.0
+	update_follow(0.0)
 
-## Dedicated raycast for picking in-world landmark targets with mouse
-func pick_landmark_target(screen_pos: Vector2) -> LandmarkTarget:
-	var from = project_ray_origin(screen_pos)
-	var to = from + project_ray_normal(screen_pos) * 200.0
-	
-	var space_state = get_world_3d().direct_space_state
-	var query = PhysicsRayQueryParameters3D.create(from, to)
-	query.collision_mask = 8 # Layer 4 (Landmark Target only)
+func _process(delta: float) -> void:
+	update_follow(delta)
+
+func update_follow(delta: float) -> void:
+	if player == null or not is_instance_valid(player) or player.route == null:
+		return
+	var frame: RouteFrame = player.frame
+	var target := Quaternion(Basis(frame.right, frame.up, -frame.forward).orthonormalized())
+	if not _initialized:
+		_frame_rotation = target
+		_initialized = true
+	else:
+		var airborne: bool = frame.is_airborne()
+		var speed: float = flight_follow_speed if airborne else frame_follow_speed
+		_frame_rotation = _frame_rotation.slerp(target, 1.0 - exp(-speed * delta)).normalized()
+		_flight_blend = move_toward(_flight_blend, 1.0 if airborne else 0.0, delta * 0.8)
+	var basis := Basis(_frame_rotation)
+	var center: Vector3 = player.center_transform().origin
+	var anchor: Vector3 = center.lerp(player.global_position, lateral_follow)
+	var offset := Vector3(0.0, follow_height + flight_extra_height * _flight_blend,
+			follow_distance + flight_extra_distance * _flight_blend)
+	var look_target: Vector3 = anchor + basis * Vector3(0.0, look_height, -look_ahead)
+	global_position = anchor + basis * offset
+	look_at(look_target, basis.y)
+
+## Dedicated ray from the camera through the cursor. Only the target layer is tested, so the
+## planet, the runner and scenery can never be mistaken for a target.
+func pick_target(screen_pos: Vector2, max_distance: float = 400.0) -> LandmarkTarget:
+	var from: Vector3 = project_ray_origin(screen_pos)
+	var to: Vector3 = from + project_ray_normal(screen_pos) * max_distance
+	var query := PhysicsRayQueryParameters3D.create(from, to, LandmarkTarget.PICK_LAYER)
 	query.collide_with_areas = true
 	query.collide_with_bodies = false
-	
-	var result = space_state.intersect_ray(query)
-	if result and result.has("collider"):
-		var col = result["collider"]
-		if col is LandmarkTarget:
-			return col as LandmarkTarget
-	return null
-
-func reset_camera() -> void:
-	_is_initialized = false
+	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return null
+	return hit["collider"] as LandmarkTarget

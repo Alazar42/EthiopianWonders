@@ -1,0 +1,81 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/kenney_mini-forest_1.0/Models/GLB format/tree-high.glb" id="ext_0"]
+[ext_resource type="PackedScene" path="res://assets/kenney_mini-forest_1.0/Models/GLB format/stones.glb" id="ext_1"]
+[ext_resource type="PackedScene" path="res://assets/kenney_mini-forest_1.0/Models/GLB format/plant.glb" id="ext_2"]
+
+[sub_resource type="StandardMaterial3D" id="mat_1"]
+albedo_color = Color(0.400000, 0.550000, 0.420000, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="cyl_2"]
+material = SubResource("mat_1")
+top_radius = 9.000000
+bottom_radius = 9.360000
+height = 1.800000
+radial_segments = 24
+rings = 1
+
+[node name="LandmarkBale" type="Node3D"]
+metadata/graybox = true
+
+[node name="Plinth" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.6, 0)
+mesh = SubResource("cyl_2")
+
+[node name="Lobelia0" parent="." instance=ExtResource("ext_0")]
+transform = Transform3D(3.4, 0, 0, 0, 3.4, 0, 0, 0, 3.4, 4.5, 0.2, 0)
+
+[node name="Lobelia1" parent="." instance=ExtResource("ext_0")]
+transform = Transform3D(3.4, 0, 0, 0, 3.4, 0, 0, 0, 3.4, 1.3905765, 0.2, 4.279754)
+
+[node name="Lobelia2" parent="." instance=ExtResource("ext_0")]
+transform = Transform3D(3.4, 0, 0, 0, 3.4, 0, 0, 0, 3.4, -3.6405764, 0.2, 2.6450336)
+
+[node name="Lobelia3" parent="." instance=ExtResource("ext_0")]
+transform = Transform3D(3.4, 0, 0, 0, 3.4, 0, 0, 0, 3.4, -3.6405764, 0.2, -2.6450336)
+
+[node name="Lobelia4" parent="." instance=ExtResource("ext_0")]
+transform = Transform3D(3.4, 0, 0, 0, 3.4, 0, 0, 0, 3.4, 1.3905765, 0.2, -4.279754)
+
+[node name="Stones0" parent="." instance=ExtResource("ext_1")]
+transform = Transform3D(3.159297, 0, 1.7259319, 0, 3.6, 0, -1.7259319, 0, 3.159297, 6.143078, 0.2, 3.3559787)
+
+[node name="Stones1" parent="." instance=ExtResource("ext_1")]
+transform = Transform3D(0.0849476, 0, 3.5989976, 0, 3.6, 0, -3.5989976, 0, 0.0849476, 0.1651761, 0.2, 6.998051)
+
+[node name="Stones2" parent="." instance=ExtResource("ext_1")]
+transform = Transform3D(-3.0743496, 0, 1.8730655, 0, 3.6, 0, -1.8730655, 0, -3.0743496, -5.977902, 0.2, 3.6420722)
+
+[node name="Stones3" parent="." instance=ExtResource("ext_1")]
+transform = Transform3D(-3.159297, 0, -1.7259321, 0, 3.6, 0, 1.7259321, 0, -3.159297, -6.143078, 0.2, -3.3559787)
+
+[node name="Stones4" parent="." instance=ExtResource("ext_1")]
+transform = Transform3D(-0.08494729, 0, -3.5989976, 0, 3.6, 0, 3.5989976, 0, -0.08494729, -0.1651761, 0.2, -6.998051)
+
+[node name="Stones5" parent="." instance=ExtResource("ext_1")]
+transform = Transform3D(3.0743492, 0, -1.873066, 0, 3.6, 0, 1.873066, 0, 3.0743492, 5.977902, 0.2, -3.6420722)
+
+[node name="Plant0" parent="." instance=ExtResource("ext_2")]
+transform = Transform3D(4.2, 0, 0, 0, 4.2, 0, 0, 0, 4.2, 2.1561465, 0.3, 0.43707252)
+
+[node name="Plant1" parent="." instance=ExtResource("ext_2")]
+transform = Transform3D(4.2, 0, 0, 0, 4.2, 0, 0, 0, 4.2, 1.2155689, 0.3, 1.8336828)
+
+[node name="Plant2" parent="." instance=ExtResource("ext_2")]
+transform = Transform3D(4.2, 0, 0, 0, 4.2, 0, 0, 0, 4.2, -0.43707252, 0.3, 2.1561465)
+
+[node name="Plant3" parent="." instance=ExtResource("ext_2")]
+transform = Transform3D(4.2, 0, 0, 0, 4.2, 0, 0, 0, 4.2, -1.8336828, 0.3, 1.2155689)
+
+[node name="Plant4" parent="." instance=ExtResource("ext_2")]
+transform = Transform3D(4.2, 0, 0, 0, 4.2, 0, 0, 0, 4.2, -2.1561465, 0.3, -0.43707252)
+
+[node name="Plant5" parent="." instance=ExtResource("ext_2")]
+transform = Transform3D(4.2, 0, 0, 0, 4.2, 0, 0, 0, 4.2, -1.2155689, 0.3, -1.8336828)
+
+[node name="Plant6" parent="." instance=ExtResource("ext_2")]
+transform = Transform3D(4.2, 0, 0, 0, 4.2, 0, 0, 0, 4.2, 0.43707252, 0.3, -2.1561465)
+
+[node name="Plant7" parent="." instance=ExtResource("ext_2")]
+transform = Transform3D(4.2, 0, 0, 0, 4.2, 0, 0, 0, 4.2, 1.8336828, 0.3, -1.2155689)

@@ -1,35 +1,23 @@
-[gd_scene load_steps=10 format=3 uid="uid://cmainmenu001"]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
-[ext_resource type="Texture2D" path="res://assets/textures/skybox_galaxy.png" id="2_skybox"]
-[ext_resource type="Texture2D" path="res://assets/textures/meadow_albedo.png" id="3_meadow"]
-[ext_resource type="PackedScene" path="res://assets/kenney_mini-forest_1.0/Models/GLB format/tree-high.glb" id="4_tree"]
+[ext_resource type="Texture2D" path="res://assets/textures/skybox_galaxy.png" id="2_sky"]
+[ext_resource type="PackedScene" path="res://scenes/planets/planet_highland.tscn" id="3_highland"]
+[ext_resource type="PackedScene" path="res://scenes/planets/planet_rift.tscn" id="4_rift"]
+[ext_resource type="PackedScene" path="res://scenes/planets/planet_simien.tscn" id="5_simien"]
 
-[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_space"]
-panorama = ExtResource("2_skybox")
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_menu"]
+panorama = ExtResource("2_sky")
 
-[sub_resource type="Sky" id="Sky_space"]
-sky_material = SubResource("PanoramaSkyMaterial_space")
+[sub_resource type="Sky" id="Sky_menu"]
+sky_material = SubResource("PanoramaSkyMaterial_menu")
 
 [sub_resource type="Environment" id="Environment_menu"]
 background_mode = 2
-sky = SubResource("Sky_space")
+sky = SubResource("Sky_menu")
 ambient_light_source = 2
-ambient_light_color = Color(0.35, 0.4, 0.5, 1)
-ambient_light_energy = 0.9
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_menuplanet"]
-albedo_texture = ExtResource("3_meadow")
-roughness = 0.85
-uv1_scale = Vector3(8, 8, 8)
-uv1_triplanar = true
-
-[sub_resource type="SphereMesh" id="SphereMesh_menuplanet"]
-material = SubResource("StandardMaterial3D_menuplanet")
-radius = 16.0
-height = 32.0
-radial_segments = 36
-rings = 18
+ambient_light_color = Color(0.6, 0.65, 0.75, 1)
+ambient_light_energy = 0.5
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -40,98 +28,78 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_menu")
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+[node name="BackgroundContainer" type="SubViewportContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 stretch = true
 
-[node name="SubViewport" type="SubViewport" parent="SubViewportContainer"]
+[node name="SubViewport" type="SubViewport" parent="BackgroundContainer"]
+own_world_3d = true
 handle_input_locally = false
 size = Vector2i(1280, 720)
 render_target_update_mode = 4
 
-[node name="World3D" type="Node3D" parent="SubViewportContainer/SubViewport"]
+[node name="World" type="Node3D" parent="BackgroundContainer/SubViewport"]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="SubViewportContainer/SubViewport/World3D"]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="BackgroundContainer/SubViewport/World"]
 environment = SubResource("Environment_menu")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="SubViewportContainer/SubViewport/World3D"]
-transform = Transform3D(0.866025, -0.25, 0.433013, 0, 0.866025, 0.5, -0.5, -0.433013, 0.75, 0, 15, 20)
+[node name="Sun" type="DirectionalLight3D" parent="BackgroundContainer/SubViewport/World"]
+transform = Transform3D(0.9, 0.2, -0.4, 0, 0.9, 0.43, 0.44, -0.4, 0.81, 0, 0, 0)
 light_color = Color(1, 0.95, 0.85, 1)
-light_energy = 1.4
+light_energy = 0.95
 
-[node name="Camera3D" type="Camera3D" parent="SubViewportContainer/SubViewport/World3D"]
-transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 6, 36)
-fov = 55.0
+[node name="Camera3D" type="Camera3D" parent="BackgroundContainer/SubViewport/World"]
+transform = Transform3D(1, 0, 0, 0, 0.9659, 0.2588, 0, -0.2588, 0.9659, 0, 14, 28)
+fov = 60.0
+far = 1000.0
 
-[node name="MenuPlanet" type="MeshInstance3D" parent="SubViewportContainer/SubViewport/World3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, -5, 0)
-mesh = SubResource("SphereMesh_menuplanet")
+[node name="MenuPlanet" parent="BackgroundContainer/SubViewport/World" instance=ExtResource("3_highland")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, -44, -22)
 
-[node name="Tree1" parent="SubViewportContainer/SubViewport/World3D/MenuPlanet" instance=ExtResource("4_tree")]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 15.8, 0)
+[node name="RiftPlanet" parent="BackgroundContainer/SubViewport/World" instance=ExtResource("4_rift")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -95, 34, -150)
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="SimienPlanet" parent="BackgroundContainer/SubViewport/World" instance=ExtResource("5_simien")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 110, 58, -230)
+
+[node name="MenuPanel" type="PanelContainer" parent="."]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 48.0
+offset_top = -150.0
+offset_right = 368.0
+offset_bottom = 150.0
 grow_vertical = 2
 
-[node name="Panel" type="Panel" parent="CenterContainer"]
-custom_minimum_size = Vector2(420, 320)
+[node name="Content" type="VBoxContainer" parent="MenuPanel"]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/Panel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 28.0
-offset_top = 24.0
-offset_right = -28.0
-offset_bottom = -24.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 14
-alignment = 1
-
-[node name="TitleLabel" type="Label" parent="CenterContainer/Panel/VBoxContainer"]
+[node name="TitleLabel" type="Label" parent="MenuPanel/Content"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
 text = "Ethiopian Wonders"
-horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="CenterContainer/Panel/VBoxContainer"]
+[node name="HintLabel" type="Label" parent="MenuPanel/Content"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 15
-text = "Spherical Endless Runner"
-horizontal_alignment = 1
+text = "A / D or arrow keys: change lane
+Click the glowing targets to discover wonders.
+Miss three and the run ends."
+autowrap_mode = 3
 
-[node name="InstructionLabel" type="Label" parent="CenterContainer/Panel/VBoxContainer"]
+[node name="PlayButton" type="Button" parent="MenuPanel/Content"]
+unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
-text = "• [A / D] or [← / →]: Change lanes
-• Click approaching targets to discover wonders
-• 3 missed landmarks ends the run"
-horizontal_alignment = 1
-autowrap_mode = 2
+text = "Play"
 
-[node name="PlayButton" type="Button" parent="CenterContainer/Panel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 44)
+[node name="QuitButton" type="Button" parent="MenuPanel/Content"]
+unique_name_in_owner = true
 layout_mode = 2
-focus_mode = 0
-theme_override_font_sizes/font_size = 16
-text = "Start Expedition"
-
-[node name="QuitButton" type="Button" parent="CenterContainer/Panel/VBoxContainer"]
-custom_minimum_size = Vector2(0, 38)
-layout_mode = 2
-focus_mode = 0
-theme_override_font_sizes/font_size = 15
 text = "Quit"

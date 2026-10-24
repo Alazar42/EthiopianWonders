@@ -1,134 +1,93 @@
-# Ethiopian Wonders — Spherical Endless Runner
+# Ethiopian Wonders
 
-An endless three-lane runner celebrating the cultural and natural wonders of Ethiopia across a chain of miniature 3D spherical worlds, inspired by *Super Mario Galaxy* planetary gravity and *Subway Surfers* lane navigation.
+An endless three-lane runner across a chain of small spherical planets, built for a **Tourism + AI** game jam. You run around real spheres (local gravity, no flat track), jump from planet to planet, and click glowing targets to discover Ethiopian wonders. Miss three and the run ends.
 
-Developed for Godot 4.7+ (GL Compatibility / Forward+).
+Godot **4.7**, Compatibility renderer, GDScript only. No plugins, no network, no API keys.
 
----
+## Run it
 
-## 1. Overview & Mechanics
+1. Open the project folder in Godot 4.7 and press **F5** (main scene: `scenes/menus/main_menu.tscn`).
+2. First open imports the assets; that takes a minute.
 
-- **Pure Spherical Planet Traversal (No Floating Path Meshes)**: The runner moves directly along the spherical surface of large low-poly planets. Gravity points radially inward (`gravity = -up`). Head points outward into space and feet are firmly grounded on the planet surface.
-- **Three-Lane Runner System**: Exactly three logical lanes: Left (-1), Center (0), Right (+1). Controls: `[A]` or `[Left Arrow]` to shift left, `[D]` or `[Right Arrow]` to shift right. Clamped to lane boundaries with smooth lateral interpolation.
-- **Planetary Transitions (Never Inverted)**: When completing an expedition sector on a planet, the player launches across space on an elevated orbital trajectory to the destination planet. The player's up vector smoothly transitions from origin planet normal to destination planet normal, guaranteeing the runner lands upright with feet on the destination planet surface.
-- **Tourism + AI Discovery Loop**: 
-  - Clickable landmark targets (`target.glb` with pulsing reticle) approach as Ethiopian wonders are reached.
-  - Left-clicking the target before the interaction deadline unlocks an achievement and displays a verified educational fact.
-  - Three-Heart System: missing a landmark subtracts one heart. 3 missed discoveries ends the expedition (Game Over).
-  - Offline curated catalog with an AI knowledge provider extension point.
-- **Authored Low-Poly Visuals**:
-  - Deep space galaxy skybox (`skybox_galaxy.png`).
-  - Textured grassy and meadow sphere surfaces (`meadow_albedo.png`).
-  - Authored low-poly environment props: trees, pines, grass patches, boulders, stones, fences, and launch bridges.
-  - Real Ethiopian Wonder 3D models integrated into authored scenes:
-    - **Rock-Hewn Churches of Lalibela** (`lalibela.fbx`)
-    - **Obelisks of Aksum** (`axum.fbx`)
-    - **Fasil Ghebbi of Gondar** (`fasiledes gondor.fbx`)
-- **Unstyled, Clean UI**: Standard native Godot Control nodes for the Main Menu, Game HUD, Discovery Popup, Pause Menu, and Game Over Screen without intrusive custom theme overrides.
-
----
-
-## 2. Controls
-
-| Action | Key / Input |
+| Action | Input |
 |---|---|
-| **Move Left** | `A` or `Left Arrow` |
-| **Move Right** | `D` or `Right Arrow` |
-| **Discover Wonder** | `Left Mouse Click` on in-world target |
-| **Pause / Resume** | `Escape` or `P` |
+| Move one lane left / right | `A` / `D`, arrow keys, or gamepad D-pad / left stick |
+| Discover a wonder | Left mouse click on the glowing target |
+| Pause / resume | `Esc`, `P`, or gamepad Start |
 
----
+The mouse never moves the camera or the runner; it only clicks targets and menus.
 
-## 3. Project Structure
+## How it plays
+
+- The runner moves forward automatically along the surface of a planet. Gravity is `-normalize(P - C)`, the runner's up is always the local surface normal, and the three lanes bend with the sphere.
+- The route is generated ahead of you from a seeded, weighted table of segments: straights, gentle curves, 60 degree turns, sharp 90 degree turns, landmark approaches, recovery stretches, and planet-to-planet hops. Segments behind you are freed.
+- Each planet's route is a fixed amount of surface; then a glowing gate marks the launch and you fly to the next planet, which is visible ahead before you leave. In flight the runner's up vector blends between the two planets' outward directions (weighted by distance to each surface), so you stay feet-first toward whatever ground is nearest and land upright.
+- A wonder appears beside the route with a floating target. The target's click window is measured in **route distance**: it opens shortly before you reach the landmark and closes just after you pass it. Click it inside the window to unlock the achievement and read a short fact. Let the window close and you lose a heart.
+- Three hearts. Game over shows wonders found, distance and time, with Restart and Main Menu.
+
+## Project layout
 
 ```
-res://
-├── project.godot
-├── README.md
-├── scenes/
-│   ├── menus/
-│   │   └── main_menu.tscn               # Main menu with 3D rotating planetary backdrop
-│   ├── game/
-│   │   ├── game_world.tscn              # Primary game scene linking planets, player & UI
-│   │   └── game_over.tscn               # Game over screen with run statistics
-│   ├── player/
-│   │   └── player.tscn                  # Capsule runner CharacterBody3D
-│   ├── planets/
-│   │   ├── spherical_planet.tscn        # Planet 1 (Lalibela Highlands with trees & grass)
-│   │   ├── planet_axum.tscn             # Planet 2 (Aksum Antiquity with stele monument)
-│   │   └── planet_gondar.tscn           # Planet 3 (Gondar Royal Enclosure)
-│   ├── landmarks/
-│   │   ├── landmark_target.tscn         # Clickable 3D target with Area3D collision
-│   │   ├── landmark_lalibela.tscn       # Authored Lalibela wonder scene
-│   │   ├── landmark_axum.tscn           # Authored Aksum wonder scene
-│   │   └── landmark_gondar.tscn         # Authored Gondar wonder scene
-│   └── ui/
-│       ├── game_hud.tscn                # Standard HUD: Hearts, Wonders, Distance, Pause
-│       ├── discovery_popup.tscn         # Educational wonder knowledge popup
-│       └── pause_menu.tscn              # Standard pause menu
-├── scripts/
-│   ├── managers/
-│   │   ├── game_manager.gd              # Orchestrates game loop & state transitions
-│   │   ├── game_state.gd                # State definitions enum
-│   │   └── discovery_manager.gd         # Hearts, discoveries, and stats tracker
-│   ├── player/
-│   │   ├── player_controller.gd         # Pure spherical runner & planetary transitions
-│   │   ├── player_gravity.gd            # Planetary gravity math
-│   │   └── lane_movement.gd             # 3-lane interpolation & banking
-│   ├── planets/
-│   │   ├── planet_controller.gd         # SphericalPlanet controller
-│   │   └── planetary_gravity.gd         # Gravity & surface normal utilities
-│   ├── landmarks/
-│   │   ├── landmark_data.gd             # Landmark Resource & AI provider hook
-│   │   └── landmark_target.gd           # Click picking, animations, and deadline logic
-│   ├── camera/
-│   │   └── gameplay_camera.gd           # Third-person planetary camera & raycasting
-│   └── ui/
-│       ├── main_menu.gd
-│       ├── game_hud.gd
-│       ├── discovery_popup.gd
-│       ├── pause_menu.gd
-│       └── game_over.gd
-├── data/
-│   └── landmarks/
-│       └── landmark_catalog.gd          # Verified Ethiopian wonder catalog
-├── assets/
-│   ├── artifacts/                       # Lalibela, Aksum, Gondar FBX models
-│   ├── textures/                        # Meadow, artifact, and galaxy skybox textures
-│   └── kenney_mini-forest_1.0/          # 3D trees, grass, rocks, targets, bridges
-└── tests/
-    ├── test_suite.gd                    # Automated test suite (36 unit/integration tests)
-    └── test_suite.tscn                  # Test runner scene
+scenes/
+  menus/main_menu.tscn         3D planet backdrop + Play / Quit
+  game/game_world.tscn         the whole game wired together (start planet, route, player, camera, UI)
+  game/game_over.tscn
+  player/player.tscn           capsule runner (placeholder)
+  planets/planet_*.tscn        four authored planets (terrain, atmosphere, grass, scenery)
+  planets/planet_transition.tscn  launch / landing gate
+  landmarks/landmark_target.tscn  clickable target (animations live in the scene)
+  landmarks/landmark_<id>.tscn    one scenery scene per wonder
+  ui/                          HUD, discovery popup, pause menu (default theme, no overrides)
+scripts/
+  managers/   game_manager (orchestration, tick), game_state (state machine), discovery_manager (hearts, stats)
+  route/      route_generator, route_segment (sampled data + builders), route_frame, route_types
+  player/     player_controller, lane_movement, player_gravity
+  planets/    planet_controller, planetary_gravity (radial gravity math)
+  landmarks/  landmark_data (resource), landmark_target
+  camera/     gameplay_camera (smoothed follow frame + mouse picking ray)
+  ui/         one small script per screen
+data/landmarks/landmark_catalog.gd   curated wonders
+tools/build_content.gd               generates planet meshes / scenes and graybox landmark scenes
+tests/test_suite.gd                  headless gameplay tests
+assets/                              meshes (generated), materials, shaders, Kenney models, wonder FBX models
 ```
 
----
+There are intentionally **no path or runway meshes**. The planet is the track; the route is sampled data (`scripts/route`, which replaces the original spec's `scripts/paths`).
 
-## 4. How to Run the Game
+## Tests
 
-### In Godot Editor
-Open the project directory in Godot 4.x and press **F5** (or run `res://scenes/menus/main_menu.tscn`).
-
-### From Command Line
-```bash
-# Launch interactive game
-godot
-
-# Run directly into game world
-godot scenes/game/game_world.tscn
-
-# Run automated verification test suite
-godot --headless tests/test_suite.tscn
+```
+godot --headless --path . --script res://tests/test_suite.gd
 ```
 
----
+Exits with the number of failures. It covers: launch into the menu, spawning on the first planet, radial gravity, automatic running, lane changes and clamping, lane-frame stability over a long run, sharp-turn geometry, generation ahead and cleanup behind, planet flights (upright landing, never upside-down, planets and flight arcs keep clear of each other), clicking (active, empty space, repeat, late), missed targets and game over, popup content, restart, pause, real keyboard and mouse events, returning to the menu, and that every scene, script and resource loads with no missing references.
 
-## 5. Asset Replacement Workflow
+## Regenerating the planets
 
-- **Player Model**:
-  Open `scenes/player/player.tscn`. The `Visuals/CapsuleMesh` can be replaced with any custom rigged character mesh or GLTF/FBX. The gameplay controller operates on the root `CharacterBody3D` and will adapt automatically.
-- **Landmark Monuments**:
-  Open `scenes/landmarks/landmark_lalibela.tscn`, `landmark_axum.tscn`, or `landmark_gondar.tscn`. Each scene encapsulates the 3D model and its `LandmarkTarget` instance. Replace the child model with new assets without altering game logic.
-- **Target Mesh**:
-  Open `scenes/landmarks/landmark_target.tscn`. Replace `Visuals/target` with any 3D marker or particle effect.
-- **Educational Facts / AI Provider**:
-  Curated facts reside in `data/landmarks/landmark_catalog.gd`. To connect an AI model or online service, set `LandmarkData.ai_insight_provider = callable`.
+`tools/build_content.gd` writes `assets/meshes/*.res` and the `planet_*.tscn` / `landmark_*.tscn` scenes. The output is ordinary scene data; you can edit it by hand in the editor. To re-run it (needs a real renderer, so not `--headless`):
+
+```
+godot --path . --rendering-driver opengl3 --script res://tools/build_content.gd
+```
+
+This **overwrites** the generated scenes. Hand edits to those files are lost if you re-run it.
+
+## Replacing placeholders
+
+- **Runner:** open `scenes/player/player.tscn` and replace the `Body` and `Visor` meshes under `Visuals` with your model. Keep the root `Node3D` and the `Visuals` node. The root's origin is the middle of the capsule and the ground is `body_height` (0.9) below it, so position the model's feet there or change `body_height` in the Inspector.
+- **Wonders:** each wonder is `scenes/landmarks/landmark_<id>.tscn`, referenced by `scene_path` in `data/landmarks/landmark_catalog.gd`. Swap the contents of that scene for the final model, or point `scene_path` somewhere else. Lalibela, Aksum and Gondar already use the supplied FBX models (with `assets/materials/artifact_*.tres` as material overrides); Simien, Danakil, Harar, Tiya and Bale are **graybox blockouts** made from primitives and Kenney pieces.
+- **Add a wonder:** add an `_add(...)` line to the catalog and a scene at `landmark_<id>.tscn`.
+- **Add a planet:** make a scene whose root is a `PlanetController` (set `radius`, `planet_name`) with a mesh of that radius, then add it to `Route > Planet Scenes` in `game_world.tscn`.
+- **Tuning:** `Route` (lookahead, corridor clearance, window size, transition spacing), `Player` (speed, lane width, gravity) and `GameplayCamera` (distance, height, smoothing) all expose their values in the Inspector.
+
+## Content and AI
+
+All wonder text is local and curated in `data/landmarks/landmark_catalog.gd`; nothing is fetched at runtime. The facts are deliberately conservative but have **not been independently verified**; check them before publishing. A future AI knowledge provider can plug in through `LandmarkData.ai_insight_provider` (a `Callable` taking the landmark and returning a string). It is unset by default and nothing in the game depends on it.
+
+## Known limitations
+
+- No audio.
+- Turn variety is gradual: the first planet has only straights and gentle curves, 60 degree turns arrive from the second planet, and sharp 90 degree turns from the third.
+- The wonder FBX files reference texture files that are not in the project, so Godot logs missing-texture warnings on import. The scenes override the material, so nothing renders without a texture.
+- Performance was measured at roughly 50 FPS average on an Intel HD 620 integrated GPU (Compatibility renderer); expect more on anything newer.
+- `downloaded/` holds the original source archives and is ignored by Godot (`.gdignore`).

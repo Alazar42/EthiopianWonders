@@ -7,15 +7,24 @@ enum State {
 	RUNNING,
 	DISCOVERY_FEEDBACK,
 	PAUSED,
-	GAME_OVER
+	GAME_OVER,
 }
 
-static func state_to_string(state: State) -> String:
-	match state:
-		State.MAIN_MENU: return "MAIN_MENU"
-		State.STARTING_RUN: return "STARTING_RUN"
-		State.RUNNING: return "RUNNING"
-		State.DISCOVERY_FEEDBACK: return "DISCOVERY_FEEDBACK"
-		State.PAUSED: return "PAUSED"
-		State.GAME_OVER: return "GAME_OVER"
-		_: return "UNKNOWN"
+const TRANSITIONS: Dictionary = {
+	State.MAIN_MENU: [State.STARTING_RUN],
+	State.STARTING_RUN: [State.RUNNING],
+	State.RUNNING: [State.DISCOVERY_FEEDBACK, State.PAUSED, State.GAME_OVER, State.STARTING_RUN],
+	State.DISCOVERY_FEEDBACK: [State.RUNNING, State.PAUSED, State.GAME_OVER, State.STARTING_RUN],
+	State.PAUSED: [State.RUNNING, State.DISCOVERY_FEEDBACK, State.STARTING_RUN, State.MAIN_MENU],
+	State.GAME_OVER: [State.STARTING_RUN, State.MAIN_MENU],
+}
+
+static func can_transition(from: State, to: State) -> bool:
+	return to in TRANSITIONS[from]
+
+## The world keeps moving while a discovery popup is on screen.
+static func is_playing(state: State) -> bool:
+	return state == State.RUNNING or state == State.DISCOVERY_FEEDBACK
+
+static func state_name(state: State) -> String:
+	return State.keys()[state]

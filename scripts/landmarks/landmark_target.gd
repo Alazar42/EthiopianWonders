@@ -1,93 +1,69 @@
 class_name LandmarkTarget
 extends Area3D
+## Clickable marker for one wonder. Its interaction window is measured in route distance:
+## it opens at `window_start` and closes at `deadline`, when the runner passes the landmark.
 
-signal target_discovered(landmark: LandmarkData)
-signal target_missed(landmark: LandmarkData)
+signal discovered(target: LandmarkTarget)
+signal missed(target: LandmarkTarget)
 
-@export var landmark_data: LandmarkData
+enum State { PENDING, ACTIVE, DISCOVERED, MISSED }
 
-var is_active: bool = true
-var is_discovered: bool = false
-var is_missed: bool = false
+## Physics layer 4 (value 8) is reserved for targets so the picking ray ignores everything else.
+const PICK_LAYER: int = 8
 
-@onready var visuals: Node3D = get_node_or_null("Visuals")
-@onready var prompt_label: Label3D = get_node_or_null("Visuals/PromptLabel")
-@onready var omni_light: OmniLight3D = get_node_or_null("Visuals/OmniLight3D")
+var landmark_data: LandmarkData
+var state: State = State.PENDING
+var window_start: float = 0.0
+var deadline: float = 0.0
 
-var _time: float = 0.0
+@onready var animation: AnimationPlayer = $AnimationPlayer
 
 func _ready() -> void:
-	collision_layer = 8 # Layer 4 for target picking
 	collision_mask = 0
-	if not visuals:
-		visuals = get_node_or_null("Visuals")
-	update_visuals()
+	collision_layer = 0
 
-func setup(p_data: LandmarkData) -> void:
-	landmark_data = p_data
-	is_active = true
-	is_discovered = false
-	is_missed = false
-	update_visuals()
+func setup(data: LandmarkData, p_window_start: float, p_deadline: float) -> void:
+	landmark_data = data
+	window_start = p_window_start
+	deadline = p_deadline
+	state = State.PENDING
+	collision_layer = 0
 
-func update_visuals() -> void:
-	if not landmark_data:
-		return
-	if prompt_label:
-		prompt_label.text = "✦ DISCOVER ✦\n" + landmark_data.name
-	if omni_light:
-		omni_light.light_color = landmark_data.color
+func is_active() -> bool:
+	return state == State.ACTIVE
 
-func _process(delta: float) -> void:
-	_time += delta
-	if visuals and is_active and not is_discovered and not is_missed:
-		# Floating and rotating animation
-		visuals.position.y = sin(_time * 3.0) * 0.25
-		visuals.rotate_y(delta * 1.5)
-	elif visuals and is_discovered:
-		visuals.scale = visuals.scale.move_toward(Vector3.ZERO, delta * 3.0)
-	elif visuals and is_missed:
-		visuals.scale = visuals.scale.move_toward(Vector3.ZERO, delta * 2.5)
+## Opens and closes the window from the runner's route progress.
+func update_window(route_distance: float) -> void:
+	match state:
+		State.PENDING:
+			if route_distance >= window_start:
+				state = State.ACTIVE
+				collision_layer = PICK_LAYER
+		State.ACTIVE:
+			if route_distance > deadline:
+				_finish(State.MISSED)
 
-func attempt_interact(player_pos: Vector3 = Vector3.ZERO) -> bool:
-	if not is_active or is_discovered or is_missed:
+## Returns true exactly once, and only while the window is open.
+func attempt_interact(route_distance: float) -> bool:
+	if state != State.ACTIVE:
 		return false
-	mark_discovered()
+	if route_distance < window_start or route_distance > deadline:
+		return false
+	_finish(State.DISCOVERED)
 	return true
 
-func mark_discovered() -> void:
-	if is_discovered or is_missed:
-		return
-	is_discovered = true
-	is_active = false
-	if landmark_data:
-		landmark_data.discovered = true
-	
-	if prompt_label:
-		prompt_label.text = "✓ DISCOVERED!"
-		prompt_label.modulate = Color(1.0, 0.9, 0.3)
-	
-	target_discovered.emit(landmark_data)
-	
-	if is_inside_tree() and visuals:
-		var tween = create_tween()
-		tween.tween_property(visuals, "scale", Vector3(1.5, 1.5, 1.5), 0.15)
-		tween.tween_property(visuals, "scale", Vector3.ZERO, 0.35)
-		tween.tween_callback(queue_free)
+func disable() -> void:
+	collision_layer = 0
+	if state == State.ACTIVE or state == State.PENDING:
+		state = State.MISSED
+		visible = false
 
-func mark_missed() -> void:
-	if is_discovered or is_missed:
-		return
-	is_missed = true
-	is_active = false
-	
-	if prompt_label:
-		prompt_label.text = "✗ MISSED!"
-		prompt_label.modulate = Color(1.0, 0.25, 0.25)
-	
-	target_missed.emit(landmark_data)
-	
-	if is_inside_tree() and visuals:
-		var tween = create_tween()
-		tween.tween_property(visuals, "scale", Vector3.ZERO, 0.4)
-		tween.tween_callback(queue_free)
+func _finish(new_state: State) -> void:
+	state = new_state
+	collision_layer = 0
+	if is_inside_tree() and animation:
+		animation.play("discovered" if new_state == State.DISCOVERED else "missed")
+	if new_state == State.DISCOVERED:
+		discovered.emit(self)
+	else:
+		missed.emit(self)

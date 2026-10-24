@@ -1,20 +1,24 @@
-[gd_scene load_steps=14 format=3 uid="uid://cgameworld001"]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="Script" path="res://scripts/managers/game_manager.gd" id="1_manager"]
-[ext_resource type="Texture2D" path="res://assets/textures/skybox_galaxy.png" id="2_skybox"]
-[ext_resource type="PackedScene" path="res://scenes/planets/spherical_planet.tscn" id="3_planet1"]
-[ext_resource type="PackedScene" path="res://scenes/planets/planet_axum.tscn" id="4_planet2"]
-[ext_resource type="PackedScene" path="res://scenes/planets/planet_gondar.tscn" id="5_planet3"]
+[ext_resource type="Script" path="res://scripts/route/route_generator.gd" id="2_route"]
+[ext_resource type="Script" path="res://scripts/camera/gameplay_camera.gd" id="3_camera"]
+[ext_resource type="Script" path="res://scripts/managers/discovery_manager.gd" id="4_discovery"]
+[ext_resource type="Texture2D" path="res://assets/textures/skybox_galaxy.png" id="5_sky"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="6_player"]
-[ext_resource type="Script" path="res://scripts/camera/gameplay_camera.gd" id="7_camera"]
-[ext_resource type="Script" path="res://scripts/managers/discovery_manager.gd" id="8_discovery"]
-[ext_resource type="PackedScene" path="res://scenes/ui/game_hud.tscn" id="9_hud"]
-[ext_resource type="PackedScene" path="res://scenes/ui/discovery_popup.tscn" id="10_popup"]
-[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="11_pause"]
-[ext_resource type="PackedScene" path="res://scenes/game/game_over.tscn" id="12_gameover"]
+[ext_resource type="PackedScene" path="res://scenes/planets/planet_highland.tscn" id="7_highland"]
+[ext_resource type="PackedScene" path="res://scenes/planets/planet_rift.tscn" id="8_rift"]
+[ext_resource type="PackedScene" path="res://scenes/planets/planet_simien.tscn" id="9_simien"]
+[ext_resource type="PackedScene" path="res://scenes/planets/planet_danakil.tscn" id="10_danakil"]
+[ext_resource type="PackedScene" path="res://scenes/landmarks/landmark_target.tscn" id="11_target"]
+[ext_resource type="PackedScene" path="res://scenes/planets/planet_transition.tscn" id="12_gate"]
+[ext_resource type="PackedScene" path="res://scenes/ui/game_hud.tscn" id="13_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/discovery_popup.tscn" id="14_popup"]
+[ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="15_pause"]
+[ext_resource type="PackedScene" path="res://scenes/game/game_over.tscn" id="16_gameover"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_world"]
-panorama = ExtResource("2_skybox")
+panorama = ExtResource("5_sky")
 
 [sub_resource type="Sky" id="Sky_world"]
 sky_material = SubResource("PanoramaSkyMaterial_world")
@@ -23,54 +27,60 @@ sky_material = SubResource("PanoramaSkyMaterial_world")
 background_mode = 2
 sky = SubResource("Sky_world")
 ambient_light_source = 2
-ambient_light_color = Color(0.35, 0.40, 0.50, 1)
-ambient_light_energy = 0.9
+ambient_light_color = Color(0.62, 0.68, 0.8, 1)
+ambient_light_energy = 0.35
+tonemap_mode = 0
 
-[node name="GameWorld" type="Node3D" node_paths=PackedStringArray("player", "gameplay_camera", "initial_planet", "all_planets")]
+[node name="GameWorld" type="Node3D" node_paths=PackedStringArray("player", "gameplay_camera", "route", "discovery_manager", "game_hud", "discovery_popup", "pause_menu", "game_over_screen")]
 script = ExtResource("1_manager")
 player = NodePath("Player")
 gameplay_camera = NodePath("GameplayCamera")
-initial_planet = NodePath("Planet1")
-all_planets = [NodePath("Planet1"), NodePath("Planet2"), NodePath("Planet3")]
+route = NodePath("Route")
+discovery_manager = NodePath("DiscoveryManager")
+game_hud = NodePath("UI/GameHUD")
+discovery_popup = NodePath("UI/DiscoveryPopup")
+pause_menu = NodePath("UI/PauseMenu")
+game_over_screen = NodePath("UI/GameOverScreen")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_world")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 90, 80)
-light_color = Color(1, 0.95, 0.85, 1)
-light_energy = 1.4
+[node name="StartPlanet" parent="." instance=ExtResource("7_highland")]
+
+[node name="Route" type="Node3D" parent="." node_paths=PackedStringArray("start_planet")]
+script = ExtResource("2_route")
+start_planet = NodePath("../StartPlanet")
+planet_scenes = Array[PackedScene]([ExtResource("7_highland"), ExtResource("8_rift"), ExtResource("9_simien"), ExtResource("10_danakil")])
+target_scene = ExtResource("11_target")
+gate_scene = ExtResource("12_gate")
+
+[node name="Player" parent="." instance=ExtResource("6_player")]
+
+[node name="GameplayCamera" type="Camera3D" parent="." node_paths=PackedStringArray("player")]
+fov = 65.0
+far = 3000.0
+script = ExtResource("3_camera")
+player = NodePath("../Player")
+
+[node name="Sun" type="DirectionalLight3D" parent="GameplayCamera"]
+transform = Transform3D(0.906308, 0.17101, -0.386, 0, 0.906308, 0.42262, 0.42262, -0.383022, 0.821394, 0, 0, 0)
+light_color = Color(1, 0.96, 0.86, 1)
+light_energy = 0.7
 shadow_enabled = true
-
-[node name="Planet1" parent="." node_paths=PackedStringArray("next_planet") instance=ExtResource("3_planet1")]
-next_planet = NodePath("../Planet2")
-
-[node name="Planet2" parent="." node_paths=PackedStringArray("next_planet") instance=ExtResource("4_planet2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -135)
-next_planet = NodePath("../Planet3")
-
-[node name="Planet3" parent="." node_paths=PackedStringArray("next_planet") instance=ExtResource("5_planet3")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 135, 0, -135)
-next_planet = NodePath("../Planet1")
-
-[node name="Player" parent="." node_paths=PackedStringArray("current_planet") instance=ExtResource("6_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 40.9, 0)
-current_planet = NodePath("../Planet1")
-
-[node name="GameplayCamera" type="Camera3D" parent="." node_paths=PackedStringArray("target_node")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 45, 8)
-script = ExtResource("7_camera")
-target_node = NodePath("../Player")
+shadow_bias = 0.08
+shadow_normal_bias = 1.5
+directional_shadow_mode = 0
+directional_shadow_max_distance = 45.0
 
 [node name="DiscoveryManager" type="Node" parent="."]
-script = ExtResource("8_discovery")
+script = ExtResource("4_discovery")
 
 [node name="UI" type="CanvasLayer" parent="."]
 
-[node name="GameHUD" parent="UI" instance=ExtResource("9_hud")]
+[node name="GameHUD" parent="UI" instance=ExtResource("13_hud")]
 
-[node name="DiscoveryPopup" parent="UI" instance=ExtResource("10_popup")]
+[node name="DiscoveryPopup" parent="UI" instance=ExtResource("14_popup")]
 
-[node name="PauseMenu" parent="UI" instance=ExtResource("11_pause")]
+[node name="PauseMenu" parent="UI" instance=ExtResource("15_pause")]
 
-[node name="GameOverScreen" parent="UI" instance=ExtResource("12_gameover")]
+[node name="GameOverScreen" parent="UI" instance=ExtResource("16_gameover")]

@@ -1,0 +1,78 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/kenney_mini-forest_1.0/Models/GLB format/rocks-high.glb" id="ext_0"]
+
+[sub_resource type="StandardMaterial3D" id="mat_1"]
+albedo_color = Color(0.850000, 0.720000, 0.300000, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="cyl_2"]
+material = SubResource("mat_1")
+top_radius = 9.000000
+bottom_radius = 9.360000
+height = 1.800000
+radial_segments = 24
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="mat_3"]
+albedo_color = Color(0.950000, 0.450000, 0.120000, 1)
+roughness = 0.9
+emission_enabled = true
+emission = Color(0.950000, 0.450000, 0.120000, 1)
+emission_energy_multiplier = 1.2
+
+[sub_resource type="CylinderMesh" id="cyl_4"]
+material = SubResource("mat_3")
+top_radius = 5.000000
+bottom_radius = 5.000000
+height = 0.300000
+radial_segments = 24
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="mat_5"]
+albedo_color = Color(0.950000, 0.930000, 0.820000, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="cyl_6"]
+material = SubResource("mat_5")
+top_radius = 6.400000
+bottom_radius = 6.400000
+height = 0.200000
+radial_segments = 24
+rings = 1
+
+[node name="LandmarkDanakil" type="Node3D"]
+metadata/graybox = true
+
+[node name="Plinth" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.6, 0)
+mesh = SubResource("cyl_2")
+
+[node name="Pool" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+mesh = SubResource("cyl_4")
+
+[node name="SaltRim" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+mesh = SubResource("cyl_6")
+
+[node name="Rocks0" parent="." instance=ExtResource("ext_0")]
+transform = Transform3D(3.2, 0, 0, 0, 3.2, 0, 0, 0, 3.2, 7.5, 1.4, 0)
+
+[node name="Rocks1" parent="." instance=ExtResource("ext_0")]
+transform = Transform3D(1.9951674, 0, 2.5018609, 0, 3.2, 0, -2.5018609, 0, 1.9951674, 4.6761737, 1.4, 5.863736)
+
+[node name="Rocks2" parent="." instance=ExtResource("ext_0")]
+transform = Transform3D(-0.71206707, 0, 3.1197693, 0, 3.2, 0, -3.1197693, 0, -0.71206707, -1.668907, 1.4, 7.3119593)
+
+[node name="Rocks3" parent="." instance=ExtResource("ext_0")]
+transform = Transform3D(-2.8831003, 0, 1.3884282, 0, 3.2, 0, -1.3884282, 0, -2.8831003, -6.7572665, 1.4, 3.254128)
+
+[node name="Rocks4" parent="." instance=ExtResource("ext_0")]
+transform = Transform3D(-2.8831003, 0, -1.3884281, 0, 3.2, 0, 1.3884281, 0, -2.8831003, -6.7572665, 1.4, -3.254128)
+
+[node name="Rocks5" parent="." instance=ExtResource("ext_0")]
+transform = Transform3D(-0.71206725, 0, -3.1197693, 0, 3.2, 0, 3.1197693, 0, -0.71206725, -1.668907, 1.4, -7.3119593)
+
+[node name="Rocks6" parent="." instance=ExtResource("ext_0")]
+transform = Transform3D(1.995167, 0, -2.5018613, 0, 3.2, 0, 2.5018613, 0, 1.995167, 4.6761737, 1.4, -5.863736)

@@ -1,0 +1,45 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Material" path="res://assets/materials/launch_ring.tres" id="1_mat"]
+
+[sub_resource type="TorusMesh" id="TorusMesh_gate"]
+material = ExtResource("1_mat")
+inner_radius = 4.1
+outer_radius = 4.6
+rings = 32
+ring_segments = 8
+
+[sub_resource type="Animation" id="Animation_pulse"]
+resource_name = "pulse"
+length = 1.6
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Gate:scale")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.8, 1.6),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(1, 1, 1), Vector3(1.06, 1.06, 1.06), Vector3(1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_gate"]
+_data = {
+&"pulse": SubResource("Animation_pulse")
+}
+
+[node name="PlanetTransition" type="Node3D"]
+
+[node name="Gate" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 3, 0)
+cast_shadow = 0
+mesh = SubResource("TorusMesh_gate")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_gate")
+}
+autoplay = "pulse"

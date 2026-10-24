@@ -3,49 +3,31 @@ extends Control
 
 signal pause_requested
 
-@onready var hearts_label: Label = $TopBar/HeartsLabel
-@onready var wonders_label: Label = $TopBar/WondersLabel
-@onready var distance_label: Label = $TopBar/DistanceLabel
-@onready var pause_button: Button = $TopBar/PauseButton
-@onready var toast_label: Label = $ToastLabel
+const LOST_HEART: Color = Color(0.25, 0.25, 0.25, 0.6)
 
-var _toast_timer: float = 0.0
+@onready var _hearts: Array[Node] = %Hearts.get_children()
+@onready var _wonders_label: Label = %WondersLabel
+@onready var _distance_label: Label = %DistanceLabel
+@onready var _toast_panel: Control = %ToastPanel
+@onready var _toast_label: Label = %ToastLabel
+@onready var _toast_timer: Timer = %ToastTimer
+@onready var _pause_button: Button = %PauseButton
 
 func _ready() -> void:
-	if pause_button:
-		pause_button.pressed.connect(func(): pause_requested.emit())
-	if toast_label:
-		toast_label.visible = false
-	update_hearts(3, 3)
+	_pause_button.pressed.connect(func() -> void: pause_requested.emit())
+	_toast_timer.timeout.connect(func() -> void: _toast_panel.visible = false)
 
-func _process(delta: float) -> void:
-	if _toast_timer > 0.0:
-		_toast_timer -= delta
-		if _toast_timer <= 0.0 and toast_label:
-			toast_label.visible = false
+func update_hearts(current: int, _max_hearts: int) -> void:
+	for i in _hearts.size():
+		(_hearts[i] as TextureRect).modulate = Color.WHITE if i < current else LOST_HEART
 
-func update_hearts(current: int, max_h: int) -> void:
-	if not hearts_label:
-		return
-	var hearts_str = "Hearts: "
-	for i in range(max_h):
-		if i < current:
-			hearts_str += "♥ "
-		else:
-			hearts_str += "♡ "
-	hearts_label.text = hearts_str.strip_edges()
+func update_wonders(count: int) -> void:
+	_wonders_label.text = "   Wonders: %d" % count
 
-func update_wonders_count(count: int) -> void:
-	if wonders_label:
-		wonders_label.text = "Wonders: %d" % count
+func update_distance(distance_m: float) -> void:
+	_distance_label.text = "   Distance: %d m" % int(distance_m)
 
-func update_distance(dist_m: float) -> void:
-	if distance_label:
-		distance_label.text = "Distance: %d m" % int(dist_m)
-
-func show_toast(text: String, is_positive: bool = true) -> void:
-	if not toast_label:
-		return
-	toast_label.text = text
-	toast_label.visible = true
-	_toast_timer = 2.5
+func show_toast(text: String) -> void:
+	_toast_label.text = text
+	_toast_panel.visible = true
+	_toast_timer.start()

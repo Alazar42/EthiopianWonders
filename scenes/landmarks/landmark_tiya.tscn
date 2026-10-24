@@ -1,0 +1,106 @@
+[gd_scene load_steps=14 format=3]
+
+
+
+[sub_resource type="StandardMaterial3D" id="mat_1"]
+albedo_color = Color(0.500000, 0.460000, 0.400000, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="cyl_2"]
+material = SubResource("mat_1")
+top_radius = 9.000000
+bottom_radius = 9.360000
+height = 1.800000
+radial_segments = 24
+rings = 1
+
+[sub_resource type="StandardMaterial3D" id="mat_3"]
+albedo_color = Color(0.580000, 0.550000, 0.500000, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="box_4"]
+material = SubResource("mat_3")
+size = Vector3(0.900000, 3.600000, 0.400000)
+
+[sub_resource type="BoxMesh" id="box_5"]
+material = SubResource("mat_3")
+size = Vector3(0.900000, 4.500000, 0.400000)
+
+[sub_resource type="BoxMesh" id="box_6"]
+material = SubResource("mat_3")
+size = Vector3(0.900000, 5.400000, 0.400000)
+
+[sub_resource type="BoxMesh" id="box_7"]
+material = SubResource("mat_3")
+size = Vector3(0.900000, 3.600000, 0.400000)
+
+[sub_resource type="BoxMesh" id="box_8"]
+material = SubResource("mat_3")
+size = Vector3(0.900000, 4.500000, 0.400000)
+
+[sub_resource type="BoxMesh" id="box_9"]
+material = SubResource("mat_3")
+size = Vector3(0.900000, 5.400000, 0.400000)
+
+[sub_resource type="BoxMesh" id="box_10"]
+material = SubResource("mat_3")
+size = Vector3(0.900000, 3.600000, 0.400000)
+
+[sub_resource type="BoxMesh" id="box_11"]
+material = SubResource("mat_3")
+size = Vector3(0.900000, 4.500000, 0.400000)
+
+[sub_resource type="BoxMesh" id="box_12"]
+material = SubResource("mat_3")
+size = Vector3(0.900000, 5.400000, 0.400000)
+
+[sub_resource type="BoxMesh" id="box_13"]
+material = SubResource("mat_3")
+size = Vector3(0.900000, 3.600000, 0.400000)
+
+[node name="LandmarkTiya" type="Node3D"]
+metadata/graybox = true
+
+[node name="Plinth" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.6, 0)
+mesh = SubResource("cyl_2")
+
+[node name="Stone_0_0" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.99820054, -0.059964005, 0, 0.059964005, 0.99820054, 0, 0, 0, 1, -6, 2, -2)
+mesh = SubResource("box_4")
+
+[node name="Stone_0_1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 2.45, -2)
+mesh = SubResource("box_5")
+
+[node name="Stone_0_2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.99820054, 0.059964005, 0, -0.059964005, 0.99820054, 0, 0, 0, 1, 0, 2.9, -2)
+mesh = SubResource("box_6")
+
+[node name="Stone_0_3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.99820054, -0.059964005, 0, 0.059964005, 0.99820054, 0, 0, 0, 1, 3, 2, -2)
+mesh = SubResource("box_7")
+
+[node name="Stone_0_4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2.45, -2)
+mesh = SubResource("box_8")
+
+[node name="Stone_1_0" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.99820054, -0.059964005, 0, 0.059964005, 0.99820054, 0, 0, 0, 1, -6, 2.9, 2)
+mesh = SubResource("box_9")
+
+[node name="Stone_1_1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 2, 2)
+mesh = SubResource("box_10")
+
+[node name="Stone_1_2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.99820054, 0.059964005, 0, -0.059964005, 0.99820054, 0, 0, 0, 1, 0, 2.45, 2)
+mesh = SubResource("box_11")
+
+[node name="Stone_1_3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.99820054, -0.059964005, 0, 0.059964005, 0.99820054, 0, 0, 0, 1, 3, 2.9, 2)
+mesh = SubResource("box_12")
+
+[node name="Stone_1_4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 2, 2)
+mesh = SubResource("box_13")

@@ -1,43 +1,36 @@
 class_name DiscoveryPopup
 extends Control
+## Compact achievement card. It never pauses the run; it closes itself or via the Close button.
 
 signal popup_closed
 
-@onready var popup_panel: Panel = $CenterContainer/Panel
-@onready var achievement_label: Label = $CenterContainer/Panel/VBoxContainer/AchievementLabel
-@onready var wonder_name_label: Label = $CenterContainer/Panel/VBoxContainer/WonderNameLabel
-@onready var fact_label: Label = $CenterContainer/Panel/VBoxContainer/FactLabel
-@onready var count_label: Label = $CenterContainer/Panel/VBoxContainer/HBoxContainer/CountLabel
-@onready var close_btn: Button = $CenterContainer/Panel/VBoxContainer/HBoxContainer/CloseButton
-
-var _auto_timer: float = 0.0
-var _is_open: bool = false
+@onready var _panel: Control = %Panel
+@onready var _achievement_label: Label = %AchievementLabel
+@onready var _wonder_label: Label = %WonderLabel
+@onready var _fact_label: Label = %FactLabel
+@onready var _count_label: Label = %CountLabel
+@onready var _close_button: Button = %CloseButton
+@onready var _close_timer: Timer = %CloseTimer
 
 func _ready() -> void:
-	visible = false
-	if close_btn:
-		close_btn.pressed.connect(hide_popup)
+	_panel.visible = false
+	_close_button.pressed.connect(hide_popup)
+	_close_timer.timeout.connect(hide_popup)
 
-func _process(delta: float) -> void:
-	if _is_open and _auto_timer > 0.0:
-		_auto_timer -= delta
-		if _auto_timer <= 0.0:
-			hide_popup()
+func is_open() -> bool:
+	return _panel.visible
 
 func show_discovery(landmark: LandmarkData, total_discovered: int) -> void:
-	if not landmark:
-		return
-	
-	wonder_name_label.text = landmark.name
-	achievement_label.text = "Achievement Unlocked: " + landmark.achievement_title
-	fact_label.text = landmark.get_fact()
-	count_label.text = "Wonders Discovered: %d" % total_discovered
-	
-	visible = true
-	_is_open = true
-	_auto_timer = 5.0
+	_achievement_label.text = "Achievement Unlocked: %s" % landmark.achievement_title
+	_wonder_label.text = landmark.name
+	_fact_label.text = landmark.get_fact()
+	_count_label.text = "Wonders discovered: %d" % total_discovered
+	_panel.visible = true
+	_close_timer.start()
 
-func hide_popup() -> void:
-	_is_open = false
-	visible = false
-	popup_closed.emit()
+func hide_popup(notify: bool = true) -> void:
+	var was_open: bool = _panel.visible
+	_panel.visible = false
+	_close_timer.stop()
+	if was_open and notify:
+		popup_closed.emit()
