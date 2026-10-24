@@ -345,6 +345,33 @@ static func spaceship() -> ArrayMesh:
 	b.box(Vector3(0, 0.3, 0.62), Vector3(0.06, 0.42, 0.5), Color(0.86, 0.2, 0.2))
 	return b.commit()
 
+## Obstacle: a jagged basalt boulder. Dark on purpose, so it stands out against every world.
+static func obstacle_boulder() -> ArrayMesh:
+	var b := Builder.new(91)
+	b.blob(Vector3(0, 0.8, 0), Vector3(1.1, 0.95, 1.0), Color(0.24, 0.23, 0.27), Color(0.46, 0.44, 0.48), 1, 0.2)
+	b.blob(Vector3(0.75, 0.35, 0.45), Vector3(0.6, 0.4, 0.55), Color(0.26, 0.25, 0.29), Color(0.42, 0.40, 0.44), 1, 0.2)
+	b.blob(Vector3(-0.7, 0.3, -0.5), Vector3(0.5, 0.35, 0.5), Color(0.26, 0.25, 0.29), Color(0.42, 0.40, 0.44), 0, 0.2)
+	return b.commit()
+
+## Obstacle: three stones piled together.
+static func obstacle_stones() -> ArrayMesh:
+	var b := Builder.new(92)
+	var low := Color(0.28, 0.26, 0.28)
+	var high := Color(0.52, 0.48, 0.46)
+	b.blob(Vector3(-0.65, 0.5, 0.15), Vector3(0.72, 0.55, 0.7), low, high, 1, 0.18)
+	b.blob(Vector3(0.6, 0.62, -0.1), Vector3(0.82, 0.68, 0.8), low, high, 1, 0.18)
+	b.blob(Vector3(0.0, 0.42, 0.8), Vector3(0.62, 0.46, 0.6), low, high, 1, 0.18)
+	return b.commit()
+
+## Obstacle: a tall rock spire with a leaning tip.
+static func obstacle_spire() -> ArrayMesh:
+	var b := Builder.new(93)
+	b.frustum(Vector3.ZERO, 0.95, 0.5, 2.0, 6, Color(0.30, 0.30, 0.35), Color(0.46, 0.46, 0.52))
+	b.pyramid(Vector3(0, 2.0, 0), Vector3(0.25, 1.0, 0.1), 1.0, 0.36, Color(0.36, 0.36, 0.42))
+	b.pyramid(Vector3(0.5, 0.3, 0.3), Vector3(0.6, 1.0, 0.2), 1.3, 0.25, Color(0.32, 0.32, 0.37))
+	b.pyramid(Vector3(-0.5, 0.3, -0.2), Vector3(-0.5, 1.0, 0.2), 1.0, 0.22, Color(0.32, 0.32, 0.37))
+	return b.commit()
+
 ## Silver helichrysum cushion: the grey-green mounds that cover the Afro-alpine plateau.
 static func helichrysum() -> ArrayMesh:
 	var b := Builder.new(53)

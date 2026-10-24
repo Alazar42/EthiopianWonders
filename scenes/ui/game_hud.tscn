@@ -1,7 +1,32 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/game_hud.gd" id="1_hud"]
-[ext_resource type="Texture2D" path="res://assets/ui/heart.svg" id="2_heart"]
+[ext_resource type="Theme" path="res://assets/ui/game_theme.tres" id="2_theme"]
+[ext_resource type="Texture2D" path="res://assets/ui/heart_full.svg" id="3_full"]
+[ext_resource type="Texture2D" path="res://assets/ui/heart_half.svg" id="4_half"]
+[ext_resource type="Texture2D" path="res://assets/ui/heart_empty.svg" id="5_empty"]
+[ext_resource type="Texture2D" path="res://assets/ui/kenney/icons/star.png" id="6_star"]
+
+[sub_resource type="Animation" id="Animation_flash"]
+resource_name = "flash"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("DamageFlash:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 0.12, 0.1, 0.5), Color(1, 0.12, 0.1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_hud"]
+_data = {
+&"flash": SubResource("Animation_flash")
+}
 
 [node name="GameHUD" type="Control"]
 layout_mode = 3
@@ -11,70 +36,113 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme = ExtResource("2_theme")
 script = ExtResource("1_hud")
+heart_full = ExtResource("3_full")
+heart_half = ExtResource("4_half")
+heart_empty = ExtResource("5_empty")
 
-[node name="TopBar" type="HBoxContainer" parent="."]
+[node name="DamageFlash" type="ColorRect" parent="."]
 layout_mode = 1
-anchors_preset = 10
+anchors_preset = 15
 anchor_right = 1.0
-offset_left = 16.0
-offset_top = 12.0
-offset_right = -16.0
-offset_bottom = 52.0
+anchor_bottom = 1.0
 grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.12, 0.1, 0)
+
+[node name="StatusPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+offset_left = 20.0
+offset_top = 16.0
+offset_right = 400.0
+offset_bottom = 100.0
+mouse_filter = 2
+theme_type_variation = &"HudPanel"
+
+[node name="Row" type="HBoxContainer" parent="StatusPanel"]
+layout_mode = 2
 mouse_filter = 2
 
-[node name="Hearts" type="HBoxContainer" parent="TopBar"]
+[node name="Hearts" type="HBoxContainer" parent="StatusPanel/Row"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Heart1" type="TextureRect" parent="TopBar/Hearts"]
-custom_minimum_size = Vector2(32, 32)
+[node name="Heart1" type="TextureRect" parent="StatusPanel/Row/Hearts"]
+custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("2_heart")
+texture = ExtResource("3_full")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Heart2" type="TextureRect" parent="TopBar/Hearts"]
-custom_minimum_size = Vector2(32, 32)
+[node name="Heart2" type="TextureRect" parent="StatusPanel/Row/Hearts"]
+custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("2_heart")
+texture = ExtResource("3_full")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Heart3" type="TextureRect" parent="TopBar/Hearts"]
-custom_minimum_size = Vector2(32, 32)
+[node name="Heart3" type="TextureRect" parent="StatusPanel/Row/Hearts"]
+custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("2_heart")
+texture = ExtResource("3_full")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="WondersLabel" type="Label" parent="TopBar"]
-unique_name_in_owner = true
+[node name="Separator" type="VSeparator" parent="StatusPanel/Row"]
+layout_mode = 2
+
+[node name="Stats" type="VBoxContainer" parent="StatusPanel/Row"]
 layout_mode = 2
 mouse_filter = 2
-text = "   Wonders: 0"
+alignment = 1
 
-[node name="DistanceLabel" type="Label" parent="TopBar"]
-unique_name_in_owner = true
+[node name="WondersRow" type="HBoxContainer" parent="StatusPanel/Row/Stats"]
 layout_mode = 2
 mouse_filter = 2
-text = "   Distance: 0 m"
 
-[node name="Spacer" type="Control" parent="TopBar"]
+[node name="StarIcon" type="TextureRect" parent="StatusPanel/Row/Stats/WondersRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
-size_flags_horizontal = 3
 mouse_filter = 2
+texture = ExtResource("6_star")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="PauseButton" type="Button" parent="TopBar"]
+[node name="WondersLabel" type="Label" parent="StatusPanel/Row/Stats/WondersRow"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"StatLabel"
+text = "0 wonders"
+
+[node name="DistanceLabel" type="Label" parent="StatusPanel/Row/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "0 m"
+
+[node name="PauseButton" type="Button" parent="."]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -170.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 78.0
+grow_horizontal = 0
 focus_mode = 0
-text = "Pause"
+text = "PAUSE"
 
 [node name="ToastPanel" type="PanelContainer" parent="."]
 unique_name_in_owner = true
@@ -85,13 +153,14 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -260.0
-offset_top = -72.0
-offset_right = 260.0
-offset_bottom = -32.0
+offset_left = -340.0
+offset_top = -90.0
+offset_right = 340.0
+offset_bottom = -26.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
+theme_type_variation = &"HudPanel"
 
 [node name="ToastLabel" type="Label" parent="ToastPanel"]
 unique_name_in_owner = true
@@ -102,5 +171,10 @@ vertical_alignment = 1
 
 [node name="ToastTimer" type="Timer" parent="."]
 unique_name_in_owner = true
-wait_time = 3.0
+wait_time = 3.5
 one_shot = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_hud")
+}

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b1pa32ck330pc"
-path="res://.godot/imported/heart.svg-868478f36e3b083b60aeb03e93785b2d.ctex"
+uid="uid://u4o1s7jl1w05"
+path="res://.godot/imported/green_button_rectangle_gradient.png-e76e17277de4fd37f7e331295f5fbd0e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/heart.svg"
-dest_files=["res://.godot/imported/heart.svg-868478f36e3b083b60aeb03e93785b2d.ctex"]
+source_file="res://assets/ui/kenney/buttons/green_button_rectangle_gradient.png"
+dest_files=["res://.godot/imported/green_button_rectangle_gradient.png-e76e17277de4fd37f7e331295f5fbd0e.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

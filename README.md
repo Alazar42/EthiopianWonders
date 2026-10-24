@@ -23,7 +23,29 @@ The mouse never moves the camera or the runner; it only clicks targets and menus
 - The route is generated ahead of you from a seeded, weighted table of segments: straights, gentle curves, 60 degree turns, sharp 90 degree turns, landmark approaches, recovery stretches, and planet-to-planet hops. Segments behind you are freed.
 - Each planet's route is a fixed amount of surface; then a glowing gate marks the launch and you fly to the next planet, which is visible ahead before you leave. In flight the runner's up vector blends between the two planets' outward directions (weighted by distance to each surface), so you stay feet-first toward whatever ground is nearest and land upright.
 - You fly a small spaceship. A wonder appears beside the route with a floating target. The target's click window is measured in **route distance**: it opens shortly before you reach the landmark and closes just after you pass it. Shoot it inside the window (click, or press Space to lock on) to unlock the achievement and read a short fact. Let the window close and you lose a heart.
-- Three hearts. Game over shows wonders found, distance and time, with Restart and Main Menu.
+- Three hearts, counted in halves. Missing a wonder costs a whole heart. Rocks (boulders, stone piles and spires) sit across the lanes: flying into one costs half a heart, but you can dodge it by changing lane or blast it with your laser first. After a crash the ship blinks and cannot be hurt again for a moment.
+- Game over shows wonders found, rocks destroyed, distance and time, with Fly Again and Main Menu.
+
+## Look and sound
+
+The interface uses **Kenney's UI Pack and UI Pack: Sci-fi** (CC0, from [kenney.nl](https://kenney.nl)): bolted silver panels, blue, yellow and red header cards, glossy blue, green and red buttons, the star, the crosshair and arrow cursors, the interface click sounds and the **Kenney Future** font. They are fetched by `python tools/fetch_kenney_ui.py` and styled as a normal Godot theme (`assets/ui/game_theme.tres`, built by `tools/make_ui_assets.py`).
+
+Colour language: blue = information and menus, yellow = achievements, red = game over and danger, green = go. Text is Kenney Future for titles and buttons, **Rajdhani** for reading text, and **Noto Sans Ethiopic** so Ge'ez script displays (the menu subtitle reads "የኢትዮጵያ ድንቆች"). Rajdhani and Noto are SIL Open Font License; licences are in `assets/fonts`.
+
+Everything moves. All animation lives in one small library, `scripts/ui/ui_motion.gd`: springs, pops, slides, punches and count-ups built on tweens that keep running while the game is paused, always end on an exact rest state, and replace each other cleanly when re-triggered. In the game:
+
+- every button springs up on hover and squashes on press (the `UiHooks` autoload hooks them all)
+- the menu title words pop in one after another, then the mission card slides in, then the controls bar rises
+- the HUD slides in and its hearts pop in one by one; a lost heart punches and flashes red; the wonder counter ticks up and its star pulses
+- toasts and the achievement banner slide in and out, and the banner's star spins in
+- the pause card pops in and its buttons follow; the game-over card pops in and each stat counts up in turn
+- scenes fade in from black, dip on restart and fade out before returning to the menu; a crash flashes the screen red and shakes the camera
+
+The mouse cursor is Kenney's arrow in menus and a crosshair while flying.
+
+Every sound is synthesised by `tools/make_audio.py` (lasers, impacts, explosions, a crash, a discovery fanfare, a launch whoosh, an engine hum and a looping music track in the Ethiopian pentatonic mode Ambassel), apart from the interface clicks, which are Kenney's. Sounds play through the `GameAudio` autoload (`scenes/audio/game_audio.tscn`); the pause menu has music and effects volume sliders.
+
+Regenerate with `python tools/make_audio.py` (needs numpy), `python tools/fetch_kenney_ui.py` and `python tools/make_ui_assets.py`.
 
 ## The worlds
 
@@ -60,12 +82,17 @@ scenes/
   planets/planet_transition.tscn  launch / landing gate
   landmarks/landmark_target.tscn  clickable target (animations live in the scene)
   landmarks/landmark_<id>.tscn    one scenery scene per wonder
-  ui/                          HUD, discovery popup, pause menu (default theme, no overrides)
+  ui/                          HUD, discovery banner, pause menu (all use assets/ui/game_theme.tres)
+  obstacles/                   boulder, stone pile and spire (shootable, half a heart each)
+  audio/game_audio.tscn        every sound, as autoload
 scripts/
   managers/   game_manager (orchestration, tick), game_state (state machine), discovery_manager (hearts, stats)
   route/      route_generator, route_segment (sampled data + builders), route_frame, route_types
   player/     player_controller, lane_movement, player_gravity
   planets/    planet_controller, planetary_gravity (radial gravity math)
+  obstacles/  obstacle (rock in the lanes; collision in route distance and lane offset)
+  audio/      game_audio (autoload), game_sound (static helper the game scripts call)
+  ui/         ui_motion (all animation), ui_hooks (button springs), ui_cursor, screen_fade, one script per screen
   landmarks/  landmark_data (resource), landmark_target
   camera/     gameplay_camera (smoothed follow frame + mouse picking ray)
   world/      space_backdrop (keeps the distant universe centred on the camera)
@@ -73,6 +100,8 @@ scripts/
 data/landmarks/landmark_catalog.gd   curated wonders
 tools/build_content.gd               generates planets, scenery, landmark scenes and the space backdrop
 tools/prop_meshes.gd, landmark_meshes.gd   the procedural low-poly models it uses
+tools/make_audio.py, make_ui_assets.py     synthesised sound and the UI theme and heart icons
+tools/fetch_kenney_ui.py                   downloads the Kenney UI sprites, font and sounds
 tests/test_suite.gd                  headless gameplay tests
 assets/                              meshes (generated), materials, shaders, Kenney models, wonder FBX models
 ```
@@ -85,7 +114,7 @@ There are intentionally **no path or runway meshes**. The planet is the track; t
 godot --headless --path . --script res://tests/test_suite.gd
 ```
 
-Exits with the number of failures. It covers: launch into the menu, spawning on the first planet, radial gravity, automatic running, lane changes and clamping, lane-frame stability over a long run, sharp-turn geometry, generation ahead and cleanup behind, planet flights (upright landing, never upside-down, planets and flight arcs keep clear of each other), clicking (active, empty space, repeat, late), missed targets and game over, popup content, restart, pause, real keyboard and mouse events, returning to the menu, and that every scene, script and resource loads with no missing references.
+Exits with the number of failures. It covers (among much else) the Kenney theme and assets, every UI animation sampled at its start, middle and end, interruption and pause behaviour, and the layout of every screen at four window shapes. It covers: launch into the menu, spawning on the first planet, radial gravity, automatic running, lane changes and clamping, lane-frame stability over a long run, sharp-turn geometry, generation ahead and cleanup behind, planet flights (upright landing, never upside-down, planets and flight arcs keep clear of each other), clicking (active, empty space, repeat, late), missed targets and game over, popup content, restart, pause, real keyboard and mouse events, returning to the menu, and that every scene, script and resource loads with no missing references.
 
 ## Regenerating the content
 
@@ -111,7 +140,7 @@ All wonder text is local and curated in `data/landmarks/landmark_catalog.gd`; no
 
 ## Known limitations
 
-- No audio.
+- The sound is synthesised, not recorded, so it is a solid placeholder rather than studio quality.
 - Turn variety is gradual: the first planet has only straights and gentle curves, 60 degree turns arrive from the second planet, and sharp 90 degree turns from the third.
 - Landmark text is curated from public sources (UNESCO and Wikipedia summaries) but not independently verified.
 - The reference photographs used for inspiration came from Wikimedia Commons; none are shipped in the game.

@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/game_over.gd" id="1_gameover"]
+[ext_resource type="Theme" path="res://assets/ui/game_theme.tres" id="2_theme"]
 
 [node name="GameOverScreen" type="Control"]
 process_mode = 3
@@ -11,16 +12,18 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 script = ExtResource("1_gameover")
 
 [node name="Dim" type="ColorRect" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0, 0, 0, 0.5)
+color = Color(0.1, 0.01, 0.02, 0.62)
 
 [node name="Center" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -30,42 +33,90 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Panel" type="PanelContainer" parent="Center"]
+[node name="Card" type="PanelContainer" parent="Center"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"CardRed"
+
+[node name="Content" type="VBoxContainer" parent="Center/Card"]
+custom_minimum_size = Vector2(460, 0)
 layout_mode = 2
 
-[node name="Content" type="VBoxContainer" parent="Center/Panel"]
-custom_minimum_size = Vector2(300, 0)
+[node name="Header" type="Label" parent="Center/Card/Content"]
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
-
-[node name="Title" type="Label" parent="Center/Panel/Content"]
-layout_mode = 2
-text = "Game Over"
+theme_type_variation = &"HeaderLabel"
+text = "MISSION OVER"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="WondersLabel" type="Label" parent="Center/Panel/Content"]
+[node name="Stats" type="GridContainer" parent="Center/Card/Content"]
+layout_mode = 2
+columns = 2
+
+[node name="WondersName" type="Label" parent="Center/Card/Content/Stats"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Wonders discovered: 0"
-horizontal_alignment = 1
+size_flags_horizontal = 3
+theme_type_variation = &"HintLabel"
+text = "Wonders discovered"
 
-[node name="DistanceLabel" type="Label" parent="Center/Panel/Content"]
+[node name="WondersLabel" type="Label" parent="Center/Card/Content/Stats"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Distance: 0 m"
-horizontal_alignment = 1
+theme_type_variation = &"NumberLabel"
+text = "0"
+horizontal_alignment = 2
 
-[node name="TimeLabel" type="Label" parent="Center/Panel/Content"]
+[node name="RocksName" type="Label" parent="Center/Card/Content/Stats"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Time: 00:00"
-horizontal_alignment = 1
+theme_type_variation = &"HintLabel"
+text = "Rocks destroyed"
 
-[node name="RestartButton" type="Button" parent="Center/Panel/Content"]
+[node name="RocksLabel" type="Label" parent="Center/Card/Content/Stats"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Restart"
+theme_type_variation = &"NumberLabel"
+text = "0"
+horizontal_alignment = 2
 
-[node name="MainMenuButton" type="Button" parent="Center/Panel/Content"]
+[node name="DistanceName" type="Label" parent="Center/Card/Content/Stats"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Main Menu"
+theme_type_variation = &"HintLabel"
+text = "Distance flown"
+
+[node name="DistanceLabel" type="Label" parent="Center/Card/Content/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"NumberLabel"
+text = "0 m"
+horizontal_alignment = 2
+
+[node name="TimeName" type="Label" parent="Center/Card/Content/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "Time"
+
+[node name="TimeLabel" type="Label" parent="Center/Card/Content/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"NumberLabel"
+text = "00:00"
+horizontal_alignment = 2
+
+[node name="Separator" type="HSeparator" parent="Center/Card/Content"]
+layout_mode = 2
+
+[node name="RestartButton" type="Button" parent="Center/Card/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"GreenButton"
+text = "FLY AGAIN"
+
+[node name="MainMenuButton" type="Button" parent="Center/Card/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "MAIN MENU"

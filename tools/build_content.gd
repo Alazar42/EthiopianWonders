@@ -117,6 +117,9 @@ func _save_prop_meshes() -> void:
 			ResourceSaver.save(_build_prop(cfg["builder"]), _prop_mesh_path(prop_id))
 	ResourceSaver.save(_grass_tuft_mesh(), "res://assets/meshes/props/grass_tuft.res")
 	ResourceSaver.save(PropMeshes.spaceship(), "res://assets/meshes/props/spaceship.res")
+	ResourceSaver.save(PropMeshes.obstacle_boulder(), "res://assets/meshes/props/obstacle_boulder.res")
+	ResourceSaver.save(PropMeshes.obstacle_stones(), "res://assets/meshes/props/obstacle_stones.res")
+	ResourceSaver.save(PropMeshes.obstacle_spire(), "res://assets/meshes/props/obstacle_spire.res")
 	for variant in CLOUD_VARIANTS:
 		ResourceSaver.save(PropMeshes.cloud(variant), "res://assets/meshes/props/cloud_%d.res" % variant)
 

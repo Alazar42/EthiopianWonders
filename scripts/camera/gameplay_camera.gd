@@ -5,8 +5,8 @@ extends Camera3D
 ## flips because the frame always comes from the planet's own up direction.
 
 @export var player: PlayerController
-@export var follow_distance: float = 7.0
-@export var follow_height: float = 4.2
+@export var follow_distance: float = 6.0
+@export var follow_height: float = 3.5
 @export var look_ahead: float = 8.0
 @export var look_height: float = 0.8
 @export var frame_follow_speed: float = 6.0
@@ -15,6 +15,9 @@ extends Camera3D
 @export var flight_extra_distance: float = 4.0
 @export var flight_extra_height: float = 3.0
 
+## Screen shake strength; add to it with add_shake(), it fades on its own.
+var shake: float = 0.0
+
 var _frame_rotation := Quaternion.IDENTITY
 var _flight_blend: float = 0.0
 var _initialized: bool = false
@@ -22,7 +25,11 @@ var _initialized: bool = false
 func _ready() -> void:
 	current = true
 
+func add_shake(amount: float) -> void:
+	shake = minf(1.0, shake + amount)
+
 func snap() -> void:
+	shake = 0.0
 	_initialized = false
 	_flight_blend = 0.0
 	update_follow(0.0)
@@ -51,20 +58,25 @@ func update_follow(delta: float) -> void:
 	var look_target: Vector3 = anchor + basis * Vector3(0.0, look_height, -look_ahead)
 	global_position = anchor + basis * offset
 	look_at(look_target, basis.y)
+	if shake > 0.0:
+		global_position += (basis.x * randf_range(-1.0, 1.0) + basis.y * randf_range(-1.0, 1.0)) * shake * 0.35
+		shake = maxf(0.0, shake - delta * 2.4)
 
-## Dedicated ray from the camera through the cursor. Only the target layer is tested, so the
-## planet, the ship and scenery can never be mistaken for a target. Returns the target that was hit
-## (or null) and the point the laser should aim at: the hit point, or far along the ray on a miss.
+## Dedicated ray from the camera through the cursor. Only the target and obstacle layers are
+## tested, so the planet, the ship and scenery can never be mistaken for either. Returns the wonder
+## target hit (or null), the obstacle hit (or null) and the point the laser should aim at: the hit
+## point, or far along the ray on a miss.
 func aim_ray(screen_pos: Vector2, max_distance: float = 400.0, miss_distance: float = 90.0) -> Dictionary:
 	var origin: Vector3 = project_ray_origin(screen_pos)
 	var direction: Vector3 = project_ray_normal(screen_pos)
-	var query := PhysicsRayQueryParameters3D.create(origin, origin + direction * max_distance, LandmarkTarget.PICK_LAYER)
+	var query := PhysicsRayQueryParameters3D.create(origin, origin + direction * max_distance,
+			LandmarkTarget.PICK_LAYER | Obstacle.PICK_LAYER)
 	query.collide_with_areas = true
 	query.collide_with_bodies = false
 	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():
-		return {"target": null, "point": origin + direction * miss_distance}
-	return {"target": hit["collider"] as LandmarkTarget, "point": hit["position"]}
+		return {"target": null, "obstacle": null, "point": origin + direction * miss_distance}
+	return {"target": hit["collider"] as LandmarkTarget, "obstacle": hit["collider"] as Obstacle, "point": hit["position"]}
 
 func pick_target(screen_pos: Vector2, max_distance: float = 400.0) -> LandmarkTarget:
 	return aim_ray(screen_pos, max_distance)["target"]

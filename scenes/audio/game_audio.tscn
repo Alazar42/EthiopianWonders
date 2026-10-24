@@ -1,0 +1,96 @@
+[gd_scene load_steps=20 format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/game_audio.gd" id="1_script"]
+[ext_resource type="AudioStream" path="res://assets/audio/laser.wav" id="s_laser"]
+[ext_resource type="AudioStream" path="res://assets/audio/laser_hit.wav" id="s_laser_hit"]
+[ext_resource type="AudioStream" path="res://assets/audio/discover.wav" id="s_discover"]
+[ext_resource type="AudioStream" path="res://assets/audio/hit.wav" id="s_hit"]
+[ext_resource type="AudioStream" path="res://assets/audio/explosion.wav" id="s_explosion"]
+[ext_resource type="AudioStream" path="res://assets/audio/heart_lost.wav" id="s_heart_lost"]
+[ext_resource type="AudioStream" path="res://assets/audio/launch.wav" id="s_launch"]
+[ext_resource type="AudioStream" path="res://assets/audio/arrive.wav" id="s_arrive"]
+[ext_resource type="AudioStream" path="res://assets/audio/kenney_tap.ogg" id="s_ui_hover"]
+[ext_resource type="AudioStream" path="res://assets/audio/kenney_click.ogg" id="s_ui_click"]
+[ext_resource type="AudioStream" path="res://assets/audio/game_over.wav" id="s_game_over"]
+[ext_resource type="AudioStream" path="res://assets/audio/engine.wav" id="s_engine"]
+[ext_resource type="AudioStream" path="res://assets/audio/music.wav" id="s_music"]
+
+[node name="GameAudio" type="Node"]
+process_mode = 3
+script = ExtResource("1_script")
+
+[node name="laser" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_laser")
+volume_db = -4
+max_polyphony = 6
+bus = &"Effects"
+
+[node name="laser_hit" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_laser_hit")
+volume_db = -3
+max_polyphony = 4
+bus = &"Effects"
+
+[node name="discover" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_discover")
+volume_db = -2
+max_polyphony = 2
+bus = &"Effects"
+
+[node name="hit" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_hit")
+volume_db = 0
+max_polyphony = 2
+bus = &"Effects"
+
+[node name="explosion" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_explosion")
+volume_db = -2
+max_polyphony = 4
+bus = &"Effects"
+
+[node name="heart_lost" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_heart_lost")
+volume_db = -3
+max_polyphony = 2
+bus = &"Effects"
+
+[node name="launch" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_launch")
+volume_db = -5
+max_polyphony = 2
+bus = &"Effects"
+
+[node name="arrive" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_arrive")
+volume_db = -4
+max_polyphony = 2
+bus = &"Effects"
+
+[node name="ui_hover" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_ui_hover")
+volume_db = -10
+max_polyphony = 3
+bus = &"Effects"
+
+[node name="ui_click" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_ui_click")
+volume_db = -6
+max_polyphony = 3
+bus = &"Effects"
+
+[node name="game_over" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_game_over")
+volume_db = -3
+max_polyphony = 1
+bus = &"Effects"
+
+[node name="engine" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_engine")
+volume_db = -14.0
+bus = &"Effects"
+
+[node name="music" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_music")
+volume_db = -4.0
+bus = &"Music"

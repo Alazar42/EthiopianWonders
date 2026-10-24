@@ -1,0 +1,107 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/obstacles/obstacle.gd" id="1_script"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/props/obstacle_boulder.res" id="2_mesh"]
+[ext_resource type="Material" path="res://assets/materials/terrain.tres" id="3_mat"]
+[ext_resource type="Material" path="res://assets/materials/warning.tres" id="4_warn"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_pick"]
+radius = 1.35
+
+[sub_resource type="TorusMesh" id="TorusMesh_warning"]
+material = ExtResource("4_warn")
+inner_radius = 1.35
+outer_radius = 1.6
+rings = 24
+ring_segments = 4
+
+[sub_resource type="Animation" id="Animation_idle"]
+resource_name = "idle"
+length = 0.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Warning:scale")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.4, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(1, 1, 1), Vector3(1.18, 1, 1.18), Vector3(1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_shatter"]
+resource_name = "shatter"
+length = 0.4
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visuals:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(1, 1, 1), Vector3(1.25, 1.25, 1.25), Vector3(0.01, 0.01, 0.01)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Visuals:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Warning:visible")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_obstacle"]
+_data = {
+&"idle": SubResource("Animation_idle"),
+&"shatter": SubResource("Animation_shatter")
+}
+
+[node name="ObstacleBoulder" type="Area3D"]
+collision_layer = 16
+collision_mask = 0
+script = ExtResource("1_script")
+half_width = 1.0
+half_depth = 0.9
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("SphereShape3D_pick")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Rock" type="MeshInstance3D" parent="Visuals"]
+material_override = ExtResource("3_mat")
+mesh = ExtResource("2_mesh")
+
+[node name="Warning" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, 0)
+cast_shadow = 0
+mesh = SubResource("TorusMesh_warning")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_obstacle")
+}
+autoplay = "idle"

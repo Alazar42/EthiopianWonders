@@ -1,8 +1,10 @@
-[gd_scene format=3 uid="uid://vi3bl3n8w3p1"]
+[gd_scene load_steps=4 format=3]
 
-[ext_resource type="Script" uid="uid://f5ywrlkdjum3" path="res://scripts/ui/discovery_popup.gd" id="1_popup"]
+[ext_resource type="Script" path="res://scripts/ui/discovery_popup.gd" id="1_popup"]
+[ext_resource type="Theme" path="res://assets/ui/game_theme.tres" id="2_theme"]
+[ext_resource type="Texture2D" path="res://assets/ui/kenney/icons/star.png" id="3_star"]
 
-[node name="DiscoveryPopup" type="Control" unique_id=79573770]
+[node name="DiscoveryPopup" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,61 +12,89 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme = ExtResource("2_theme")
 script = ExtResource("1_popup")
 
-[node name="Anchor" type="VBoxContainer" parent="." unique_id=1567127363]
+[node name="Panel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -250.0
-offset_top = 64.0
-offset_right = 250.0
+offset_left = -350.0
+offset_top = 132.0
+offset_right = 350.0
 grow_horizontal = 2
-mouse_filter = 2
+theme_type_variation = &"CardYellow"
 
-[node name="Panel" type="PanelContainer" parent="Anchor" unique_id=1471549068]
+[node name="Content" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+
+[node name="Header" type="Label" parent="Panel/Content"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
-
-[node name="Content" type="VBoxContainer" parent="Anchor/Panel" unique_id=1071646792]
-layout_mode = 2
-
-[node name="AchievementLabel" type="Label" parent="Anchor/Panel/Content" unique_id=257991348]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Achievement Unlocked"
+theme_type_variation = &"HeaderLabel"
+text = "ACHIEVEMENT UNLOCKED"
 horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="WonderLabel" type="Label" parent="Anchor/Panel/Content" unique_id=1384867048]
+[node name="Row" type="HBoxContainer" parent="Panel/Content"]
+layout_mode = 2
+
+[node name="StarIcon" type="TextureRect" parent="Panel/Content/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 84)
+layout_mode = 2
+size_flags_vertical = 0
+texture = ExtResource("3_star")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="VBoxContainer" parent="Panel/Content/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TitleLabel" type="Label" parent="Panel/Content/Row/Text"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "Achievement"
+
+[node name="WonderLabel" type="Label" parent="Panel/Content/Row/Text"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 0)
+layout_mode = 2
+theme_type_variation = &"StatLabel"
 text = "Wonder"
-horizontal_alignment = 1
+autowrap_mode = 3
 
-[node name="FactLabel" type="Label" parent="Anchor/Panel/Content" unique_id=1101144013]
+[node name="FactLabel" type="Label" parent="Panel/Content/Row/Text"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(460, 0)
+custom_minimum_size = Vector2(500, 0)
 layout_mode = 2
 text = "Fact"
 autowrap_mode = 3
 
-[node name="Footer" type="HBoxContainer" parent="Anchor/Panel/Content" unique_id=1642047568]
+[node name="Footer" type="HBoxContainer" parent="Panel/Content"]
 layout_mode = 2
 
-[node name="CountLabel" type="Label" parent="Anchor/Panel/Content/Footer" unique_id=1425249487]
+[node name="CountLabel" type="Label" parent="Panel/Content/Footer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+theme_type_variation = &"HintLabel"
 text = "Wonders discovered: 1"
 
-[node name="CloseButton" type="Button" parent="Anchor/Panel/Content/Footer" unique_id=766708927]
+[node name="CloseButton" type="Button" parent="Panel/Content/Footer"]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
-text = "Close"
+theme_type_variation = &"GreenButton"
+text = "OK"
 
-[node name="CloseTimer" type="Timer" parent="." unique_id=84165957]
+[node name="CloseTimer" type="Timer" parent="."]
 unique_name_in_owner = true
 wait_time = 6.0
 one_shot = true

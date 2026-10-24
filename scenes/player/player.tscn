@@ -22,8 +22,8 @@ albedo_color = Color(0, 0, 0, 0.35)
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_shadow"]
 material = SubResource("StandardMaterial3D_shadow")
-top_radius = 0.9
-bottom_radius = 0.9
+top_radius = 0.6
+bottom_radius = 0.6
 height = 0.02
 radial_segments = 16
 rings = 1
@@ -64,11 +64,12 @@ _data = {
 
 [node name="Player" type="Node3D"]
 script = ExtResource("1_player")
-body_height = 1.4
+body_height = 1.0
 laser_scene = ExtResource("5_bolt")
 impact_scene = ExtResource("6_impact")
 
 [node name="Visuals" type="Node3D" parent="."]
+transform = Transform3D(0.62, 0, 0, 0, 0.62, 0, 0, 0, 0.62, 0, 0, 0)
 
 [node name="Ship" type="MeshInstance3D" parent="Visuals"]
 material_override = ExtResource("3_mat")
@@ -95,7 +96,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.18, -0.03, -0.4)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.18, -0.03, -0.4)
 
 [node name="BlobShadow" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.38, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.98, 0)
 mesh = SubResource("CylinderMesh_shadow")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]

@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
 [ext_resource type="Texture2D" path="res://assets/textures/skybox_galaxy.png" id="2_sky"]
@@ -6,6 +6,9 @@
 [ext_resource type="PackedScene" path="res://scenes/planets/planet_rift.tscn" id="4_rift"]
 [ext_resource type="PackedScene" path="res://scenes/planets/planet_simien.tscn" id="5_simien"]
 [ext_resource type="PackedScene" path="res://scenes/game/space_backdrop.tscn" id="6_backdrop"]
+[ext_resource type="Theme" path="res://assets/ui/game_theme.tres" id="7_theme"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/props/spaceship.res" id="8_ship"]
+[ext_resource type="Material" path="res://assets/materials/terrain.tres" id="9_mat"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_menu"]
 panorama = ExtResource("2_sky")
@@ -20,6 +23,78 @@ ambient_light_source = 2
 ambient_light_color = Color(0.6, 0.65, 0.75, 1)
 ambient_light_energy = 0.5
 
+[sub_resource type="Animation" id="Animation_float"]
+resource_name = "float"
+length = 4.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("BackgroundContainer/SubViewport/World/MenuShip:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 2, 4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(7, 12, 14), Vector3(7, 12.7, 14), Vector3(7, 12, 14)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("BackgroundContainer/SubViewport/World/MenuShip:rotation")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 2, 4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.12, 0.55, 0.12), Vector3(0.12, 0.55, -0.12), Vector3(0.12, 0.55, 0.12)]
+}
+
+[sub_resource type="Animation" id="Animation_fade_in"]
+resource_name = "fade_in"
+length = 0.9
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Fade:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.9),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0, 0, 0, 1), Color(0, 0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_fade_out"]
+resource_name = "fade_out"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Fade:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0, 0, 0, 0), Color(0, 0, 0, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_fade"]
+_data = {
+&"fade_in": SubResource("Animation_fade_in"),
+&"fade_out": SubResource("Animation_fade_out")
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ship"]
+_data = {
+&"float": SubResource("Animation_float")
+}
+
 [node name="MainMenu" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -27,6 +102,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("7_theme")
 script = ExtResource("1_menu")
 
 [node name="BackgroundContainer" type="SubViewportContainer" parent="."]
@@ -73,37 +149,163 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -95, 34, -150)
 [node name="SimienPlanet" parent="BackgroundContainer/SubViewport/World" instance=ExtResource("5_simien")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 110, 58, -230)
 
-[node name="MenuPanel" type="PanelContainer" parent="."]
+[node name="MenuShip" type="MeshInstance3D" parent="BackgroundContainer/SubViewport/World"]
+transform = Transform3D(1.6, 0, 0, 0, 1.6, 0, 0, 0, 1.6, 7, 12, 14)
+material_override = ExtResource("9_mat")
+mesh = ExtResource("8_ship")
+
+[node name="TitleBlock" type="VBoxContainer" parent="."]
+layout_mode = 1
+offset_left = 60.0
+offset_top = 40.0
+offset_right = 640.0
+offset_bottom = 320.0
+mouse_filter = 2
+
+[node name="TitleTop" type="Label" parent="TitleBlock"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "ETHIOPIAN"
+
+[node name="TitleBottom" type="Label" parent="TitleBlock"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "WONDERS"
+
+[node name="GeezSubtitle" type="Label" parent="TitleBlock"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+theme_type_variation = &"SubtitleLabel"
+text = "የኢትዮጵያ ድንቆች"
+
+[node name="Tagline" type="Label" parent="TitleBlock"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+theme_type_variation = &"FloatLabel"
+text = "FLY  -  SHOOT  -  DISCOVER"
+
+[node name="MenuCard" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
 layout_mode = 1
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_left = 48.0
-offset_top = -150.0
-offset_right = 368.0
-offset_bottom = 150.0
+offset_left = 60.0
+offset_top = 30.0
+offset_right = 500.0
+offset_bottom = 260.0
 grow_vertical = 2
+theme_type_variation = &"CardBlue"
 
-[node name="Content" type="VBoxContainer" parent="MenuPanel"]
+[node name="Content" type="VBoxContainer" parent="MenuCard"]
 layout_mode = 2
 
-[node name="TitleLabel" type="Label" parent="MenuPanel/Content"]
+[node name="Header" type="Label" parent="MenuCard/Content"]
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
-text = "Ethiopian Wonders"
+theme_type_variation = &"HeaderLabel"
+text = "MISSION SELECT"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="HintLabel" type="Label" parent="MenuPanel/Content"]
-layout_mode = 2
-text = "A / D or arrow keys: change lane
-Click a glowing target, or press Space, to blast it with your laser and discover the wonder.
-Miss three and the run ends."
-autowrap_mode = 3
-
-[node name="PlayButton" type="Button" parent="MenuPanel/Content"]
+[node name="PlayButton" type="Button" parent="MenuCard/Content"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Play"
+theme_type_variation = &"GreenButton"
+text = "PLAY"
 
-[node name="QuitButton" type="Button" parent="MenuPanel/Content"]
+[node name="QuitButton" type="Button" parent="MenuCard/Content"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Quit"
+theme_type_variation = &"RedButton"
+text = "QUIT"
+
+[node name="ControlsBar" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -390.0
+offset_top = -78.0
+offset_right = 390.0
+offset_bottom = -22.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_type_variation = &"HudPanel"
+
+[node name="Hints" type="HBoxContainer" parent="ControlsBar"]
+layout_mode = 2
+alignment = 1
+
+[node name="Lanes" type="Label" parent="ControlsBar/Hints"]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "A / D  CHANGE LANE"
+
+[node name="Spacer1" type="Control" parent="ControlsBar/Hints"]
+custom_minimum_size = Vector2(28, 0)
+layout_mode = 2
+
+[node name="Fire" type="Label" parent="ControlsBar/Hints"]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "CLICK / SPACE  FIRE LASER"
+
+[node name="Spacer2" type="Control" parent="ControlsBar/Hints"]
+custom_minimum_size = Vector2(28, 0)
+layout_mode = 2
+
+[node name="Pause" type="Label" parent="ControlsBar/Hints"]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "ESC  PAUSE"
+
+[node name="Credit" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -330.0
+offset_top = -34.0
+offset_right = -14.0
+offset_bottom = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_type_variation = &"HintLabel"
+text = "UI by Kenney (CC0)"
+horizontal_alignment = 2
+
+[node name="Fade" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_fade")
+}
+autoplay = "fade_in"
+
+[node name="ShipPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_ship")
+}
+autoplay = "float"

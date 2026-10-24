@@ -32,6 +32,13 @@ func _run() -> void:
 	await _test_clicking()
 	await _test_input_pipeline()
 	await _test_lasers()
+	await _test_health_and_hud()
+	await _test_obstacles()
+	await _test_ui_and_audio()
+	await _test_theme_and_kenney_assets()
+	await _test_ui_motion()
+	await _test_screen_animations()
+	await _test_layout()
 	await _test_missing_and_game_over()
 	await _test_restart_and_popup()
 	await _test_worlds_and_backdrop()
@@ -42,11 +49,14 @@ func _run() -> void:
 
 # --- helpers -------------------------------------------------------------------------------------------
 
-func _new_world() -> GameManager:
+func _new_world(with_obstacles: bool = false) -> GameManager:
 	var world := (load(WORLD_SCENE) as PackedScene).instantiate() as GameManager
 	root.add_child(world)
 	world.set_process(false) # tests drive tick() themselves
 	await process_frame
+	# Rocks are opt-in here, so long autoplay runs are not interrupted by crashes.
+	world.route.obstacles_enabled = with_obstacles
+	world.start_new_run()
 	return world
 
 func _free_world(world: GameManager) -> void:
@@ -461,6 +471,513 @@ func _test_lasers() -> void:
 	check("firing again does not award the wonder twice", world.discovery_manager.discovered_wonders.size() == 1)
 	await _free_world(world)
 
+func _hud_heart_textures(world: GameManager) -> Array[Texture2D]:
+	var found: Array[Texture2D] = []
+	for heart in world.game_hud.get_node("%Hearts").get_children():
+		found.append((heart as TextureRect).texture)
+	return found
+
+func _test_health_and_hud() -> void:
+	print("half hearts")
+	var world := await _new_world()
+	var dm := world.discovery_manager
+	var hud := world.game_hud
+	check("a run starts with six half hearts", dm.health_halves == 6 and is_equal_approx(dm.current_hearts, 3.0))
+	var textures := _hud_heart_textures(world)
+	check("a full health bar shows three full hearts", textures == [hud.heart_full, hud.heart_full, hud.heart_full])
+	dm.register_obstacle_hit()
+	check("an obstacle costs exactly half a heart", dm.health_halves == 5 and is_equal_approx(dm.current_hearts, 2.5))
+	textures = _hud_heart_textures(world)
+	check("the third heart turns into a half heart", textures == [hud.heart_full, hud.heart_full, hud.heart_half])
+	dm.register_miss(LandmarkCatalog.get_by_id("lalibela"))
+	check("a missed wonder still costs a whole heart", dm.health_halves == 3 and is_equal_approx(dm.current_hearts, 1.5))
+	textures = _hud_heart_textures(world)
+	check("hearts show full, half and empty", textures == [hud.heart_full, hud.heart_half, hud.heart_empty])
+	check("two obstacles do not end the run", dm.obstacles_hit == 1 and world.state != GameState.State.GAME_OVER)
+	dm.register_obstacle_hit()
+	dm.register_obstacle_hit()
+	check("half hearts run out into game over", dm.health_halves == 1 and world.state != GameState.State.GAME_OVER)
+	dm.register_obstacle_hit()
+	check("the last half heart ends the run", world.state == GameState.State.GAME_OVER and dm.health_halves == 0)
+	var stats: Dictionary = dm.stats()
+	check("run stats include rocks hit and destroyed", stats.has("obstacles_hit") and stats.has("obstacles_destroyed") and stats["obstacles_hit"] == 4)
+	check("the game over screen shows the stats", world.game_over_screen.visible)
+	await _free_world(world)
+
+func _first_obstacle(world: GameManager) -> Obstacle:
+	var first: Obstacle = null
+	for obstacle in world.route.obstacles:
+		if first == null or obstacle.route_distance < first.route_distance:
+			first = obstacle
+	return first
+
+## Moves the ship straight into a lane without waiting for the slide.
+func _snap_to_lane(world: GameManager, lane_index: int) -> void:
+	world.player.lane.target_lane = lane_index
+	world.player.lane.offset = float(lane_index) * world.player.lane_width
+
+func _test_obstacles() -> void:
+	print("obstacles")
+	var world := await _new_world(true)
+	var route := world.route
+	var dm := world.discovery_manager
+	check("rocks are generated ahead of the ship", route.obstacles.size() >= 3, "%d rocks" % route.obstacles.size())
+	var too_early: int = 0
+	var blocked_rows: int = 0
+	var in_calm_segments: int = 0
+	for obstacle in route.obstacles:
+		if obstacle.route_distance < route.obstacle_min_start:
+			too_early += 1
+		var lanes: Dictionary = {}
+		for other in route.obstacles:
+			if absf(other.route_distance - obstacle.route_distance) < 2.0:
+				lanes[roundi(other.lane_offset / route.lane_width)] = true
+		if lanes.size() >= 3:
+			blocked_rows += 1
+		for seg in route.segments:
+			if seg.contains(obstacle.route_distance) and seg.type in [RouteTypes.SegmentType.LANDMARK_APPROACH,
+					RouteTypes.SegmentType.RECOVERY, RouteTypes.SegmentType.PLANET_ARRIVAL, RouteTypes.SegmentType.PLANET_TRANSITION]:
+				in_calm_segments += 1
+	check("the tutorial stretch has no rocks", too_early == 0, "%d too early" % too_early)
+	check("no row of rocks ever blocks all three lanes", blocked_rows == 0, "%d blocked rows" % blocked_rows)
+	check("no rocks in landmark, recovery, arrival or flight segments", in_calm_segments == 0, "%d" % in_calm_segments)
+
+	# Flying into a rock costs half a heart, and the rock breaks.
+	var rock := _first_obstacle(world)
+	_snap_to_lane(world, roundi(rock.lane_offset / route.lane_width))
+	var guard: int = 0
+	while rock.is_active() and world.is_playing() and guard < int(30.0 / DT):
+		world.tick(DT)
+		for target in route.targets:
+			if is_instance_valid(target) and target.is_active():
+				target.attempt_interact(world.player.distance)
+		_snap_to_lane(world, roundi(rock.lane_offset / route.lane_width))
+		guard += 1
+	check("crashing into a rock costs half a heart", dm.obstacles_hit >= 1 and dm.health_halves == 6 - dm.obstacles_hit - 2 * dm.missed_count,
+		"hits %d halves %d" % [dm.obstacles_hit, dm.health_halves])
+	check("the rock that was hit is destroyed", not rock.is_active())
+	check("the ship is invulnerable and blinking after a crash", world.player.is_invulnerable())
+	var hits_after_crash: int = dm.obstacles_hit
+	_step(world, 0.2)
+	check("one crash cannot cost more than half a heart", dm.obstacles_hit == hits_after_crash)
+	_step(world, 1.5, true)
+	check("invulnerability wears off", not world.player.is_invulnerable())
+	await _free_world(world)
+
+	# Dodging: switching to a free lane avoids the rock completely.
+	world = await _new_world(true)
+	var target_rock := _first_obstacle(world)
+	var rock_lane: int = roundi(target_rock.lane_offset / world.route.lane_width)
+	var free_lane: int = -1 if rock_lane != -1 else 1
+	for other in world.route.obstacles:
+		if absf(other.route_distance - target_rock.route_distance) < 2.0 and roundi(other.lane_offset / world.route.lane_width) == free_lane:
+			free_lane = 0 if rock_lane != 0 else 1
+	_snap_to_lane(world, free_lane)
+	var hits_before: int = world.discovery_manager.obstacles_hit
+	while world.player.distance < target_rock.route_distance + 3.0 and world.is_playing():
+		world.tick(DT)
+		for target in world.route.targets:
+			if is_instance_valid(target) and target.is_active():
+				target.attempt_interact(world.player.distance)
+		_snap_to_lane(world, free_lane)
+		if world.player.distance > target_rock.route_distance - 15.0:
+			break
+	while world.player.distance < target_rock.route_distance + 3.0 and world.is_playing():
+		world.tick(DT)
+		_snap_to_lane(world, free_lane)
+	check("switching lanes dodges a rock", world.discovery_manager.obstacles_hit == hits_before and target_rock.is_active())
+	await _free_world(world)
+
+	# Lasers: clicking a rock destroys it, with no damage.
+	world = await _new_world(true)
+	var shot_rock := _first_obstacle(world)
+	var cleared: bool = true
+	while shot_rock.route_distance - world.player.distance > 28.0 and world.is_playing():
+		world.tick(DT)
+		for target in world.route.targets:
+			if is_instance_valid(target) and target.is_active():
+				target.attempt_interact(world.player.distance)
+		_snap_to_lane(world, 0)
+	await physics_frame
+	await physics_frame
+	world.gameplay_camera.snap()
+	var screen: Vector2 = world.gameplay_camera.unproject_position(shot_rock.global_position + Vector3.UP * 0.9)
+	var health_before: int = world.discovery_manager.health_halves
+	check("clicking a rock does not count as a discovery", not world.click_at(screen))
+	check("a laser shot destroys the rock", not shot_rock.is_active())
+	check("shooting a rock costs nothing", world.discovery_manager.health_halves == health_before)
+	check("the destroyed rock is counted", world.discovery_manager.obstacles_destroyed == 1)
+	await _free_world(world)
+
+	# Space locks on to the nearest rock when no wonder is open.
+	world = await _new_world(true)
+	var lock_rock := _first_obstacle(world)
+	while lock_rock.route_distance - world.player.distance > 30.0 and world.is_playing():
+		world.tick(DT)
+		for target in world.route.targets:
+			if is_instance_valid(target) and target.is_active():
+				target.attempt_interact(world.player.distance)
+		_snap_to_lane(world, 0)
+	_key(KEY_SPACE, true)
+	await process_frame
+	_key(KEY_SPACE, false)
+	check("Space blasts the nearest rock when no wonder is open", world.discovery_manager.obstacles_destroyed == 1)
+	check("blasting does not discover anything", world.discovery_manager.discovered_wonders.size() <= 1)
+	await _free_world(world)
+
+func _test_ui_and_audio() -> void:
+	print("game UI and audio")
+	var audio := root.get_node_or_null("GameAudio")
+	check("the GameAudio autoload exists", audio != null)
+	var missing: Array[String] = []
+	for sound in ["laser", "laser_hit", "discover", "hit", "explosion", "heart_lost", "launch", "arrive",
+			"ui_hover", "ui_click", "game_over", "engine", "music"]:
+		var player := audio.get_node_or_null(sound) as AudioStreamPlayer if audio else null
+		if player == null or player.stream == null:
+			missing.append(sound)
+	check("every sound is present", missing.is_empty(), str(missing))
+	check("the music loops", ((audio.get_node("music") as AudioStreamPlayer).stream as AudioStreamWAV).loop_mode == AudioStreamWAV.LOOP_FORWARD)
+	check("the Music and Effects buses exist", AudioServer.get_bus_index(&"Music") >= 0 and AudioServer.get_bus_index(&"Effects") >= 0)
+	audio.set_bus_volume(&"Music", 0.5)
+	check("bus volume can be changed", absf(audio.get_bus_volume(&"Music") - 0.5) < 0.01)
+	audio.set_bus_volume(&"Music", 1.0)
+	var button := Button.new()
+	root.add_child(button)
+	check("buttons get hover and click sounds automatically", button.mouse_entered.get_connections().size() > 0 and button.pressed.get_connections().size() > 0)
+	button.queue_free()
+
+	var theme := load("res://assets/ui/game_theme.tres") as Theme
+	check("the game theme loads with a default font", theme != null and theme.default_font != null)
+	check("the theme styles buttons and panels", theme.has_stylebox("normal", "Button") and theme.has_stylebox("panel", "PanelContainer"))
+	check("the title style uses its own font", theme.get_font("font", "TitleLabel") != theme.default_font)
+	var unthemed: Array[String] = []
+	for path in ["res://scenes/menus/main_menu.tscn", "res://scenes/ui/game_hud.tscn", "res://scenes/ui/discovery_popup.tscn",
+			"res://scenes/ui/pause_menu.tscn", "res://scenes/game/game_over.tscn"]:
+		var screen := (load(path) as PackedScene).instantiate() as Control
+		if screen.theme != theme:
+			unthemed.append(path)
+		screen.free()
+	check("every screen uses the game theme", unthemed.is_empty(), str(unthemed))
+	var world := await _new_world()
+	check("the ship is smaller than before", (world.player.get_node("Visuals") as Node3D).scale.x <= 0.7)
+	await _free_world(world)
+
+func _test_theme_and_kenney_assets() -> void:
+	print("Kenney theme and assets")
+	var theme := load("res://assets/ui/game_theme.tres") as Theme
+	var problems: Array[String] = []
+	var checked: int = 0
+	for theme_type in ["Button", "GreenButton", "RedButton", "YellowButton", "PanelContainer", "HudPanel",
+			"CardBlue", "CardYellow", "CardRed", "CardGreen"]:
+		for style_name in ["normal", "hover", "pressed", "disabled", "panel"]:
+			if not theme.has_stylebox(style_name, theme_type):
+				continue
+			var box := theme.get_stylebox(style_name, theme_type)
+			if box is StyleBoxTexture:
+				checked += 1
+				var texture := (box as StyleBoxTexture).texture
+				var sb := box as StyleBoxTexture
+				if texture == null:
+					problems.append("%s/%s has no texture" % [theme_type, style_name])
+				elif sb.texture_margin_left + sb.texture_margin_right >= texture.get_width() \
+						or sb.texture_margin_top + sb.texture_margin_bottom >= texture.get_height() + 1:
+					problems.append("%s/%s margins exceed the texture" % [theme_type, style_name])
+	check("buttons, panels and cards are Kenney 9-slice textures", checked >= 18 and problems.is_empty(), "%d checked, %s" % [checked, str(problems)])
+	var variations: Array[String] = []
+	for variation in ["TitleLabel", "HeaderLabel", "FloatLabel", "SubtitleLabel", "StatLabel", "HintLabel", "NumberLabel",
+			"GreenButton", "RedButton", "YellowButton", "HudPanel", "CardBlue", "CardYellow", "CardRed", "CardGreen"]:
+		if theme.get_type_variation_base(variation) == &"":
+			variations.append(variation)
+	check("every theme variation the screens use exists", variations.is_empty(), str(variations))
+	var title_font := theme.get_font("font", "TitleLabel") as FontVariation
+	var button_font := theme.get_font("font", "Button") as FontVariation
+	check("titles and buttons use Kenney Future", title_font != null and title_font.base_font.resource_path.ends_with("KenneyFuture.ttf") 		and button_font != null and button_font.base_font.resource_path.ends_with("KenneyFuture.ttf"))
+	var missing: Array[String] = []
+	for path in ["res://assets/ui/kenney/cards/blue_card.png", "res://assets/ui/kenney/cards/yellow_card.png",
+			"res://assets/ui/kenney/cards/red_card.png", "res://assets/ui/kenney/buttons/green_button_rectangle_depth_gradient.png",
+			"res://assets/ui/kenney/icons/star.png", "res://assets/ui/kenney/cursors/crosshair.png",
+			"res://assets/ui/kenney/cursors/arrow.png", "res://assets/ui/kenney/License.txt",
+			"res://assets/fonts/KenneyFuture.ttf", "res://assets/audio/kenney_click.ogg", "res://assets/audio/kenney_tap.ogg"]:
+		if not ResourceLoader.exists(path) and not FileAccess.file_exists(path):
+			missing.append(path)
+	check("the Kenney sprites, fonts, sounds and licence are in the project", missing.is_empty(), str(missing))
+	var audio := root.get_node("GameAudio")
+	check("interface sounds are Kenney's", (audio.get_node("ui_click") as AudioStreamPlayer).stream.resource_path.contains("kenney"))
+	check("the UiHooks autoload is present", root.has_node("UiHooks"))
+
+## A plain Control to animate, parked in the tree with a known size and position.
+func _motion_control(position: Vector2 = Vector2(100, 100)) -> Control:
+	var control := Control.new()
+	control.custom_minimum_size = Vector2(120, 60)
+	control.size = Vector2(120, 60)
+	control.position = position
+	root.add_child(control)
+	return control
+
+func _test_ui_motion() -> void:
+	print("UI motion")
+	# Pop in: starts small and invisible, passes through the middle, ends exact.
+	var control := _motion_control()
+	UiMotion.pop_in(control, 0.0, 0.4)
+	check("pop-in starts invisible and smaller", control.modulate.a == 0.0 and control.scale.x < 1.0)
+	await create_timer(0.12).timeout
+	check("pop-in is partway after a moment", control.modulate.a > 0.0 and control.modulate.a <= 1.0 and control.scale.x < 1.0 + 0.3)
+	await create_timer(0.7).timeout
+	check("pop-in ends fully visible at exactly scale 1", is_equal_approx(control.modulate.a, 1.0) and control.scale.is_equal_approx(Vector2.ONE))
+
+	# Slide in: starts displaced, ends at home, and re-triggering mid-slide never drifts.
+	control.position = Vector2(100, 100)
+	UiMotion.slide_in(control, Vector2(0, -200), 0.0, 0.4)
+	check("slide-in starts displaced", control.position.y < 0.0)
+	await create_timer(0.1).timeout
+	UiMotion.slide_in(control, Vector2(0, -200), 0.0, 0.4)
+	await create_timer(0.9).timeout
+	check("slide-in ends exactly at home even when re-triggered", control.position.is_equal_approx(Vector2(100, 100)) and is_equal_approx(control.modulate.a, 1.0),
+		str(control.position))
+
+	# Slide out: ends hidden, then everything is restored for next time.
+	UiMotion.slide_out(control, Vector2(0, -200), 0.25)
+	await create_timer(0.6).timeout
+	check("slide-out hides the control and restores its state", not control.visible and control.position.is_equal_approx(Vector2(100, 100)) and is_equal_approx(control.modulate.a, 1.0))
+
+	# Pop out likewise.
+	control.visible = true
+	UiMotion.pop_out(control, 0.2)
+	await create_timer(0.5).timeout
+	check("pop-out hides and restores", not control.visible and control.scale.is_equal_approx(Vector2.ONE) and is_equal_approx(control.modulate.a, 1.0))
+
+	# Punch ends clean.
+	control.visible = true
+	UiMotion.punch(control, 1.5, 0.4)
+	await create_timer(0.08).timeout
+	check("punch grows the control", control.scale.x > 1.0)
+	await create_timer(1.2).timeout
+	check("punch settles at scale 1 and no tilt", control.scale.is_equal_approx(Vector2.ONE) and absf(control.rotation_degrees) < 0.01,
+		"%s %f" % [control.scale, control.rotation_degrees])
+
+	# Reset snaps everything back mid-animation.
+	UiMotion.slide_in(control, Vector2(300, 0), 0.0, 1.0)
+	UiMotion.reset(control)
+	await create_timer(0.3).timeout
+	check("reset stops animations and restores rest state", control.position.is_equal_approx(Vector2(100, 100)) and is_equal_approx(control.modulate.a, 1.0))
+
+	# Count up: between start and end partway, exact at the end, formatter applied.
+	var label := Label.new()
+	root.add_child(label)
+	UiMotion.count_up(label, 0, 100, 0.5, func(v: int) -> String: return "%d m" % v)
+	await create_timer(0.2).timeout
+	var partway: int = int(label.text.get_slice(" ", 0))
+	check("count-up is between the start and the end partway", partway > 0 and partway < 100, label.text)
+	await create_timer(0.7).timeout
+	check("count-up lands exactly on the final value", label.text == "100 m", label.text)
+	label.queue_free()
+
+	# Buttons spring on hover and press, and always return to rest.
+	var button := Button.new()
+	button.text = "TEST"
+	root.add_child(button)
+	await process_frame
+	check("every new button is hooked for motion automatically", button.has_meta("_motion_hooked"))
+	button.mouse_entered.emit()
+	await create_timer(0.4).timeout
+	check("hovering springs a button up", button.scale.x > 1.03, str(button.scale))
+	button.button_down.emit()
+	await create_timer(0.3).timeout
+	check("pressing squashes a button", button.scale.x < 1.0, str(button.scale))
+	button.mouse_exited.emit()
+	await create_timer(0.4).timeout
+	check("a button returns to exactly scale 1", button.scale.is_equal_approx(Vector2.ONE), str(button.scale))
+	for i in 6:
+		button.mouse_entered.emit()
+		await create_timer(0.02).timeout
+		button.mouse_exited.emit()
+		await create_timer(0.02).timeout
+	await create_timer(0.5).timeout
+	check("rapid hovering never leaves a button scaled", button.scale.is_equal_approx(Vector2.ONE), str(button.scale))
+	button.disabled = true
+	button.mouse_entered.emit()
+	await create_timer(0.3).timeout
+	check("disabled buttons do not spring", button.scale.is_equal_approx(Vector2.ONE))
+	button.queue_free()
+
+	# Animations keep running while the game is paused, so menus still animate.
+	control.visible = true
+	paused = true
+	UiMotion.pop_in(control, 0.0, 0.3)
+	await create_timer(0.7).timeout
+	var ran_while_paused: bool = is_equal_approx(control.modulate.a, 1.0) and control.scale.is_equal_approx(Vector2.ONE)
+	paused = false
+	check("UI animations run while the tree is paused", ran_while_paused)
+	control.queue_free()
+
+	# The screen fade.
+	var fade := (load("res://scenes/ui/screen_fade.tscn") as PackedScene).instantiate() as ScreenFade
+	root.add_child(fade)
+	await process_frame
+	check("the screen fade starts black", fade.opacity() == 1.0)
+	fade.fade_in(0.2)
+	await create_timer(0.6).timeout
+	check("fading in clears the screen", fade.opacity() == 0.0)
+	fade.fade_out(0.2)
+	await create_timer(0.6).timeout
+	check("fading out goes fully black", fade.opacity() == 1.0)
+	fade.queue_free()
+
+func _test_screen_animations() -> void:
+	print("screen animations")
+	Engine.time_scale = 1.0
+	# Main menu intro: everything ends visible and in place.
+	var menu := (load("res://scenes/menus/main_menu.tscn") as PackedScene).instantiate() as MainMenu
+	root.add_child(menu)
+	await process_frame
+	await process_frame
+	var title := menu.get_node("%TitleTop") as Control
+	var card := menu.get_node("%MenuCard") as Control
+	check("the menu starts with its title and card hidden", title.modulate.a < 0.2 and card.modulate.a < 0.2)
+	var card_home: float = card.position.x
+	await create_timer(2.6).timeout
+	var all_visible: bool = true
+	for node_name in ["%TitleTop", "%TitleBottom", "%GeezSubtitle", "%Tagline", "%MenuCard", "%ControlsBar"]:
+		all_visible = all_visible and is_equal_approx((menu.get_node(node_name) as Control).modulate.a, 1.0)
+	check("the menu intro ends with every element fully visible", all_visible)
+	check("the mission card settles in place", absf(card.position.x - (card_home if card_home > 0.0 else 60.0)) < 70.0, str(card.position))
+	check("the menu's buttons are clickable and focused", (menu.get_node("%PlayButton") as Button).has_focus())
+	menu.queue_free()
+	await process_frame
+
+	# HUD: intro, heart punch, count-up, toast.
+	var world := await _new_world()
+	var hud := world.game_hud
+	await create_timer(1.4).timeout
+	var hearts := hud.get_node("%Hearts").get_children()
+	var intro_done: bool = is_equal_approx((hud.get_node("%StatusPanel") as Control).modulate.a, 1.0)
+	for heart in hearts:
+		intro_done = intro_done and is_equal_approx((heart as Control).modulate.a, 1.0) and (heart as Control).scale.is_equal_approx(Vector2.ONE)
+	check("the HUD intro ends with the panel and hearts fully in", intro_done)
+	world.discovery_manager.register_obstacle_hit()
+	await create_timer(0.08).timeout
+	var lost_heart := hearts[2] as Control
+	check("losing health punches the affected heart", lost_heart.scale.x > 1.05, str(lost_heart.scale))
+	await create_timer(1.2).timeout
+	check("the heart settles back to normal size", lost_heart.scale.is_equal_approx(Vector2.ONE) and lost_heart.modulate.is_equal_approx(Color.WHITE))
+	hud.update_wonders(3)
+	await create_timer(0.1).timeout
+	var counting: String = (hud.get_node("%WondersLabel") as Label).text
+	await create_timer(0.8).timeout
+	check("the wonder counter ticks up to its final value", (hud.get_node("%WondersLabel") as Label).text == "3 wonders", counting)
+	hud.show_toast("Test message")
+	var toast := hud.get_node("%ToastPanel") as Control
+	await create_timer(0.6).timeout
+	check("a toast slides in and stays", toast.visible and is_equal_approx(toast.modulate.a, 1.0))
+	var toast_home: Vector2 = toast.position
+	hud._toast_timer.timeout.emit()
+	await create_timer(0.7).timeout
+	check("a toast slides out, hides and returns to rest", not toast.visible and toast.position.is_equal_approx(toast_home))
+	hud.show_toast("Again")
+	await create_timer(0.7).timeout
+	check("a toast can be shown again after leaving", toast.visible and toast.position.is_equal_approx(toast_home))
+
+	# Achievement banner.
+	var popup := world.discovery_popup
+	var panel := popup.get_node("%Panel") as Control
+	var landmark := LandmarkCatalog.get_by_id("yeha")
+	popup.show_discovery(landmark, 1)
+	await create_timer(0.1).timeout
+	check("the banner is off-screen at first and sliding", panel.visible and panel.position.y < 130.0, str(panel.position))
+	await create_timer(1.0).timeout
+	var banner_home_y: float = panel.position.y
+	check("the banner lands fully visible", is_equal_approx(panel.modulate.a, 1.0) and banner_home_y >= 0.0)
+	popup.hide_popup()
+	await create_timer(0.7).timeout
+	check("the banner slides away and hides", not panel.visible and not popup.is_open())
+	popup.show_discovery(landmark, 2)
+	popup.hide_popup(false)
+	popup.show_discovery(landmark, 3)
+	await create_timer(1.0).timeout
+	check("rapid show, hide, show leaves the banner in place", panel.visible and absf(panel.position.y - banner_home_y) < 1.0,
+		"%f vs %f" % [panel.position.y, banner_home_y])
+	popup.hide_popup(false)
+
+	# Pause card pops in with its buttons.
+	world.toggle_pause()
+	var card_node := world.pause_menu.get_node("%Card") as Control
+	await create_timer(0.9).timeout
+	var pause_ready: bool = is_equal_approx(card_node.modulate.a, 1.0) and card_node.scale.is_equal_approx(Vector2.ONE)
+	for button_name in ["%ResumeButton", "%RestartButton", "%MainMenuButton"]:
+		pause_ready = pause_ready and is_equal_approx((world.pause_menu.get_node(button_name) as Control).modulate.a, 1.0)
+	check("the pause card and its buttons finish fully visible while paused", pause_ready)
+	world.toggle_pause()
+	check("resuming hides the pause card at once", not world.pause_menu.visible)
+
+	# Game over: stats count up to the exact numbers.
+	world.discovery_manager.obstacles_destroyed = 4
+	world.discovery_manager.run_distance = 123.0
+	world.discovery_manager.elapsed_time = 75.0
+	world.discovery_manager.health_halves = 1
+	world.discovery_manager.register_obstacle_hit()
+	check("game over shows the card straight away", world.game_over_screen.visible)
+	await create_timer(0.3).timeout
+	var counting_label := world.game_over_screen.get_node("%DistanceLabel") as Label
+	var mid_text: String = counting_label.text
+	await create_timer(2.6).timeout
+	var go := world.game_over_screen
+	check("game over stats count up to their exact final values",
+		(go.get_node("%RocksLabel") as Label).text == "4" and (go.get_node("%DistanceLabel") as Label).text == "123 m" \
+		and (go.get_node("%TimeLabel") as Label).text == "01:15" and (go.get_node("%WondersLabel") as Label).text == "0",
+		"%s | %s | %s" % [(go.get_node("%RocksLabel") as Label).text, (go.get_node("%DistanceLabel") as Label).text, (go.get_node("%TimeLabel") as Label).text])
+	check("the game over buttons fade in and are visible", is_equal_approx((go.get_node("%RestartButton") as Control).modulate.a, 1.0))
+	world.start_new_run()
+	check("restarting hides the game over card immediately", not world.game_over_screen.visible)
+	await _free_world(world)
+
+func _test_layout() -> void:
+	print("layout at different window sizes")
+	Engine.time_scale = 4.0
+	var original_size: Vector2i = root.size
+	var problems: Array[String] = []
+	# Stretching keeps the shape of 16:9 windows, so only different aspect ratios test the layout.
+	for window_size in [Vector2i(1280, 720), Vector2i(1024, 600), Vector2i(800, 800), Vector2i(2560, 1080)]:
+		root.size = window_size
+		await process_frame
+		var view: Rect2 = root.get_visible_rect()
+		var menu := (load("res://scenes/menus/main_menu.tscn") as PackedScene).instantiate() as MainMenu
+		root.add_child(menu)
+		await create_timer(2.8).timeout
+		var card := menu.get_node("%MenuCard") as Control
+		var bar := menu.get_node("%ControlsBar") as Control
+		var title := menu.get_node("TitleBlock") as Control
+		for item in [["menu card", card], ["controls bar", bar], ["title", title]]:
+			if not view.grow(2).encloses((item[1] as Control).get_global_rect()):
+				problems.append("%s %s outside %s at %s" % [item[0], str((item[1] as Control).get_global_rect()), str(view), str(window_size)])
+		if card.get_global_rect().intersects(bar.get_global_rect()):
+			problems.append("menu card overlaps the controls bar at %s" % str(window_size))
+		menu.queue_free()
+		await process_frame
+
+		var world := await _new_world()
+		await create_timer(1.6).timeout
+		world.game_hud.show_toast("A fairly long message to test how the toast panel fits at every size")
+		world.discovery_popup.show_discovery(LandmarkCatalog.get_by_id("lalibela"), 1)
+		await create_timer(1.6).timeout
+		for item in [["status panel", world.game_hud.get_node("%StatusPanel")], ["pause button", world.game_hud.get_node("%PauseButton")],
+				["toast", world.game_hud.get_node("%ToastPanel")], ["banner", world.discovery_popup.get_node("%Panel")]]:
+			if not view.grow(2).encloses((item[1] as Control).get_global_rect()):
+				problems.append("%s %s outside %s at %s" % [item[0], str((item[1] as Control).get_global_rect()), str(view), str(window_size)])
+		world.toggle_pause()
+		await create_timer(1.2).timeout
+		if not view.grow(2).encloses((world.pause_menu.get_node("%Card") as Control).get_global_rect()):
+			problems.append("pause card outside the view at %s" % str(window_size))
+		world.toggle_pause()
+		world.discovery_manager.health_halves = 1
+		world.discovery_manager.register_obstacle_hit()
+		await create_timer(1.2).timeout
+		if not view.grow(2).encloses((world.game_over_screen.get_node("%Card") as Control).get_global_rect()):
+			problems.append("game over card outside the view at %s" % str(window_size))
+		await _free_world(world)
+	root.size = original_size
+	Engine.time_scale = 1.0
+	check("every screen stays inside the window at 16:9, 1024x600, square and ultrawide", problems.is_empty(), "\n    ".join(problems))
+
 func _test_missing_and_game_over() -> void:
 	print("hearts and game over")
 	var world := await _new_world()
@@ -510,7 +1027,7 @@ func _test_restart_and_popup() -> void:
 	var data := target.landmark_data
 	check("popup is visible after a discovery", popup.is_open())
 	check("popup shows the wonder name", (popup.get_node("%WonderLabel") as Label).text == data.name)
-	check("popup shows the achievement title", (popup.get_node("%AchievementLabel") as Label).text.contains(data.achievement_title))
+	check("popup shows the achievement title", (popup.get_node("%TitleLabel") as Label).text == data.achievement_title)
 	check("popup shows the landmark fact", (popup.get_node("%FactLabel") as Label).text == data.get_fact())
 	check("popup shows the discovery count", (popup.get_node("%CountLabel") as Label).text.ends_with("1"))
 	popup.hide_popup()
@@ -652,7 +1169,9 @@ func _test_return_to_menu() -> void:
 	var world := await _new_world()
 	world.toggle_pause()
 	world.pause_menu.main_menu_requested.emit()
-	await process_frame
-	await process_frame
+	await create_timer(0.9).timeout
 	check("pause menu returns to the main menu", current_scene is MainMenu, str(current_scene))
 	check("tree is unpaused after leaving", not paused)
+	(current_scene as MainMenu).get_node("%PlayButton").pressed.emit()
+	await create_timer(1.2).timeout
+	check("Play fades out and starts the game", current_scene is GameManager, str(current_scene))

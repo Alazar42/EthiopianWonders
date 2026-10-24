@@ -26,6 +26,12 @@ signal planet_spawned(planet: PlanetController)
 @export var wonder_lateral: float = 17.0
 @export var window_lead: float = 28.0
 @export var deadline_after_target: float = 4.0
+@export_group("Obstacles")
+@export var obstacle_scenes: Array[PackedScene] = []
+@export var obstacles_enabled: bool = true
+@export var lane_width: float = 2.4
+## No obstacles before this route distance, so the tutorial planet stays calm.
+@export var obstacle_min_start: float = 70.0
 @export_group("Transitions")
 @export var transition_clearance: float = 14.0
 @export var transition_attempts: int = 32
@@ -34,9 +40,12 @@ signal planet_spawned(planet: PlanetController)
 @export_range(0.0, 90.0) var max_launch_yaw: float = 70.0
 
 var rng := RandomNumberGenerator.new()
+## Separate stream, so turning obstacles on or off never changes the route itself.
+var _obstacle_rng := RandomNumberGenerator.new()
 var segments: Array[RouteSegment] = []
 var planets: Array[PlanetController] = []
 var targets: Array[LandmarkTarget] = []
+var obstacles: Array[Obstacle] = []
 ## End of the generated route.
 var head := RouteFrame.new()
 var head_planet: PlanetController
@@ -58,6 +67,7 @@ var _transition_retries: int = 0
 func begin_run(p_seed: int = -1) -> void:
 	_clear()
 	rng.seed = seed_value if p_seed < 0 else p_seed
+	_obstacle_rng.seed = rng.seed + 777
 	planets.append(start_planet)
 	head_planet = start_planet
 	planet_index = 0
@@ -191,6 +201,7 @@ func _append_surface(type: RouteTypes.SegmentType, forced_landmark: String = "")
 		_spawn_landmark(seg, forced_landmark)
 	elif type != T.PLANET_ARRIVAL:
 		_since_landmark += 1
+	_spawn_obstacles(seg)
 	_last_type = type
 	if seg.planet:
 		(seg.planet as PlanetController).clear_decorations_near(seg.positions, corridor_clearance)
@@ -346,6 +357,44 @@ func _spawn_landmark(seg: RouteSegment, forced_id: String) -> void:
 			planet.clear_decorations_near(PackedVector3Array([target.global_position]), 4.0)
 		target_spawned.emit(target)
 
+## Rocks across the lanes. Rows are spaced so there is time to switch lanes, and at most two of the
+## three lanes are blocked in a row, so there is always a way through.
+func _spawn_obstacles(seg: RouteSegment) -> void:
+	if not obstacles_enabled or obstacle_scenes.is_empty() or seg.start_distance < obstacle_min_start:
+		return
+	if not seg.type in [T.STRAIGHT, T.CURVE_LEFT, T.CURVE_RIGHT, T.TURN_LEFT, T.TURN_RIGHT, T.SHARP_LEFT, T.SHARP_RIGHT]:
+		return
+	var spacing: float = maxf(8.5, 14.0 - 1.2 * float(planet_index))
+	var double_chance: float = clampf(0.06 * float(planet_index), 0.0, 0.3)
+	var distance: float = seg.start_distance + _obstacle_rng.randf_range(5.0, 8.0)
+	var last_lane: int = 99
+	while distance < seg.end_distance() - 4.0:
+		var lanes: Array[int] = [-1, 0, 1]
+		lanes.erase(last_lane if _obstacle_rng.randf() < 0.6 else 99)
+		var first: int = lanes[_obstacle_rng.randi() % lanes.size()]
+		var row: Array[int] = [first]
+		if _obstacle_rng.randf() < double_chance:
+			var others: Array[int] = [-1, 0, 1]
+			others.erase(first)
+			row.append(others[_obstacle_rng.randi() % others.size()])
+		for lane in row:
+			_place_obstacle(seg, distance + _obstacle_rng.randf_range(-0.4, 0.4), lane)
+		last_lane = first
+		distance += spacing + _obstacle_rng.randf_range(-1.5, 3.0)
+
+func _place_obstacle(seg: RouteSegment, distance: float, lane: int) -> void:
+	var scene: PackedScene = obstacle_scenes[_obstacle_rng.randi() % obstacle_scenes.size()]
+	var obstacle := scene.instantiate() as Obstacle
+	var frame := RouteFrame.new()
+	seg.sample(distance, frame)
+	add_child(obstacle)
+	var xf: Transform3D = frame.lane_transform(float(lane) * lane_width, 0.0)
+	xf.basis = xf.basis.rotated(xf.basis.y, _obstacle_rng.randf() * TAU)
+	obstacle.global_transform = xf
+	obstacle.setup(distance, float(lane) * lane_width)
+	seg.props.append(obstacle)
+	obstacles.append(obstacle)
+
 # --- cleanup ------------------------------------------------------------------------------------
 
 func _cleanup(route_distance: float) -> void:
@@ -358,6 +407,9 @@ func _cleanup(route_distance: float) -> void:
 	for i in range(targets.size() - 1, -1, -1):
 		if not is_instance_valid(targets[i]) or targets[i].is_queued_for_deletion():
 			targets.remove_at(i)
+	for i in range(obstacles.size() - 1, -1, -1):
+		if not is_instance_valid(obstacles[i]) or obstacles[i].is_queued_for_deletion():
+			obstacles.remove_at(i)
 	for i in range(planets.size() - 1, -1, -1):
 		var planet: PlanetController = planets[i]
 		# The start planet stays alive so an in-place restart can reuse it.
@@ -377,6 +429,7 @@ func _clear() -> void:
 		seg.free_props()
 	segments.clear()
 	targets.clear()
+	obstacles.clear()
 	for planet in planets:
 		if is_instance_valid(planet) and planet != start_planet:
 			planet.queue_free()
