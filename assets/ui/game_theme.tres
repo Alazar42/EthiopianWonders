@@ -1,45 +1,242 @@
-[gd_resource type="Theme" format=3 uid="uid://ch612v0ast1wq"]
+[gd_resource type="Theme" load_steps=20 format=3]
 
-[ext_resource type="FontFile" uid="uid://b0fxetq4cb1xt" path="res://assets/fonts/Rajdhani-SemiBold.ttf" id="1_body"]
-[ext_resource type="FontFile" uid="uid://brymqrwmns61j" path="res://assets/fonts/Rajdhani-Bold.ttf" id="2_bold"]
-[ext_resource type="FontFile" uid="uid://dr3op6522ani4" path="res://assets/fonts/KenneyFuture.ttf" id="3_future"]
-[ext_resource type="FontFile" uid="uid://cwusekx4yc36f" path="res://assets/fonts/NotoSansEthiopic-Variable.ttf" id="4_geez"]
-[ext_resource type="FontFile" uid="uid://dpi8jfd1ydm2b" path="res://assets/fonts/KenneyFutureNarrow.ttf" id="5_narrow"]
-[ext_resource type="Texture2D" uid="uid://d14yt68y4j7cn" path="res://assets/ui/kenney/panels/panel_glass_screws.png" id="tex_0"]
-[ext_resource type="Texture2D" uid="uid://c256pqqrkk5bc" path="res://assets/ui/kenney/panels/panel_glass.png" id="tex_1"]
-[ext_resource type="Texture2D" uid="uid://bfemu6427qjke" path="res://assets/ui/kenney/cards/blue_card.png" id="tex_2"]
-[ext_resource type="Texture2D" uid="uid://ci2ls8qh5iomi" path="res://assets/ui/kenney/cards/yellow_card.png" id="tex_3"]
-[ext_resource type="Texture2D" uid="uid://3uoa2j0t2exq" path="res://assets/ui/kenney/cards/red_card.png" id="tex_4"]
-[ext_resource type="Texture2D" uid="uid://b766incf0elvj" path="res://assets/ui/kenney/cards/green_card.png" id="tex_5"]
-[ext_resource type="Texture2D" uid="uid://n7l2fn6nv0tb" path="res://assets/ui/kenney/buttons/blue_button_rectangle_depth_gradient.png" id="tex_6"]
-[ext_resource type="Texture2D" uid="uid://co0vxhvgx2km7" path="res://assets/ui/kenney/buttons/blue_button_rectangle_depth_gloss.png" id="tex_7"]
-[ext_resource type="Texture2D" uid="uid://bkqjsfnyjnr0c" path="res://assets/ui/kenney/buttons/blue_button_rectangle_gradient.png" id="tex_8"]
-[ext_resource type="Texture2D" uid="uid://2pt15m22sm1y" path="res://assets/ui/kenney/buttons/green_button_rectangle_depth_gradient.png" id="tex_9"]
-[ext_resource type="Texture2D" uid="uid://bj70s57lbrg8j" path="res://assets/ui/kenney/buttons/green_button_rectangle_depth_gloss.png" id="tex_10"]
-[ext_resource type="Texture2D" uid="uid://u4o1s7jl1w05" path="res://assets/ui/kenney/buttons/green_button_rectangle_gradient.png" id="tex_11"]
-[ext_resource type="Texture2D" uid="uid://cb6f4kvqg1clu" path="res://assets/ui/kenney/buttons/red_button_rectangle_depth_gradient.png" id="tex_12"]
-[ext_resource type="Texture2D" uid="uid://coegliauup1ac" path="res://assets/ui/kenney/buttons/red_button_rectangle_depth_gloss.png" id="tex_13"]
-[ext_resource type="Texture2D" uid="uid://cqrkkbq3hh7bw" path="res://assets/ui/kenney/buttons/red_button_rectangle_gradient.png" id="tex_14"]
-[ext_resource type="Texture2D" uid="uid://bm2hqjubfl1l6" path="res://assets/ui/kenney/buttons/yellow_button_rectangle_depth_gradient.png" id="tex_15"]
-[ext_resource type="Texture2D" uid="uid://qsnnf0fh1s4w" path="res://assets/ui/kenney/buttons/yellow_button_rectangle_depth_gloss.png" id="tex_16"]
-[ext_resource type="Texture2D" uid="uid://tu0wk852q36j" path="res://assets/ui/kenney/buttons/yellow_button_rectangle_gradient.png" id="tex_17"]
-[ext_resource type="Texture2D" uid="uid://ce5vrwxrytd2t" path="res://assets/ui/kenney/buttons/grey_button_rectangle_depth_flat.png" id="tex_18"]
-[ext_resource type="Texture2D" uid="uid://dvvhn6pdeuqnb" path="res://assets/ui/kenney/sliders/grabber.png" id="tex_19"]
+[ext_resource type="FontFile" path="res://assets/fonts/Nunito-Variable.ttf" id="1_nunito"]
+[ext_resource type="FontFile" path="res://assets/fonts/Cinzel-Variable.ttf" id="2_cinzel"]
+[ext_resource type="Texture2D" path="res://assets/ui/kenney/adventure/panel_brown.png" id="tex_0"]
+[ext_resource type="Texture2D" path="res://assets/ui/kenney/adventure/panel_brown_corners.png" id="tex_1"]
+[ext_resource type="Texture2D" path="res://assets/ui/kenney/adventure/button_brown.png" id="tex_2"]
+[ext_resource type="Texture2D" path="res://assets/ui/kenney/adventure/button_grey.png" id="tex_3"]
+[ext_resource type="Texture2D" path="res://assets/ui/kenney/adventure/button_red.png" id="tex_4"]
+[ext_resource type="Texture2D" path="res://assets/ui/kenney/sliders/grabber.png" id="tex_5"]
 
-[sub_resource type="FontVariation" id="Font_Future"]
-fallbacks = Array[Font]([ExtResource("4_geez")])
-base_font = ExtResource("3_future")
+[sub_resource type="FontVariation" id="Font_Body"]
+base_font = ExtResource("1_nunito")
+variation_opentype = {2003265652: 600}
 
-[sub_resource type="StyleBoxTexture" id="BtnDisabled"]
-content_margin_left = 30.0
-content_margin_top = 10.0
-content_margin_right = 30.0
-content_margin_bottom = 16.0
-texture = ExtResource("tex_18")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 12.0
+[sub_resource type="FontVariation" id="Font_Bold"]
+base_font = ExtResource("1_nunito")
+variation_opentype = {2003265652: 800}
+
+[sub_resource type="FontVariation" id="Font_Title"]
+base_font = ExtResource("2_cinzel")
+variation_opentype = {2003265652: 800}
+
+[sub_resource type="FontVariation" id="Font_Button"]
+base_font = ExtResource("2_cinzel")
+variation_opentype = {2003265652: 700}
+
+[sub_resource type="StyleBoxTexture" id="Panel"]
+texture = ExtResource("tex_0")
+texture_margin_left = 24
+texture_margin_top = 24
+texture_margin_right = 24
+texture_margin_bottom = 24
+content_margin_left = 32
+content_margin_top = 28
+content_margin_right = 32
+content_margin_bottom = 28
+
+[sub_resource type="StyleBoxTexture" id="HudPanel"]
+texture = ExtResource("tex_0")
+texture_margin_left = 24
+texture_margin_top = 24
+texture_margin_right = 24
+texture_margin_bottom = 24
+content_margin_left = 24
+content_margin_top = 14
+content_margin_right = 24
+content_margin_bottom = 14
+
+[sub_resource type="StyleBoxTexture" id="Card"]
+texture = ExtResource("tex_1")
+texture_margin_left = 30
+texture_margin_top = 30
+texture_margin_right = 30
+texture_margin_bottom = 30
+content_margin_left = 38
+content_margin_top = 30
+content_margin_right = 38
+content_margin_bottom = 34
+
+[sub_resource type="StyleBoxTexture" id="Btn_brown"]
+texture = ExtResource("tex_2")
+texture_margin_left = 16
+texture_margin_top = 16
+texture_margin_right = 16
+texture_margin_bottom = 16
+content_margin_left = 32
+content_margin_top = 12
+content_margin_right = 32
+content_margin_bottom = 16
+
+[sub_resource type="StyleBoxTexture" id="BtnHover_brown"]
+texture = ExtResource("tex_2")
+texture_margin_left = 16
+texture_margin_top = 16
+texture_margin_right = 16
+texture_margin_bottom = 16
+content_margin_left = 32
+content_margin_top = 12
+content_margin_right = 32
+content_margin_bottom = 16
+modulate_color = Color(1.14, 1.1, 1.0, 1)
+
+[sub_resource type="StyleBoxTexture" id="BtnDown_brown"]
+texture = ExtResource("tex_2")
+texture_margin_left = 16
+texture_margin_top = 16
+texture_margin_right = 16
+texture_margin_bottom = 16
+content_margin_left = 32
+content_margin_top = 16
+content_margin_right = 32
+content_margin_bottom = 12
+modulate_color = Color(0.8, 0.78, 0.76, 1)
+
+[sub_resource type="StyleBoxTexture" id="BtnDisabled_brown"]
+texture = ExtResource("tex_2")
+texture_margin_left = 16
+texture_margin_top = 16
+texture_margin_right = 16
+texture_margin_bottom = 16
+content_margin_left = 32
+content_margin_top = 12
+content_margin_right = 32
+content_margin_bottom = 16
+modulate_color = Color(0.62, 0.62, 0.62, 0.85)
+
+[sub_resource type="StyleBoxTexture" id="Btn_grey"]
+texture = ExtResource("tex_3")
+texture_margin_left = 16
+texture_margin_top = 16
+texture_margin_right = 16
+texture_margin_bottom = 16
+content_margin_left = 32
+content_margin_top = 12
+content_margin_right = 32
+content_margin_bottom = 16
+
+[sub_resource type="StyleBoxTexture" id="BtnHover_grey"]
+texture = ExtResource("tex_3")
+texture_margin_left = 16
+texture_margin_top = 16
+texture_margin_right = 16
+texture_margin_bottom = 16
+content_margin_left = 32
+content_margin_top = 12
+content_margin_right = 32
+content_margin_bottom = 16
+modulate_color = Color(1.14, 1.1, 1.0, 1)
+
+[sub_resource type="StyleBoxTexture" id="BtnDown_grey"]
+texture = ExtResource("tex_3")
+texture_margin_left = 16
+texture_margin_top = 16
+texture_margin_right = 16
+texture_margin_bottom = 16
+content_margin_left = 32
+content_margin_top = 16
+content_margin_right = 32
+content_margin_bottom = 12
+modulate_color = Color(0.8, 0.78, 0.76, 1)
+
+[sub_resource type="StyleBoxTexture" id="BtnDisabled_grey"]
+texture = ExtResource("tex_3")
+texture_margin_left = 16
+texture_margin_top = 16
+texture_margin_right = 16
+texture_margin_bottom = 16
+content_margin_left = 32
+content_margin_top = 12
+content_margin_right = 32
+content_margin_bottom = 16
+modulate_color = Color(0.62, 0.62, 0.62, 0.85)
+
+[sub_resource type="StyleBoxTexture" id="Btn_red"]
+texture = ExtResource("tex_4")
+texture_margin_left = 16
+texture_margin_top = 16
+texture_margin_right = 16
+texture_margin_bottom = 16
+content_margin_left = 32
+content_margin_top = 12
+content_margin_right = 32
+content_margin_bottom = 16
+
+[sub_resource type="StyleBoxTexture" id="BtnHover_red"]
+texture = ExtResource("tex_4")
+texture_margin_left = 16
+texture_margin_top = 16
+texture_margin_right = 16
+texture_margin_bottom = 16
+content_margin_left = 32
+content_margin_top = 12
+content_margin_right = 32
+content_margin_bottom = 16
+modulate_color = Color(1.14, 1.1, 1.0, 1)
+
+[sub_resource type="StyleBoxTexture" id="BtnDown_red"]
+texture = ExtResource("tex_4")
+texture_margin_left = 16
+texture_margin_top = 16
+texture_margin_right = 16
+texture_margin_bottom = 16
+content_margin_left = 32
+content_margin_top = 16
+content_margin_right = 32
+content_margin_bottom = 12
+modulate_color = Color(0.8, 0.78, 0.76, 1)
+
+[sub_resource type="StyleBoxTexture" id="BtnDisabled_red"]
+texture = ExtResource("tex_4")
+texture_margin_left = 16
+texture_margin_top = 16
+texture_margin_right = 16
+texture_margin_bottom = 16
+content_margin_left = 32
+content_margin_top = 12
+content_margin_right = 32
+content_margin_bottom = 16
+modulate_color = Color(0.62, 0.62, 0.62, 0.85)
+
+[sub_resource type="StyleBoxTexture" id="Ribbon"]
+texture = ExtResource("tex_4")
+texture_margin_left = 16
+texture_margin_top = 16
+texture_margin_right = 16
+texture_margin_bottom = 16
+content_margin_left = 24
+content_margin_top = 4
+content_margin_right = 24
+content_margin_bottom = 8
+
+[sub_resource type="StyleBoxFlat" id="SliderTrack"]
+bg_color = Color(0.43, 0.29, 0.15, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.25, 0.15, 0.07, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+content_margin_top = 9
+content_margin_bottom = 9
+
+[sub_resource type="StyleBoxFlat" id="SliderFill"]
+bg_color = Color(0.95, 0.64, 0.2, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.6, 0.33, 0.08, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+content_margin_top = 9
+content_margin_bottom = 9
 
 [sub_resource type="StyleBoxFlat" id="Focus"]
 bg_color = Color(1, 1, 1, 0)
@@ -47,356 +244,122 @@ border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(1, 0.86, 0.35, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-expand_margin_left = 3.0
-expand_margin_top = 3.0
-expand_margin_right = 3.0
-expand_margin_bottom = 3.0
-
-[sub_resource type="StyleBoxTexture" id="BtnHover_blue"]
-content_margin_left = 30.0
-content_margin_top = 10.0
-content_margin_right = 30.0
-content_margin_bottom = 16.0
-texture = ExtResource("tex_7")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="Btn_blue"]
-content_margin_left = 30.0
-content_margin_top = 10.0
-content_margin_right = 30.0
-content_margin_bottom = 16.0
-texture = ExtResource("tex_6")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="BtnDown_blue"]
-content_margin_left = 30.0
-content_margin_top = 16.0
-content_margin_right = 30.0
-content_margin_bottom = 10.0
-texture = ExtResource("tex_8")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 10.0
-
-[sub_resource type="StyleBoxTexture" id="Card_blue"]
-content_margin_left = 26.0
-content_margin_top = 0.0
-content_margin_right = 26.0
-content_margin_bottom = 24.0
-texture = ExtResource("tex_2")
-texture_margin_left = 10.0
-texture_margin_top = 34.0
-texture_margin_right = 10.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="Card_green"]
-content_margin_left = 26.0
-content_margin_top = 0.0
-content_margin_right = 26.0
-content_margin_bottom = 24.0
-texture = ExtResource("tex_5")
-texture_margin_left = 10.0
-texture_margin_top = 34.0
-texture_margin_right = 10.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="Card_red"]
-content_margin_left = 26.0
-content_margin_top = 0.0
-content_margin_right = 26.0
-content_margin_bottom = 24.0
-texture = ExtResource("tex_4")
-texture_margin_left = 10.0
-texture_margin_top = 34.0
-texture_margin_right = 10.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="Card_yellow"]
-content_margin_left = 26.0
-content_margin_top = 0.0
-content_margin_right = 26.0
-content_margin_bottom = 24.0
-texture = ExtResource("tex_3")
-texture_margin_left = 10.0
-texture_margin_top = 34.0
-texture_margin_right = 10.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="FontVariation" id="Font_Bold"]
-fallbacks = Array[Font]([ExtResource("4_geez")])
-base_font = ExtResource("2_bold")
-
-[sub_resource type="StyleBoxTexture" id="BtnHover_green"]
-content_margin_left = 30.0
-content_margin_top = 10.0
-content_margin_right = 30.0
-content_margin_bottom = 16.0
-texture = ExtResource("tex_10")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="Btn_green"]
-content_margin_left = 30.0
-content_margin_top = 10.0
-content_margin_right = 30.0
-content_margin_bottom = 16.0
-texture = ExtResource("tex_9")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="BtnDown_green"]
-content_margin_left = 30.0
-content_margin_top = 16.0
-content_margin_right = 30.0
-content_margin_bottom = 10.0
-texture = ExtResource("tex_11")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 10.0
+border_color = Color(1, 0.8, 0.25, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 3
+expand_margin_top = 3
+expand_margin_right = 3
+expand_margin_bottom = 3
 
 [sub_resource type="StyleBoxLine" id="Line"]
-color = Color(0.5, 0.56, 0.72, 0.8)
-thickness = 2
-
-[sub_resource type="StyleBoxFlat" id="SliderFill"]
-content_margin_top = 8.0
-content_margin_bottom = 8.0
-bg_color = Color(0.13, 0.64, 0.88, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.05, 0.4, 0.62, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="StyleBoxFlat" id="SliderTrack"]
-content_margin_top = 8.0
-content_margin_bottom = 8.0
-bg_color = Color(0.36, 0.43, 0.62, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.2, 0.25, 0.42, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-
-[sub_resource type="FontVariation" id="Font_Body"]
-fallbacks = Array[Font]([ExtResource("4_geez")])
-base_font = ExtResource("1_body")
-
-[sub_resource type="StyleBoxTexture" id="HudPanel"]
-content_margin_left = 18.0
-content_margin_top = 10.0
-content_margin_right = 18.0
-content_margin_bottom = 10.0
-texture = ExtResource("tex_1")
-texture_margin_left = 12.0
-texture_margin_top = 12.0
-texture_margin_right = 12.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="FontVariation" id="Font_FutureNarrow"]
-fallbacks = Array[Font]([ExtResource("4_geez")])
-base_font = ExtResource("5_narrow")
-
-[sub_resource type="StyleBoxTexture" id="Panel"]
-content_margin_left = 26.0
-content_margin_top = 22.0
-content_margin_right = 26.0
-content_margin_bottom = 22.0
-texture = ExtResource("tex_0")
-texture_margin_left = 12.0
-texture_margin_top = 12.0
-texture_margin_right = 12.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="BtnHover_red"]
-content_margin_left = 30.0
-content_margin_top = 10.0
-content_margin_right = 30.0
-content_margin_bottom = 16.0
-texture = ExtResource("tex_13")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="Btn_red"]
-content_margin_left = 30.0
-content_margin_top = 10.0
-content_margin_right = 30.0
-content_margin_bottom = 16.0
-texture = ExtResource("tex_12")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="BtnDown_red"]
-content_margin_left = 30.0
-content_margin_top = 16.0
-content_margin_right = 30.0
-content_margin_bottom = 10.0
-texture = ExtResource("tex_14")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 10.0
-
-[sub_resource type="StyleBoxTexture" id="BtnHover_yellow"]
-content_margin_left = 30.0
-content_margin_top = 10.0
-content_margin_right = 30.0
-content_margin_bottom = 16.0
-texture = ExtResource("tex_16")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="Btn_yellow"]
-content_margin_left = 30.0
-content_margin_top = 10.0
-content_margin_right = 30.0
-content_margin_bottom = 16.0
-texture = ExtResource("tex_15")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 12.0
-
-[sub_resource type="StyleBoxTexture" id="BtnDown_yellow"]
-content_margin_left = 30.0
-content_margin_top = 16.0
-content_margin_right = 30.0
-content_margin_bottom = 10.0
-texture = ExtResource("tex_17")
-texture_margin_left = 10.0
-texture_margin_top = 10.0
-texture_margin_right = 10.0
-texture_margin_bottom = 10.0
+color = Color(0.45, 0.3, 0.15, 0.55)
+thickness = 3
 
 [resource]
 default_font = SubResource("Font_Body")
 default_font_size = 24
-Button/colors/font_color = Color(1, 1, 1, 1)
-Button/colors/font_disabled_color = Color(0.75, 0.78, 0.85, 1)
-Button/colors/font_focus_color = Color(1, 1, 1, 1)
-Button/colors/font_hover_color = Color(1, 1, 0.85, 1)
-Button/colors/font_outline_color = Color(0.04, 0.18, 0.3, 1)
-Button/colors/font_pressed_color = Color(0.9, 0.95, 1, 1)
-Button/constants/outline_size = 5
-Button/font_sizes/font_size = 26
-Button/fonts/font = SubResource("Font_Future")
-Button/styles/disabled = SubResource("BtnDisabled")
-Button/styles/focus = SubResource("Focus")
-Button/styles/hover = SubResource("BtnHover_blue")
-Button/styles/normal = SubResource("Btn_blue")
-Button/styles/pressed = SubResource("BtnDown_blue")
-CardBlue/base_type = &"PanelContainer"
-CardBlue/styles/panel = SubResource("Card_blue")
-CardGreen/base_type = &"PanelContainer"
-CardGreen/styles/panel = SubResource("Card_green")
-CardRed/base_type = &"PanelContainer"
-CardRed/styles/panel = SubResource("Card_red")
-CardYellow/base_type = &"PanelContainer"
-CardYellow/styles/panel = SubResource("Card_yellow")
-FloatLabel/base_type = &"Label"
-FloatLabel/colors/font_color = Color(1, 1, 1, 1)
-FloatLabel/colors/font_outline_color = Color(0.03, 0.06, 0.15, 1)
-FloatLabel/constants/outline_size = 6
-FloatLabel/font_sizes/font_size = 28
-FloatLabel/fonts/font = SubResource("Font_Bold")
-GreenButton/base_type = &"Button"
-GreenButton/styles/hover = SubResource("BtnHover_green")
-GreenButton/styles/normal = SubResource("Btn_green")
-GreenButton/styles/pressed = SubResource("BtnDown_green")
-GridContainer/constants/h_separation = 28
-GridContainer/constants/v_separation = 8
-HBoxContainer/constants/separation = 12
-HSeparator/constants/separation = 14
-HSeparator/styles/separator = SubResource("Line")
-HSlider/constants/grabber_offset = 0
-HSlider/icons/grabber = ExtResource("tex_19")
-HSlider/icons/grabber_highlight = ExtResource("tex_19")
-HSlider/styles/grabber_area = SubResource("SliderFill")
-HSlider/styles/grabber_area_highlight = SubResource("SliderFill")
-HSlider/styles/slider = SubResource("SliderTrack")
-HeaderLabel/base_type = &"Label"
-HeaderLabel/colors/font_color = Color(1, 1, 1, 1)
-HeaderLabel/colors/font_outline_color = Color(0.04, 0.2, 0.32, 1)
-HeaderLabel/constants/outline_size = 5
-HeaderLabel/font_sizes/font_size = 26
-HeaderLabel/fonts/font = SubResource("Font_Future")
-HintLabel/base_type = &"Label"
-HintLabel/colors/font_color = Color(0.3, 0.36, 0.52, 1)
-HintLabel/colors/font_outline_color = Color(0, 0, 0, 0)
-HintLabel/constants/outline_size = 0
-HintLabel/font_sizes/font_size = 22
-HintLabel/fonts/font = SubResource("Font_Body")
-HudPanel/base_type = &"PanelContainer"
-HudPanel/styles/panel = SubResource("HudPanel")
-Label/colors/font_color = Color(0.1, 0.14, 0.28, 1)
+
+Label/colors/font_color = Color(0.28, 0.17, 0.08, 1)
 Label/colors/font_outline_color = Color(0, 0, 0, 0)
 Label/constants/outline_size = 0
 Label/font_sizes/font_size = 24
 Label/fonts/font = SubResource("Font_Body")
-NumberLabel/base_type = &"Label"
-NumberLabel/colors/font_color = Color(0.1, 0.14, 0.28, 1)
-NumberLabel/colors/font_outline_color = Color(0, 0, 0, 0)
-NumberLabel/constants/outline_size = 0
-NumberLabel/font_sizes/font_size = 34
-NumberLabel/fonts/font = SubResource("Font_FutureNarrow")
-Panel/styles/panel = SubResource("Panel")
-PanelContainer/styles/panel = SubResource("Panel")
-RedButton/base_type = &"Button"
-RedButton/styles/hover = SubResource("BtnHover_red")
-RedButton/styles/normal = SubResource("Btn_red")
-RedButton/styles/pressed = SubResource("BtnDown_red")
+
+TitleLabel/base_type = &"Label"
+TitleLabel/colors/font_color = Color(1, 0.93, 0.74, 1)
+TitleLabel/colors/font_outline_color = Color(0.32, 0.17, 0.06, 1)
+TitleLabel/constants/outline_size = 14
+TitleLabel/font_sizes/font_size = 78
+TitleLabel/fonts/font = SubResource("Font_Title")
+
+HeaderLabel/base_type = &"Label"
+HeaderLabel/colors/font_color = Color(1, 1, 1, 1)
+HeaderLabel/colors/font_outline_color = Color(0.45, 0.1, 0.1, 1)
+HeaderLabel/constants/outline_size = 6
+HeaderLabel/font_sizes/font_size = 28
+HeaderLabel/fonts/font = SubResource("Font_Button")
+
+HeaderLabel/styles/normal = SubResource("Ribbon")
+
+FloatLabel/base_type = &"Label"
+FloatLabel/colors/font_color = Color(1, 1, 1, 1)
+FloatLabel/colors/font_outline_color = Color(0.06, 0.04, 0.03, 1)
+FloatLabel/constants/outline_size = 7
+FloatLabel/font_sizes/font_size = 28
+FloatLabel/fonts/font = SubResource("Font_Bold")
+
 StatLabel/base_type = &"Label"
-StatLabel/colors/font_color = Color(0.1, 0.14, 0.28, 1)
+StatLabel/colors/font_color = Color(0.28, 0.17, 0.08, 1)
 StatLabel/colors/font_outline_color = Color(0, 0, 0, 0)
 StatLabel/constants/outline_size = 0
 StatLabel/font_sizes/font_size = 30
 StatLabel/fonts/font = SubResource("Font_Bold")
-SubtitleLabel/base_type = &"Label"
-SubtitleLabel/colors/font_color = Color(0.88, 0.95, 1, 1)
-SubtitleLabel/colors/font_outline_color = Color(0.03, 0.06, 0.15, 1)
-SubtitleLabel/constants/outline_size = 7
-SubtitleLabel/font_sizes/font_size = 36
-SubtitleLabel/fonts/font = SubResource("Font_Bold")
-TitleLabel/base_type = &"Label"
-TitleLabel/colors/font_color = Color(1, 0.83, 0.3, 1)
-TitleLabel/colors/font_outline_color = Color(0.25, 0.1, 0.02, 1)
-TitleLabel/constants/outline_size = 12
-TitleLabel/font_sizes/font_size = 62
-TitleLabel/fonts/font = SubResource("Font_Future")
+
+HintLabel/base_type = &"Label"
+HintLabel/colors/font_color = Color(0.5, 0.35, 0.2, 1)
+HintLabel/colors/font_outline_color = Color(0, 0, 0, 0)
+HintLabel/constants/outline_size = 0
+HintLabel/font_sizes/font_size = 22
+HintLabel/fonts/font = SubResource("Font_Body")
+
+NumberLabel/base_type = &"Label"
+NumberLabel/colors/font_color = Color(0.28, 0.17, 0.08, 1)
+NumberLabel/colors/font_outline_color = Color(0, 0, 0, 0)
+NumberLabel/constants/outline_size = 0
+NumberLabel/font_sizes/font_size = 32
+NumberLabel/fonts/font = SubResource("Font_Button")
+
+Button/colors/font_color = Color(0.28, 0.17, 0.08, 1)
+Button/colors/font_hover_color = Color(0.42, 0.2, 0.04, 1)
+Button/colors/font_pressed_color = Color(0.2, 0.11, 0.04, 1)
+Button/colors/font_focus_color = Color(0.28, 0.17, 0.08, 1)
+Button/colors/font_disabled_color = Color(0.45, 0.4, 0.35, 1)
+Button/colors/font_outline_color = Color(0, 0, 0, 0)
+Button/constants/outline_size = 0
+Button/font_sizes/font_size = 28
+Button/fonts/font = SubResource("Font_Button")
+Button/styles/normal = SubResource("Btn_brown")
+Button/styles/hover = SubResource("BtnHover_brown")
+Button/styles/pressed = SubResource("BtnDown_brown")
+Button/styles/disabled = SubResource("BtnDisabled_brown")
+Button/styles/focus = SubResource("Focus")
+
+GreyButton/base_type = &"Button"
+GreyButton/styles/normal = SubResource("Btn_grey")
+GreyButton/styles/hover = SubResource("BtnHover_grey")
+GreyButton/styles/pressed = SubResource("BtnDown_grey")
+GreyButton/styles/disabled = SubResource("BtnDisabled_grey")
+
+RedButton/base_type = &"Button"
+RedButton/colors/font_color = Color(1, 1, 1, 1)
+RedButton/colors/font_hover_color = Color(1, 0.95, 0.8, 1)
+RedButton/colors/font_pressed_color = Color(0.95, 0.85, 0.85, 1)
+RedButton/colors/font_focus_color = Color(1, 1, 1, 1)
+RedButton/colors/font_outline_color = Color(0.45, 0.1, 0.1, 1)
+RedButton/constants/outline_size = 6
+RedButton/styles/normal = SubResource("Btn_red")
+RedButton/styles/hover = SubResource("BtnHover_red")
+RedButton/styles/pressed = SubResource("BtnDown_red")
+RedButton/styles/disabled = SubResource("BtnDisabled_red")
+
+PanelContainer/styles/panel = SubResource("Panel")
+HudPanel/base_type = &"PanelContainer"
+HudPanel/styles/panel = SubResource("HudPanel")
+CardPanel/base_type = &"PanelContainer"
+CardPanel/styles/panel = SubResource("Card")
+
+HSlider/styles/slider = SubResource("SliderTrack")
+HSlider/styles/grabber_area = SubResource("SliderFill")
+HSlider/styles/grabber_area_highlight = SubResource("SliderFill")
+HSlider/icons/grabber = ExtResource("tex_5")
+HSlider/icons/grabber_highlight = ExtResource("tex_5")
+
+HSeparator/styles/separator = SubResource("Line")
+HSeparator/constants/separation = 16
 VBoxContainer/constants/separation = 12
-VSeparator/styles/separator = SubResource("Line")
-YellowButton/base_type = &"Button"
-YellowButton/styles/hover = SubResource("BtnHover_yellow")
-YellowButton/styles/normal = SubResource("Btn_yellow")
-YellowButton/styles/pressed = SubResource("BtnDown_yellow")
+HBoxContainer/constants/separation = 12
+GridContainer/constants/h_separation = 28
+GridContainer/constants/v_separation = 8

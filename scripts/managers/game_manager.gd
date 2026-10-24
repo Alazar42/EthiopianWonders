@@ -23,6 +23,9 @@ extends Node3D
 ## Rocks are only locked on to when they are this close.
 @export var obstacle_lock_range: float = 45.0
 
+## The ship stops while a discovery popup is open so it can be read; off for long automated runs.
+@export var pause_on_discovery: bool = true
+
 var state: GameState.State = GameState.State.MAIN_MENU
 var _state_before_pause: GameState.State = GameState.State.RUNNING
 var _mood_tween: Tween
@@ -75,6 +78,7 @@ func start_new_run() -> void:
 	pause_menu.hide_pause()
 	game_over_screen.hide_screen()
 	discovery_popup.hide_popup(false)
+	UiCursor.set_crosshair()
 	game_hud.visible = true
 	game_hud.update_wonders(0)
 	game_hud.update_distance(0.0)
@@ -237,8 +241,10 @@ func _on_wonder_discovered(landmark: LandmarkData, total: int) -> void:
 	game_hud.update_wonders(total)
 	discovery_popup.show_discovery(landmark, total)
 	GameSound.play(&"discover")
-	if state == GameState.State.RUNNING:
+	if state == GameState.State.RUNNING and pause_on_discovery:
 		set_state(GameState.State.DISCOVERY_FEEDBACK)
+		GameSound.set_engine(false)
+		UiCursor.set_arrow()
 
 func _on_wonder_missed(_landmark: LandmarkData, remaining: float) -> void:
 	GameSound.play(&"heart_lost")
@@ -257,6 +263,8 @@ func _hearts_text(hearts: float) -> String:
 func _on_popup_closed() -> void:
 	if state == GameState.State.DISCOVERY_FEEDBACK:
 		set_state(GameState.State.RUNNING)
+		GameSound.set_engine(true)
+		UiCursor.set_crosshair()
 
 ## Tints the ambient light and fog to a world's mood, instantly or as a slow blend.
 func apply_mood(planet: PlanetController, instant: bool = false) -> void:

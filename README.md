@@ -28,14 +28,16 @@ The mouse never moves the camera or the runner; it only clicks targets and menus
 
 ## Look and sound
 
-The interface uses **Kenney's UI Pack and UI Pack: Sci-fi** (CC0, from [kenney.nl](https://kenney.nl)): bolted silver panels, blue, yellow and red header cards, glossy blue, green and red buttons, the star, the crosshair and arrow cursors, the interface click sounds and the **Kenney Future** font. They are fetched by `python tools/fetch_kenney_ui.py` and styled as a normal Godot theme (`assets/ui/game_theme.tres`, built by `tools/make_ui_assets.py`).
+The interface uses **Kenney's UI Pack: Adventure** (CC0, from [kenney.nl](https://kenney.nl)): parchment panels, wood-framed buttons and red ribbon headers, plus the star, the crosshair and arrow cursors and the click sounds from Kenney's other UI packs. Titles and buttons are set in **Cinzel** and reading text in **Nunito** (both SIL Open Font License, in `assets/fonts`). Fetch them with `python tools/fetch_kenney_ui.py` and `python tools/fetch_fonts.py`; `tools/make_ui_assets.py` writes the Godot theme (`assets/ui/game_theme.tres`).
 
-Colour language: blue = information and menus, yellow = achievements, red = game over and danger, green = go. Text is Kenney Future for titles and buttons, **Rajdhani** for reading text, and **Noto Sans Ethiopic** so Ge'ez script displays (the menu subtitle reads "የኢትዮጵያ ድንቆች"). Rajdhani and Noto are SIL Open Font License; licences are in `assets/fonts`.
+The game opens with two splash screens (`scenes/menus/splash.tscn`): the Techawach Games logo on white, then the Melkam Studios logo full screen. Any key or click skips. The main menu is deliberately minimal: the title, Play and Quit.
+
+When a wonder is discovered the ship stops and the achievement card stays up until the player closes it (Continue button, Enter, Space or Esc), so it can be read.
 
 Everything moves. All animation lives in one small library, `scripts/ui/ui_motion.gd`: springs, pops, slides, punches and count-ups built on tweens that keep running while the game is paused, always end on an exact rest state, and replace each other cleanly when re-triggered. In the game:
 
 - every button springs up on hover and squashes on press (the `UiHooks` autoload hooks them all)
-- the menu title words pop in one after another, then the mission card slides in, then the controls bar rises
+- the menu title words pop in one after another, then the buttons rise
 - the HUD slides in and its hearts pop in one by one; a lost heart punches and flashes red; the wonder counter ticks up and its star pulses
 - toasts and the achievement banner slide in and out, and the banner's star spins in
 - the pause card pops in and its buttons follow; the game-over card pops in and each stat counts up in turn

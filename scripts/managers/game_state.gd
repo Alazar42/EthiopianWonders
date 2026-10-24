@@ -22,9 +22,9 @@ const TRANSITIONS: Dictionary = {
 static func can_transition(from: State, to: State) -> bool:
 	return to in TRANSITIONS[from]
 
-## The world keeps moving while a discovery popup is on screen.
+## The world only moves while running; it stands still while a discovery popup is being read.
 static func is_playing(state: State) -> bool:
-	return state == State.RUNNING or state == State.DISCOVERY_FEEDBACK
+	return state == State.RUNNING
 
 static func state_name(state: State) -> String:
 	return State.keys()[state]

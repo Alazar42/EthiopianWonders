@@ -5,6 +5,7 @@ extends SceneTree
 
 const DT: float = 1.0 / 60.0
 const MENU_SCENE: String = "res://scenes/menus/main_menu.tscn"
+const SPLASH_SCENE: String = "res://scenes/menus/splash.tscn"
 const WORLD_SCENE: String = "res://scenes/game/game_world.tscn"
 
 var _passed: int = 0
@@ -56,6 +57,7 @@ func _new_world(with_obstacles: bool = false) -> GameManager:
 	await process_frame
 	# Rocks are opt-in here, so long autoplay runs are not interrupted by crashes.
 	world.route.obstacles_enabled = with_obstacles
+	world.pause_on_discovery = false # long autoplay runs must not stall on a popup
 	world.start_new_run()
 	return world
 
@@ -82,8 +84,21 @@ func _radial_height(world: GameManager) -> float:
 
 func _test_menu_and_loading() -> void:
 	print("menu and loading")
-	check("project launches into the main menu",
-		ProjectSettings.get_setting("application/run/main_scene") == MENU_SCENE)
+	check("project launches into the splash screens",
+		ProjectSettings.get_setting("application/run/main_scene") == SPLASH_SCENE)
+	var splash := (load(SPLASH_SCENE) as PackedScene).instantiate() as Splash
+	root.add_child(splash)
+	await process_frame
+	var logo := splash.get_node("%Logo") as TextureRect
+	check("the first splash is Techawach on white", splash.index == 0 and logo.texture.resource_path.ends_with("techawach.jpg")
+		and splash.get_node("%Background").color == Color.WHITE)
+	splash.skip()
+	check("the second splash is Melkam, full screen", splash.index == 1 and logo.texture.resource_path.ends_with("melkam.jpg")
+		and logo.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_COVERED)
+	check("the splash scene leads to the main menu", splash.next_scene == MENU_SCENE)
+	splash.set_process(false)
+	splash.queue_free()
+	await process_frame
 	var menu := (load(MENU_SCENE) as PackedScene).instantiate() as MainMenu
 	root.add_child(menu)
 	await process_frame
@@ -321,6 +336,7 @@ func _test_planet_transitions() -> void:
 func _test_clicking() -> void:
 	print("landmark clicking")
 	var world := await _new_world()
+	world.pause_on_discovery = true
 	var player := world.player
 	var target: LandmarkTarget = world.route.targets[0]
 	check("the first target is the tutorial wonder", target.landmark_data.id == "lalibela")
@@ -342,11 +358,15 @@ func _test_clicking() -> void:
 	check("second click does not award it again", not world.click_at(screen) and not target.attempt_interact(player.distance))
 	check("exactly one wonder is recorded", world.discovery_manager.discovered_wonders.size() == 1)
 	check("hearts are untouched by a discovery", world.discovery_manager.current_hearts == 3)
-	check("discovery enters the feedback state without pausing",
+	check("discovery enters the feedback state without pausing the tree",
 		world.state == GameState.State.DISCOVERY_FEEDBACK and not paused)
 	var distance_before: float = player.distance
+	_step(world, 1.0, false)
+	check("the ship stops while the popup is open", absf(player.distance - distance_before) < 0.001 and world.discovery_popup.is_open())
+	world.discovery_popup.hide_popup()
+	check("closing the popup lets the ship fly on", world.state == GameState.State.RUNNING)
 	_step(world, 0.5, false)
-	check("the run keeps going during discovery feedback", player.distance > distance_before + 1.0)
+	check("the ship moves again after the popup", player.distance > distance_before + 1.0)
 	await _free_world(world)
 
 ## Input events are given in window coordinates; convert from viewport coordinates.
@@ -618,6 +638,7 @@ func _test_obstacles() -> void:
 			if is_instance_valid(target) and target.is_active():
 				target.attempt_interact(world.player.distance)
 		_snap_to_lane(world, 0)
+	world.discovery_popup.hide_popup(false) # an open popup would take the Space press
 	_key(KEY_SPACE, true)
 	await process_frame
 	_key(KEY_SPACE, false)
@@ -667,8 +688,7 @@ func _test_theme_and_kenney_assets() -> void:
 	var theme := load("res://assets/ui/game_theme.tres") as Theme
 	var problems: Array[String] = []
 	var checked: int = 0
-	for theme_type in ["Button", "GreenButton", "RedButton", "YellowButton", "PanelContainer", "HudPanel",
-			"CardBlue", "CardYellow", "CardRed", "CardGreen"]:
+	for theme_type in ["Button", "GreyButton", "RedButton", "PanelContainer", "HudPanel", "CardPanel", "HeaderLabel"]:
 		for style_name in ["normal", "hover", "pressed", "disabled", "panel"]:
 			if not theme.has_stylebox(style_name, theme_type):
 				continue
@@ -682,22 +702,28 @@ func _test_theme_and_kenney_assets() -> void:
 				elif sb.texture_margin_left + sb.texture_margin_right >= texture.get_width() \
 						or sb.texture_margin_top + sb.texture_margin_bottom >= texture.get_height() + 1:
 					problems.append("%s/%s margins exceed the texture" % [theme_type, style_name])
-	check("buttons, panels and cards are Kenney 9-slice textures", checked >= 18 and problems.is_empty(), "%d checked, %s" % [checked, str(problems)])
+	check("buttons, panels and ribbons are Kenney Adventure 9-slice textures", checked >= 14 and problems.is_empty(), "%d checked, %s" % [checked, str(problems)])
 	var variations: Array[String] = []
-	for variation in ["TitleLabel", "HeaderLabel", "FloatLabel", "SubtitleLabel", "StatLabel", "HintLabel", "NumberLabel",
-			"GreenButton", "RedButton", "YellowButton", "HudPanel", "CardBlue", "CardYellow", "CardRed", "CardGreen"]:
+	for variation in ["TitleLabel", "HeaderLabel", "FloatLabel", "StatLabel", "HintLabel", "NumberLabel",
+			"GreyButton", "RedButton", "HudPanel", "CardPanel"]:
 		if theme.get_type_variation_base(variation) == &"":
 			variations.append(variation)
 	check("every theme variation the screens use exists", variations.is_empty(), str(variations))
 	var title_font := theme.get_font("font", "TitleLabel") as FontVariation
 	var button_font := theme.get_font("font", "Button") as FontVariation
-	check("titles and buttons use Kenney Future", title_font != null and title_font.base_font.resource_path.ends_with("KenneyFuture.ttf") 		and button_font != null and button_font.base_font.resource_path.ends_with("KenneyFuture.ttf"))
+	check("titles and buttons use Cinzel", title_font != null and title_font.base_font.resource_path.ends_with("Cinzel-Variable.ttf")
+		and button_font != null and button_font.base_font.resource_path.ends_with("Cinzel-Variable.ttf"))
+	var body_font := theme.default_font as FontVariation
+	check("reading text uses Nunito", body_font != null and body_font.base_font.resource_path.ends_with("Nunito-Variable.ttf"))
+	check("no Ethiopic font or Geez text is left", not FileAccess.file_exists("res://assets/fonts/NotoSansEthiopic-Variable.ttf")
+		and not (FileAccess.get_file_as_string("res://scenes/menus/main_menu.tscn") + FileAccess.get_file_as_string("res://scripts/ui/main_menu.gd")).contains("የ"))
 	var missing: Array[String] = []
-	for path in ["res://assets/ui/kenney/cards/blue_card.png", "res://assets/ui/kenney/cards/yellow_card.png",
-			"res://assets/ui/kenney/cards/red_card.png", "res://assets/ui/kenney/buttons/green_button_rectangle_depth_gradient.png",
+	for path in ["res://assets/ui/kenney/adventure/panel_brown.png", "res://assets/ui/kenney/adventure/panel_brown_corners.png",
+			"res://assets/ui/kenney/adventure/button_brown.png", "res://assets/ui/kenney/adventure/button_red.png",
+			"res://assets/ui/kenney/adventure/button_grey.png", "res://assets/ui/techawach.jpg", "res://assets/ui/melkam.jpg",
 			"res://assets/ui/kenney/icons/star.png", "res://assets/ui/kenney/cursors/crosshair.png",
 			"res://assets/ui/kenney/cursors/arrow.png", "res://assets/ui/kenney/License.txt",
-			"res://assets/fonts/KenneyFuture.ttf", "res://assets/audio/kenney_click.ogg", "res://assets/audio/kenney_tap.ogg"]:
+			"res://assets/fonts/Cinzel-Variable.ttf", "res://assets/fonts/Nunito-Variable.ttf", "res://assets/audio/kenney_click.ogg", "res://assets/audio/kenney_tap.ogg"]:
 		if not ResourceLoader.exists(path) and not FileAccess.file_exists(path):
 			missing.append(path)
 	check("the Kenney sprites, fonts, sounds and licence are in the project", missing.is_empty(), str(missing))
@@ -834,13 +860,12 @@ func _test_screen_animations() -> void:
 	var title := menu.get_node("%TitleTop") as Control
 	var card := menu.get_node("%MenuCard") as Control
 	check("the menu starts with its title and card hidden", title.modulate.a < 0.2 and card.modulate.a < 0.2)
-	var card_home: float = card.position.x
 	await create_timer(2.6).timeout
 	var all_visible: bool = true
-	for node_name in ["%TitleTop", "%TitleBottom", "%GeezSubtitle", "%Tagline", "%MenuCard", "%ControlsBar"]:
+	for node_name in ["%TitleTop", "%TitleBottom", "%MenuCard"]:
 		all_visible = all_visible and is_equal_approx((menu.get_node(node_name) as Control).modulate.a, 1.0)
 	check("the menu intro ends with every element fully visible", all_visible)
-	check("the mission card settles in place", absf(card.position.x - (card_home if card_home > 0.0 else 60.0)) < 70.0, str(card.position))
+	check("the menu is minimal: title, Play and Quit only", menu.get_node("Center").get_child_count() == 4 and not menu.has_node("%ControlsBar"))
 	check("the menu's buttons are clickable and focused", (menu.get_node("%PlayButton") as Button).has_focus())
 	menu.queue_free()
 	await process_frame
@@ -944,13 +969,10 @@ func _test_layout() -> void:
 		root.add_child(menu)
 		await create_timer(2.8).timeout
 		var card := menu.get_node("%MenuCard") as Control
-		var bar := menu.get_node("%ControlsBar") as Control
-		var title := menu.get_node("TitleBlock") as Control
-		for item in [["menu card", card], ["controls bar", bar], ["title", title]]:
+		var title := menu.get_node("Center") as Control
+		for item in [["menu card", card], ["title", title]]:
 			if not view.grow(2).encloses((item[1] as Control).get_global_rect()):
 				problems.append("%s %s outside %s at %s" % [item[0], str((item[1] as Control).get_global_rect()), str(view), str(window_size)])
-		if card.get_global_rect().intersects(bar.get_global_rect()):
-			problems.append("menu card overlaps the controls bar at %s" % str(window_size))
 		menu.queue_free()
 		await process_frame
 

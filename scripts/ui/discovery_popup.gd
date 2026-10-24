@@ -1,7 +1,7 @@
 class_name DiscoveryPopup
 extends Control
-## Achievement card. It slides in from the top with a spinning star and never pauses the run; it
-## closes itself or via the OK button.
+## Achievement card. It slides in from the top with a spinning star. The game stands still while it
+## is open; it stays until the player closes it (button, Enter, Space or Esc), so it can be read.
 
 signal popup_closed
 
@@ -14,14 +14,20 @@ const SLIDE_OFFSET: Vector2 = Vector2(0, -170)
 @onready var _fact_label: Label = %FactLabel
 @onready var _count_label: Label = %CountLabel
 @onready var _close_button: Button = %CloseButton
-@onready var _close_timer: Timer = %CloseTimer
 
 var _open: bool = false
 
 func _ready() -> void:
 	_panel.visible = false
 	_close_button.pressed.connect(hide_popup)
-	_close_timer.timeout.connect(hide_popup)
+	_close_button.focus_mode = Control.FOCUS_NONE
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not _open or not event.is_pressed() or event.is_echo():
+		return
+	if event.is_action("ui_accept") or event.is_action("pause_game") or event.is_action("fire"):
+		hide_popup()
+		get_viewport().set_input_as_handled()
 
 func is_open() -> bool:
 	return _open
@@ -33,7 +39,6 @@ func show_discovery(landmark: LandmarkData, total_discovered: int) -> void:
 	_count_label.text = "Wonders discovered: %d" % total_discovered
 	_open = true
 	UiMotion.slide_in(_panel, SLIDE_OFFSET, 0.0, 0.6)
-	_close_timer.start()
 	# The star spins in as the card lands.
 	await get_tree().process_frame
 	_star.pivot_offset = _star.size * 0.5
@@ -45,7 +50,6 @@ func show_discovery(landmark: LandmarkData, total_discovered: int) -> void:
 func hide_popup(notify: bool = true) -> void:
 	var was_open: bool = _open
 	_open = false
-	_close_timer.stop()
 	if notify and was_open:
 		UiMotion.slide_out(_panel, SLIDE_OFFSET, 0.35)
 		popup_closed.emit()
