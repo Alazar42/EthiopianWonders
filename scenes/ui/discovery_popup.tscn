@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://vi3bl3n8w3p1"]
 
-[ext_resource type="Script" path="res://scripts/ui/discovery_popup.gd" id="1_popup"]
+[ext_resource type="Script" uid="uid://f5ywrlkdjum3" path="res://scripts/ui/discovery_popup.gd" id="1_popup"]
 
-[node name="DiscoveryPopup" type="Control"]
+[node name="DiscoveryPopup" type="Control" unique_id=79573770]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -12,7 +12,7 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_popup")
 
-[node name="Anchor" type="VBoxContainer" parent="."]
+[node name="Anchor" type="VBoxContainer" parent="." unique_id=1567127363]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -23,48 +23,48 @@ offset_right = 250.0
 grow_horizontal = 2
 mouse_filter = 2
 
-[node name="Panel" type="PanelContainer" parent="Anchor"]
+[node name="Panel" type="PanelContainer" parent="Anchor" unique_id=1471549068]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Content" type="VBoxContainer" parent="Anchor/Panel"]
+[node name="Content" type="VBoxContainer" parent="Anchor/Panel" unique_id=1071646792]
 layout_mode = 2
 
-[node name="AchievementLabel" type="Label" parent="Anchor/Panel/Content"]
+[node name="AchievementLabel" type="Label" parent="Anchor/Panel/Content" unique_id=257991348]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Achievement Unlocked"
 horizontal_alignment = 1
 
-[node name="WonderLabel" type="Label" parent="Anchor/Panel/Content"]
+[node name="WonderLabel" type="Label" parent="Anchor/Panel/Content" unique_id=1384867048]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Wonder"
 horizontal_alignment = 1
 
-[node name="FactLabel" type="Label" parent="Anchor/Panel/Content"]
+[node name="FactLabel" type="Label" parent="Anchor/Panel/Content" unique_id=1101144013]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(460, 0)
 layout_mode = 2
 text = "Fact"
 autowrap_mode = 3
 
-[node name="Footer" type="HBoxContainer" parent="Anchor/Panel/Content"]
+[node name="Footer" type="HBoxContainer" parent="Anchor/Panel/Content" unique_id=1642047568]
 layout_mode = 2
 
-[node name="CountLabel" type="Label" parent="Anchor/Panel/Content/Footer"]
+[node name="CountLabel" type="Label" parent="Anchor/Panel/Content/Footer" unique_id=1425249487]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Wonders discovered: 1"
 
-[node name="CloseButton" type="Button" parent="Anchor/Panel/Content/Footer"]
+[node name="CloseButton" type="Button" parent="Anchor/Panel/Content/Footer" unique_id=766708927]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
 text = "Close"
 
-[node name="CloseTimer" type="Timer" parent="."]
+[node name="CloseTimer" type="Timer" parent="." unique_id=84165957]
 unique_name_in_owner = true
 wait_time = 6.0
 one_shot = true
