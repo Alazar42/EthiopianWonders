@@ -94,7 +94,7 @@ text = "Ethiopian Wonders"
 [node name="HintLabel" type="Label" parent="MenuPanel/Content"]
 layout_mode = 2
 text = "A / D or arrow keys: change lane
-Click the glowing targets to discover wonders.
+Click a glowing target, or press Space, to blast it with your laser and discover the wonder.
 Miss three and the run ends."
 autowrap_mode = 3
 

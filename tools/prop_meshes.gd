@@ -322,6 +322,29 @@ static func lobelia_spike() -> ArrayMesh:
 	b.frustum(Vector3(0, 0.6, 0), 0.3, 0.3, 0.5, 6, Color(0.60, 0.58, 0.50))
 	return b.commit()
 
+## The player's spaceship, about 2 units long. Local -Z is forward. Wing stripes use the Ethiopian
+## colours; the cockpit and engine discs glow.
+static func spaceship() -> ArrayMesh:
+	var b := Builder.new(81)
+	var hull := Color(0.84, 0.88, 0.96)
+	var dark := Color(0.30, 0.33, 0.40)
+	b.box(Vector3(0, 0, 0.1), Vector3(0.5, 0.3, 1.4), hull)
+	b.pyramid(Vector3(0, 0, -0.6), Vector3(0, 0, -1), 0.85, 0.25, Color(0.92, 0.94, 1.0))
+	b.blob(Vector3(0, 0.2, -0.15), Vector3(0.2, 0.15, 0.38), Color(0.3, 0.85, 1.0, 0.45), Color(0.6, 0.95, 1.0, 0.45), 1, 0.02)
+	for side in [-1.0, 1.0]:
+		var sweep := Basis(Vector3.UP, -0.35 * side)
+		b.box(Vector3(side * 0.95, -0.03, 0.3), Vector3(1.5, 0.07, 0.7), Color(0.72, 0.78, 0.9), sweep)
+		var stripes: Array = [Color(0.10, 0.62, 0.25), Color(0.98, 0.82, 0.10), Color(0.86, 0.16, 0.16)]
+		for i in 3:
+			b.box(Vector3(side * (0.7 + 0.32 * float(i)), -0.0, 0.52 + 0.11 * float(i)),
+				Vector3(0.3, 0.085, 0.14), stripes[i], sweep)
+		b.box(Vector3(side * 1.18, -0.03, -0.1), Vector3(0.07, 0.07, 0.55), dark)
+		b.box(Vector3(side * 0.27, 0, 0.8), Vector3(0.22, 0.22, 0.4), dark)
+		b.box(Vector3(side * 0.27, 0, 1.02), Vector3(0.17, 0.17, 0.05), Color(0.4, 0.9, 1.0, 0.1))
+		b.box(Vector3(side * 0.5, 0.17, 0.62), Vector3(0.05, 0.3, 0.4), Color(0.78, 0.2, 0.2), Basis(Vector3.BACK, 0.3 * side))
+	b.box(Vector3(0, 0.3, 0.62), Vector3(0.06, 0.42, 0.5), Color(0.86, 0.2, 0.2))
+	return b.commit()
+
 ## Silver helichrysum cushion: the grey-green mounds that cover the Afro-alpine plateau.
 static func helichrysum() -> ArrayMesh:
 	var b := Builder.new(53)

@@ -15,6 +15,10 @@ extends Node3D
 @export_file("*.tscn") var main_menu_scene: String = "res://scenes/menus/main_menu.tscn"
 ## Seconds the sky and fog take to blend into the next world's mood during a flight.
 @export var mood_blend_time: float = 4.0
+@export_group("Lasers")
+## Half-angle of the cone ahead of the ship that Space aims at.
+@export_range(5.0, 60.0) var aim_assist_degrees: float = 30.0
+@export var aim_assist_range: float = 90.0
 
 var state: GameState.State = GameState.State.MAIN_MENU
 var _state_before_pause: GameState.State = GameState.State.RUNNING
@@ -66,7 +70,7 @@ func start_new_run() -> void:
 	game_hud.visible = true
 	game_hud.update_wonders(0)
 	game_hud.update_distance(0.0)
-	game_hud.show_toast("Click the glowing target before you run past it!")
+	game_hud.show_toast("Click the glowing target, or press Space, to blast it with your laser!")
 	set_state(GameState.State.RUNNING)
 
 func toggle_pause() -> void:
@@ -114,13 +118,39 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventMouseButton and event.is_action_pressed("interact_target"):
 		if is_playing():
 			click_at((event as InputEventMouseButton).position)
+	elif event.is_action_pressed("fire") and not event.is_echo():
+		if is_playing():
+			fire_forward()
 
-## Mouse picking. Only a real target hit inside its open window can discover anything.
+## Fires a laser at the cursor. Only a real target hit inside its open window can discover anything.
 func click_at(screen_pos: Vector2) -> bool:
-	var target: LandmarkTarget = gameplay_camera.pick_target(screen_pos)
+	var aim: Dictionary = gameplay_camera.aim_ray(screen_pos)
+	player.fire_laser(aim["point"])
+	var target: LandmarkTarget = aim["target"]
 	if target == null:
 		return false
 	return target.attempt_interact(player.distance)
+
+## Fires straight ahead, locking on to the closest open target inside the aim-assist cone.
+func fire_forward() -> bool:
+	var forward: Vector3 = player.get_forward()
+	var best: LandmarkTarget = null
+	var best_angle: float = deg_to_rad(aim_assist_degrees)
+	for target in route.targets:
+		if not is_instance_valid(target) or not target.is_active():
+			continue
+		var to_target: Vector3 = target.global_position - player.global_position
+		if to_target.length() > aim_assist_range:
+			continue
+		var angle: float = forward.angle_to(to_target)
+		if angle < best_angle:
+			best_angle = angle
+			best = target
+	if best == null:
+		player.fire_laser(player.global_position + forward * 80.0)
+		return false
+	player.fire_laser(best.global_position)
+	return best.attempt_interact(player.distance)
 
 # --- events -----------------------------------------------------------------------------------------
 

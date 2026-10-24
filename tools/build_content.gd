@@ -116,6 +116,7 @@ func _save_prop_meshes() -> void:
 		if cfg.has("builder"):
 			ResourceSaver.save(_build_prop(cfg["builder"]), _prop_mesh_path(prop_id))
 	ResourceSaver.save(_grass_tuft_mesh(), "res://assets/meshes/props/grass_tuft.res")
+	ResourceSaver.save(PropMeshes.spaceship(), "res://assets/meshes/props/spaceship.res")
 	for variant in CLOUD_VARIANTS:
 		ResourceSaver.save(PropMeshes.cloud(variant), "res://assets/meshes/props/cloud_%d.res" % variant)
 

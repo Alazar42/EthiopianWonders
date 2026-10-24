@@ -31,6 +31,7 @@ func _run() -> void:
 	await _test_planet_transitions()
 	await _test_clicking()
 	await _test_input_pipeline()
+	await _test_lasers()
 	await _test_missing_and_game_over()
 	await _test_restart_and_popup()
 	await _test_worlds_and_backdrop()
@@ -92,7 +93,9 @@ func _test_movement_basics() -> void:
 	check("player starts on the first planet's top",
 		player.global_position.distance_to(start_planet.global_position + Vector3.UP * (start_planet.radius + player.body_height + player.spawn_drop)) < 0.05,
 		str(player.global_position))
-	check("planet is much larger than the player", start_planet.radius >= 35.0 and start_planet.radius > player.body_height * 2.0 * 15.0)
+	var ship_length: float = (player.get_node("Visuals/Ship") as MeshInstance3D).get_aabb().size.z
+	check("planet is much larger than the ship", start_planet.radius >= 35.0 and start_planet.radius > ship_length * 15.0,
+		"radius %f, ship %f" % [start_planet.radius, ship_length])
 	var before_distance: float = player.distance
 	_step(world, 1.0)
 	check("gravity brings the player to the surface", player.gravity.is_grounded() and absf(_radial_height(world) - player.body_height) < 0.01,
@@ -413,6 +416,50 @@ func _test_input_pipeline() -> void:
 	check("clicks are ignored while paused", not world.click_at(screen) and world.discovery_manager.discovered_wonders.size() == count_while_paused)
 	await _free_world(world)
 	paused = false
+
+func _live_bolts() -> int:
+	var count: int = 0
+	for bolt in get_nodes_in_group("laser_bolts"):
+		if not bolt.is_queued_for_deletion():
+			count += 1
+	return count
+
+func _test_lasers() -> void:
+	print("spaceship lasers")
+	var world := await _new_world()
+	var player := world.player
+	check("the player is a spaceship with two wing cannons", player.get_node_or_null("Visuals/Ship") != null 		and player.get_node("Visuals/Cannons").get_child_count() == 2)
+	_key(KEY_SPACE, true)
+	await process_frame
+	_key(KEY_SPACE, false)
+	check("Space fires a laser", _live_bolts() == 1)
+	check("firing at nothing discovers nothing", world.discovery_manager.discovered_wonders.is_empty())
+	_mouse(true, Vector2(4, 4))
+	await process_frame
+	_mouse(false, Vector2(4, 4))
+	check("a click on empty space still fires a laser but discovers nothing",
+		_live_bolts() == 2 and world.discovery_manager.discovered_wonders.is_empty())
+	for i in 40:
+		player.fire_laser(player.global_position + player.get_forward() * 50.0)
+	check("live bolts are capped", _live_bolts() <= player.max_bolts, "%d bolts" % _live_bolts())
+
+	# Space locks on to a target inside the aim-assist cone.
+	var target: LandmarkTarget = world.route.targets[0]
+	while not target.is_active():
+		world.tick(DT)
+	var angle: float = player.get_forward().angle_to(target.global_position - player.global_position)
+	check("an open target is inside the aim-assist cone", rad_to_deg(angle) < world.aim_assist_degrees, "%f deg" % rad_to_deg(angle))
+	var bolts_before: int = _live_bolts()
+	_key(KEY_SPACE, true)
+	await process_frame
+	_key(KEY_SPACE, false)
+	check("Space locks on and discovers the target", target.state == LandmarkTarget.State.DISCOVERED 		and world.discovery_manager.discovered_wonders.size() == 1)
+	check("the lock-on shot fired a bolt too", _live_bolts() >= mini(bolts_before + 1, player.max_bolts))
+	_key(KEY_SPACE, true)
+	await process_frame
+	_key(KEY_SPACE, false)
+	check("firing again does not award the wonder twice", world.discovery_manager.discovered_wonders.size() == 1)
+	await _free_world(world)
 
 func _test_missing_and_game_over() -> void:
 	print("hearts and game over")

@@ -1,0 +1,57 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/player/one_shot_effect.gd" id="1_effect"]
+[ext_resource type="Material" path="res://assets/materials/laser_flash.tres" id="2_mat"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_flash"]
+material = ExtResource("2_mat")
+radius = 1.0
+height = 2.0
+radial_segments = 10
+rings = 5
+
+[sub_resource type="Animation" id="Animation_burst"]
+resource_name = "burst"
+length = 0.35
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Flash:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.35),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0.4, 0.4, 0.4), Vector3(2.4, 2.4, 2.4)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Flash:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.33),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_impact"]
+_data = {
+&"burst": SubResource("Animation_burst")
+}
+
+[node name="LaserImpact" type="Node3D"]
+script = ExtResource("1_effect")
+
+[node name="Flash" type="MeshInstance3D" parent="."]
+cast_shadow = 0
+mesh = SubResource("SphereMesh_flash")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_impact")
+}
+autoplay = "burst"

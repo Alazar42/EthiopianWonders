@@ -53,14 +53,18 @@ func update_follow(delta: float) -> void:
 	look_at(look_target, basis.y)
 
 ## Dedicated ray from the camera through the cursor. Only the target layer is tested, so the
-## planet, the runner and scenery can never be mistaken for a target.
-func pick_target(screen_pos: Vector2, max_distance: float = 400.0) -> LandmarkTarget:
-	var from: Vector3 = project_ray_origin(screen_pos)
-	var to: Vector3 = from + project_ray_normal(screen_pos) * max_distance
-	var query := PhysicsRayQueryParameters3D.create(from, to, LandmarkTarget.PICK_LAYER)
+## planet, the ship and scenery can never be mistaken for a target. Returns the target that was hit
+## (or null) and the point the laser should aim at: the hit point, or far along the ray on a miss.
+func aim_ray(screen_pos: Vector2, max_distance: float = 400.0, miss_distance: float = 90.0) -> Dictionary:
+	var origin: Vector3 = project_ray_origin(screen_pos)
+	var direction: Vector3 = project_ray_normal(screen_pos)
+	var query := PhysicsRayQueryParameters3D.create(origin, origin + direction * max_distance, LandmarkTarget.PICK_LAYER)
 	query.collide_with_areas = true
 	query.collide_with_bodies = false
 	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():
-		return null
-	return hit["collider"] as LandmarkTarget
+		return {"target": null, "point": origin + direction * miss_distance}
+	return {"target": hit["collider"] as LandmarkTarget, "point": hit["position"]}
+
+func pick_target(screen_pos: Vector2, max_distance: float = 400.0) -> LandmarkTarget:
+	return aim_ray(screen_pos, max_distance)["target"]
