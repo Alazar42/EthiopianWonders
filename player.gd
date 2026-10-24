@@ -9,6 +9,7 @@ const PLAYER_SURFACE_OFFSET := 0.5
 @onready var camera: Camera3D = $PlayerHead/Camera3D
 
 var planet_center := Vector3.ZERO
+var pending_mouse_turn := 0.0
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -18,20 +19,29 @@ func _ready() -> void:
 	linear_damp = 2.0
 	angular_damp = 8.0
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		head.rotate_y(-event.relative.x * SENSITIVITY)
-		camera.rotate_x(-event.relative.y * SENSITIVITY)
-		camera.rotation.x = clamp(camera.rotation.x, deg_to_rad(-80), deg_to_rad(80))
+		pending_mouse_turn -= event.relative.x * SENSITIVITY
+		camera.rotation.x = clamp(
+			camera.rotation.x - event.relative.y * SENSITIVITY,
+			deg_to_rad(-30),
+			deg_to_rad(15)
+		)
 	elif event is InputEventMouseButton and event.pressed:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	elif event.is_action_pressed("ui_cancel"):
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
+
 func _physics_process(_delta: float) -> void:
 	var up := (global_position - planet_center).normalized()
 	if up.length_squared() < 0.01:
 		up = Vector3.UP
+	if not is_zero_approx(pending_mouse_turn):
+		global_transform.basis = (
+			Basis(up, pending_mouse_turn) * global_transform.basis
+		).orthonormalized()
+		pending_mouse_turn = 0.0
 
 	# Keep the player's center exactly one half-player-height above the planet
 	# surface. The planet is centered at the origin and has a radius of 6.
