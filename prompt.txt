@@ -1,6 +1,11 @@
-https://kenney.nl/assets/ui-pack-adventure use this kenny asset and the font change it to 
-other this one is so bad, also the target when hit the pop up message is being shown on front while the spaceship going without giving a chance to even read it so stop the space shipppp to allow readers,
-and the use the splash from the file path
-res://assets/ui/ the images techawach and melkam 
-
-then make the main menu so simple and minimal don't use amharic it is no use
+okay now make the colabs cinematic not just showing on and of and also make it smaller this is having bad res
+and on other side the sound have to be changed to this one in the audio folder videoplayback.ogg
+and for the distance between the planets give more space between them maybe showing some space stations 
+in between with ethiopian origin for exampple nss12, and still now it feels it is repeatable, also there 
+have to be a high scoring system, at first if someone made it to top 10 they will set their name and place
+their name on the leaderboard else they will be not on the leaderboard and that will be only for local way,
+and there will be leaderboards place, so let's make it not feel repetitive and expected always where it is 
+known where it starts, i need more wonders of ethiopia and added, even we don't need them if we don't have but
+the infinity idea have to be more seen, also the player is being restricted so much so what are you thinking, 
+no jump up or anythning but can go anywhere on the planet, is that a good idea? no need camera movment.
+also the player will be more of a controller than just a shooter.
