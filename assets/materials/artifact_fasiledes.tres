@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/artifact_fasiledes_albedo.png" id="1_0fesh"]
+
+[resource]
+resource_name = "ArtifactFasiledes"
+albedo_texture = ExtResource("1_0fesh")
+roughness = 0.85
+uv1_scale = Vector3(2, 2, 2)

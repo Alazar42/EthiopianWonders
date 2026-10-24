@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://bfohq8mid73ts"]
+
+[ext_resource type="Script" path="res://scripts/paths/path_segment.gd" id="1_segment"]
+
+[node name="PathSegment" type="Node3D"]
+script = ExtResource("1_segment")
+
+[node name="RunwayMeshInstance" type="MeshInstance3D" parent="."]
+
+[node name="Decorations" type="Node3D" parent="."]

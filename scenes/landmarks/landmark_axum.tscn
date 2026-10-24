@@ -1,0 +1,17 @@
+[gd_scene load_steps=5 format=3 uid="uid://clandmarkaxum01"]
+
+[ext_resource type="PackedScene" path="res://assets/artifacts/axum.fbx" id="1_model"]
+[ext_resource type="Texture2D" path="res://assets/textures/artifact_axum_albedo.png" id="2_texture"]
+[ext_resource type="PackedScene" path="res://scenes/landmarks/landmark_target.tscn" id="3_target"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_axum"]
+albedo_texture = ExtResource("2_texture")
+roughness = 0.8
+
+[node name="LandmarkAxum" type="Node3D"]
+
+[node name="axum" parent="." instance=ExtResource("1_model")]
+transform = Transform3D(0.35, 0, 0, 0, 0.35, 0, 0, 0, 0.35, 0, 0, 0)
+
+[node name="LandmarkTarget" parent="." instance=ExtResource("3_target")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.0, 0)

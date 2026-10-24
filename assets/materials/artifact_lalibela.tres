@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/textures/artifact_lalibela_albedo.png" id="1_3hscx"]
+
+[resource]
+resource_name = "ArtifactLalibela"
+albedo_texture = ExtResource("1_3hscx")
+roughness = 0.85
+uv1_scale = Vector3(2, 2, 2)

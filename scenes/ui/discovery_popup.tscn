@@ -1,0 +1,72 @@
+[gd_scene load_steps=2 format=3 uid="uid://cdiscoverypopup001"]
+
+[ext_resource type="Script" path="res://scripts/ui/discovery_popup.gd" id="1_popup"]
+
+[node name="DiscoveryPopup" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_popup")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 30.0
+offset_bottom = 230.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="Panel" type="Panel" parent="CenterContainer"]
+custom_minimum_size = Vector2(500, 180)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 14.0
+offset_right = -16.0
+offset_bottom = -14.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="AchievementLabel" type="Label" parent="CenterContainer/Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Achievement Unlocked: Monolithic Marvel"
+horizontal_alignment = 1
+
+[node name="WonderNameLabel" type="Label" parent="CenterContainer/Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Rock-Hewn Churches of Lalibela"
+horizontal_alignment = 1
+
+[node name="FactLabel" type="Label" parent="CenterContainer/Panel/VBoxContainer"]
+custom_minimum_size = Vector2(460, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Educational fact about the wonder."
+autowrap_mode = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="CountLabel" type="Label" parent="CenterContainer/Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 13
+text = "Wonders Discovered: 1"
+
+[node name="CloseButton" type="Button" parent="CenterContainer/Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "Close"

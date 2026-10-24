@@ -1,0 +1,17 @@
+[gd_scene load_steps=5 format=3 uid="uid://clandmarkgondar01"]
+
+[ext_resource type="PackedScene" path="res://assets/artifacts/fasiledes gondor.fbx" id="1_model"]
+[ext_resource type="Texture2D" path="res://assets/textures/artifact_fasiledes_albedo.png" id="2_texture"]
+[ext_resource type="PackedScene" path="res://scenes/landmarks/landmark_target.tscn" id="3_target"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gondar"]
+albedo_texture = ExtResource("2_texture")
+roughness = 0.85
+
+[node name="LandmarkGondar" type="Node3D"]
+
+[node name="fasiledes gondor" parent="." instance=ExtResource("1_model")]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0, 0, 0)
+
+[node name="LandmarkTarget" parent="." instance=ExtResource("3_target")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.0, 0)

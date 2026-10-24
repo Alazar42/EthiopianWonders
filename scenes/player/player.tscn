@@ -1,0 +1,43 @@
+[gd_scene format=3 uid="uid://bplayer001"]
+
+[ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="1_player"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
+radius = 0.45
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_runner"]
+albedo_color = Color(0.88, 0.45, 0.22, 1)
+roughness = 0.6
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_runner"]
+radius = 0.45
+height = 1.8
+radial_segments = 16
+rings = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_visor"]
+albedo_color = Color(0.15, 0.2, 0.25, 1)
+roughness = 0.2
+
+[sub_resource type="BoxMesh" id="BoxMesh_visor"]
+size = Vector3(0.5, 0.25, 0.3)
+
+[node name="Player" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_player")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="CapsuleMesh" type="MeshInstance3D" parent="Visuals"]
+material_override = SubResource("StandardMaterial3D_runner")
+mesh = SubResource("CapsuleMesh_runner")
+
+[node name="Visor" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, -0.35)
+material_override = SubResource("StandardMaterial3D_visor")
+mesh = SubResource("BoxMesh_visor")
