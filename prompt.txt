@@ -742,3 +742,5 @@ At the end, report:
 - Where to replace the capsule and grayboxed Ethiopian landmark assets.
 
 Be precise about what has actually been implemented and tested.
+
+it is so bad when going to other planetes it is not following toward that center it is being placed on it's head and also use only planets not pathes and there is nothing visually appealing on the planet no grass nothing apealing, also i told you the UI does'nt need any styling and themeing and also the .tscn files have to be used more that script doings on runtime
