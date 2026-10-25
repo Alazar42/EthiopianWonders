@@ -11,6 +11,7 @@ signal target_spawned(target: LandmarkTarget)
 signal planet_spawned(planet: PlanetController)
 signal tank_spawned(tank: FuelTank)
 signal crate_spawned(crate: AmmoCrate)
+signal health_spawned(pack: HealthPack)
 
 @export var start_planet: PlanetController
 @export var planet_scenes: Array[PackedScene] = []
@@ -60,6 +61,14 @@ signal crate_spawned(crate: AmmoCrate)
 @export var ammo_spacing_min: float = 150.0
 @export var ammo_spacing_max: float = 200.0
 @export var ammo_spacing_growth: float = 8.0
+@export_group("Health packs")
+@export var health_scene: PackedScene
+@export var health_packs_enabled: bool = true
+## Health packs are rare: far apart, and further apart on later planets.
+@export var health_first_distance: float = 280.0
+@export var health_spacing_min: float = 420.0
+@export var health_spacing_max: float = 560.0
+@export var health_spacing_growth: float = 20.0
 @export_group("Space traffic")
 ## Ethiopian stations and satellites drifting beside the flight path between planets.
 @export var traffic_scenes: Array[PackedScene] = []
@@ -85,12 +94,15 @@ var _fuel_rng := RandomNumberGenerator.new()
 var _fuel_next: float = 0.0
 var _ammo_rng := RandomNumberGenerator.new()
 var _ammo_next: float = 0.0
+var _health_rng := RandomNumberGenerator.new()
+var _health_next: float = 0.0
 var segments: Array[RouteSegment] = []
 var planets: Array[PlanetController] = []
 var targets: Array[LandmarkTarget] = []
 var obstacles: Array[Obstacle] = []
 var fuel_tanks: Array[FuelTank] = []
 var ammo_crates: Array[AmmoCrate] = []
+var health_packs: Array[HealthPack] = []
 ## End of the generated route.
 var head := RouteFrame.new()
 var head_planet: PlanetController
@@ -127,6 +139,8 @@ func begin_run(p_seed: int = -1) -> void:
 	_fuel_next = fuel_first_distance
 	_ammo_rng.seed = rng.seed + 2626
 	_ammo_next = ammo_first_distance
+	_health_rng.seed = rng.seed + 3939
+	_health_next = health_first_distance
 	_last_gap_center = 99999.0
 	planets.append(start_planet)
 	head_planet = start_planet
@@ -185,6 +199,9 @@ func disable_targets() -> void:
 	for crate in ammo_crates:
 		if is_instance_valid(crate):
 			crate.disable()
+	for pack in health_packs:
+		if is_instance_valid(pack):
+			pack.disable()
 
 # --- generation ---------------------------------------------------------------------------------
 
@@ -270,6 +287,7 @@ func _append_surface(type: RouteTypes.SegmentType, forced_landmark: String = "")
 	_spawn_obstacles(seg)
 	_spawn_fuel(seg)
 	_spawn_ammo(seg)
+	_spawn_health(seg)
 	_last_type = type
 	if seg.planet:
 		(seg.planet as PlanetController).clear_decorations_near(seg.positions, corridor_clearance)
@@ -324,6 +342,7 @@ func _append_transition() -> void:
 	_spawn_space_traffic(seg)
 	_spawn_fuel(seg)
 	_spawn_ammo(seg)
+	_spawn_health(seg)
 	_spawn_gate(seg, head.position, head.right, head.up, head.forward)
 	dest.clear_decorations_near(PackedVector3Array([head.position]), 14.0)
 	_append_surface(RouteTypes.SegmentType.PLANET_ARRIVAL)
@@ -495,6 +514,37 @@ func _spawn_ammo(seg: RouteSegment) -> void:
 		_ammo_next = at + _ammo_rng.randf_range(ammo_spacing_min, ammo_spacing_max) \
 				+ ammo_spacing_growth * float(mini(planet_index, 8))
 
+## Health packs, very rare. Each keeps clear of gas tanks, ammo crates and the segment's wonder.
+func _spawn_health(seg: RouteSegment) -> void:
+	if not health_packs_enabled or health_scene == null:
+		return
+	while _health_next < seg.end_distance() - 2.0:
+		var at: float = maxf(_health_next, seg.start_distance + 2.0)
+		if seg.target != null:
+			var target_at: float = seg.start_distance + seg.length * 0.55
+			if absf(at - target_at) < 9.0:
+				at = target_at + 9.0
+		for other in fuel_tanks + ammo_crates:
+			if is_instance_valid(other) and absf(other.route_distance - at) < 10.0:
+				at = other.route_distance + 10.0
+		if at >= seg.end_distance() - 2.0:
+			break
+		_place_health(seg, at)
+		_health_next = at + _health_rng.randf_range(health_spacing_min, health_spacing_max) \
+				+ health_spacing_growth * float(mini(planet_index, 8))
+
+func _place_health(seg: RouteSegment, distance: float) -> void:
+	var frame := RouteFrame.new()
+	seg.sample(distance, frame)
+	var offset: float = _health_rng.randf_range(-steer_band + 2.0, steer_band - 2.0)
+	var pack := health_scene.instantiate() as HealthPack
+	add_child(pack)
+	pack.global_transform = frame.lane_transform(offset, fuel_height)
+	pack.setup(distance, offset)
+	seg.props.append(pack)
+	health_packs.append(pack)
+	health_spawned.emit(pack)
+
 func _place_crate(seg: RouteSegment, distance: float) -> void:
 	var frame := RouteFrame.new()
 	seg.sample(distance, frame)
@@ -611,6 +661,9 @@ func _cleanup(route_distance: float) -> void:
 	for i in range(ammo_crates.size() - 1, -1, -1):
 		if not is_instance_valid(ammo_crates[i]) or ammo_crates[i].is_queued_for_deletion():
 			ammo_crates.remove_at(i)
+	for i in range(health_packs.size() - 1, -1, -1):
+		if not is_instance_valid(health_packs[i]) or health_packs[i].is_queued_for_deletion():
+			health_packs.remove_at(i)
 	for i in range(planets.size() - 1, -1, -1):
 		var planet: PlanetController = planets[i]
 		# The start planet stays alive so an in-place restart can reuse it.
@@ -633,6 +686,7 @@ func _clear() -> void:
 	obstacles.clear()
 	fuel_tanks.clear()
 	ammo_crates.clear()
+	health_packs.clear()
 	for planet in planets:
 		if is_instance_valid(planet) and planet != start_planet:
 			planet.queue_free()

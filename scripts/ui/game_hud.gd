@@ -64,6 +64,11 @@ func update_hearts(current_halves: int, _max_halves: int) -> void:
 		var heart := _hearts[i] as TextureRect
 		var halves: int = clampi(current_halves - i * 2, 0, 2)
 		heart.texture = [heart_empty, heart_half, heart_full][halves]
+		if previous >= 0 and halves > clampi(previous - i * 2, 0, 2):
+			# A health pack: the hearts that came back pop and flash green.
+			UiMotion.punch(heart, 1.5, 0.5)
+			heart.modulate = Color(0.6, 2.2, 0.8)
+			heart.create_tween().tween_property(heart, "modulate", Color.WHITE, 0.6)
 		if previous >= 0 and halves < clampi(previous - i * 2, 0, 2):
 			UiMotion.punch(heart, 1.6, 0.55)
 			heart.modulate = Color(3.0, 0.5, 0.5)

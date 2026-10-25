@@ -67,6 +67,7 @@ func _new_world(with_obstacles: bool = false) -> GameManager:
 	world.route.fuel_tanks_enabled = false
 	world.ammo_enabled = false
 	world.route.ammo_crates_enabled = false
+	world.route.health_packs_enabled = false
 	world.pause_on_discovery = false # long autoplay runs must not stall on a popup
 	world.start_new_run()
 	return world

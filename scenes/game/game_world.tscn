@@ -25,6 +25,7 @@
 [ext_resource type="Script" path="res://scripts/managers/fuel_system.gd" id="40_fuel"]
 [ext_resource type="PackedScene" path="res://scenes/effects/ambient_motes.tscn" id="45_motes"]
 [ext_resource type="Script" path="res://scripts/managers/ammo_system.gd" id="42_ammo"]
+[ext_resource type="PackedScene" path="res://scenes/fuel/health_pack.tscn" id="46_health"]
 [ext_resource type="PackedScene" path="res://scenes/fuel/ammo_crate.tscn" id="43_crate"]
 [ext_resource type="PackedScene" path="res://scenes/effects/burst.tscn" id="44_burst"]
 [ext_resource type="PackedScene" path="res://scenes/fuel/fuel_tank.tscn" id="41_tank"]
@@ -88,6 +89,7 @@ target_scene = ExtResource("11_target")
 gate_scene = ExtResource("12_gate")
 fuel_scene = ExtResource("41_tank")
 ammo_scene = ExtResource("43_crate")
+health_scene = ExtResource("46_health")
 obstacle_scenes = Array[PackedScene]([ExtResource("19_boulder"), ExtResource("20_stones"), ExtResource("21_spire")])
 traffic_scenes = Array[PackedScene]([ExtResource("30_nss12"), ExtResource("31_etrss1"), ExtResource("32_selam")])
 

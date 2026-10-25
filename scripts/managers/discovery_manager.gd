@@ -92,6 +92,15 @@ func register_obstacle_hit() -> void:
 	obstacle_hit.emit(current_hearts)
 	_check_game_over()
 
+## A health pack was shot: every heart comes back. Returns how many half hearts were restored.
+func restore_health() -> int:
+	if not is_active:
+		return 0
+	var gained: int = max_halves() - health_halves
+	health_halves = max_halves()
+	hearts_changed.emit(health_halves, max_halves())
+	return gained
+
 func register_planet_arrival() -> void:
 	if is_active:
 		planets_reached += 1

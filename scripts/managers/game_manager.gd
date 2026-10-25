@@ -54,6 +54,7 @@ func _ready() -> void:
 	route.segment_entered.connect(_on_segment_entered)
 	route.tank_spawned.connect(_on_tank_spawned)
 	route.crate_spawned.connect(_on_tank_spawned)
+	route.health_spawned.connect(_on_tank_spawned)
 	ammo.changed.connect(game_hud.update_ammo)
 	ammo.low_ammo.connect(_on_low_ammo)
 	ammo.emptied.connect(_on_ammo_emptied)
@@ -277,7 +278,12 @@ func _on_tank_spawned(tank: FuelTank) -> void:
 	tank.collected.connect(_on_tank_collected, CONNECT_ONE_SHOT)
 
 func _on_tank_collected(tank: FuelTank) -> void:
-	if tank is AmmoCrate:
+	if tank is HealthPack:
+		var restored: int = discovery_manager.restore_health()
+		GameSound.play(&"level_up")
+		game_hud.show_toast("Health restored!" if restored > 0 else "Health is already full")
+		_spawn_burst(tank.global_position, Color(1.0, 0.4, 0.5))
+	elif tank is AmmoCrate:
 		var rounds: int = ammo.add(int(tank.amount))
 		GameSound.play(&"ammo_pickup")
 		game_hud.show_toast("Ammo +%d" % rounds)

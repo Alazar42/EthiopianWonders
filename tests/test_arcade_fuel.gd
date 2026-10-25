@@ -47,6 +47,7 @@ func _new_world() -> GameManager:
 	world.route.fuel_tanks_enabled = true
 	world.ammo_enabled = false
 	world.route.ammo_crates_enabled = false
+	world.route.health_packs_enabled = false
 	world.start_new_run()
 	return world
 
