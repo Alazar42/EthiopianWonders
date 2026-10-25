@@ -17,6 +17,8 @@ const TOAST_OFFSET: Vector2 = Vector2(0, 40)
 @onready var _star: Control = %StarIcon
 @onready var _wonders_label: Label = %WondersLabel
 @onready var _distance_label: Label = %DistanceLabel
+@onready var _fuel_row: Control = %FuelRow
+@onready var _fuel_bar: ProgressBar = %FuelBar
 @onready var _toast_panel: Control = %ToastPanel
 @onready var _toast_label: Label = %ToastLabel
 @onready var _toast_timer: Timer = %ToastTimer
@@ -83,6 +85,14 @@ func update_score(score: int) -> void:
 
 func _refresh_progress() -> void:
 	_distance_label.text = "%s pts   |   %d m" % [Leaderboard.format_score(_score), _distance]
+
+## The fuel gauge. It turns red under a third of the tank.
+func update_fuel(fuel: float, capacity: float) -> void:
+	_fuel_bar.value = fuel / capacity * 100.0
+	_fuel_bar.modulate = Color(1.0, 0.45, 0.35) if fuel / capacity <= 0.3 else Color.WHITE
+
+func set_fuel_visible(shown: bool) -> void:
+	_fuel_row.visible = shown
 
 func show_toast(text: String) -> void:
 	_toast_label.text = text

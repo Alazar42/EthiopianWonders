@@ -62,6 +62,9 @@ func _new_world(with_obstacles: bool = false) -> GameManager:
 	await process_frame
 	# Rocks are opt-in here, so long autoplay runs are not interrupted by crashes.
 	world.route.obstacles_enabled = with_obstacles
+	# Fuel has its own tests; long autoplay runs must not run dry.
+	world.fuel_enabled = false
+	world.route.fuel_tanks_enabled = false
 	world.pause_on_discovery = false # long autoplay runs must not stall on a popup
 	world.start_new_run()
 	return world

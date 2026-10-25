@@ -12,6 +12,7 @@ signal score_saved(rank: int)
 const COUNT_TIME: float = 0.7
 
 @onready var _dim: Control = %Dim
+@onready var _header: Label = %Header
 @onready var _card: Control = %Card
 @onready var _rows: Array[Array] = [
 	[%ScoreName, %ScoreLabel], [%WondersName, %WondersLabel], [%RocksName, %RocksLabel],
@@ -46,6 +47,7 @@ func show_game_over(stats: Dictionary, board: Leaderboard = null) -> void:
 	_stats = stats
 	_board = board
 	_saved = false
+	_header.text = "OUT OF FUEL" if stats.get("reason", "") == "fuel" else "MISSION OVER"
 	visible = true
 	UiCursor.set_arrow()
 	var score: int = int(stats.get("score", 0))

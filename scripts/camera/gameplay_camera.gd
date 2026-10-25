@@ -62,7 +62,7 @@ func update_follow(delta: float) -> void:
 		global_position += (basis.x * randf_range(-1.0, 1.0) + basis.y * randf_range(-1.0, 1.0)) * shake * 0.35
 		shake = maxf(0.0, shake - delta * 2.4)
 
-## Dedicated ray from the camera through the cursor. Only the target and obstacle layers are
+## Dedicated ray from the camera through the cursor. Only the target, obstacle and fuel tank layers are
 ## tested, so the planet, the ship and scenery can never be mistaken for either. Returns the wonder
 ## target hit (or null), the obstacle hit (or null) and the point the laser should aim at: the hit
 ## point, or far along the ray on a miss.
@@ -70,13 +70,14 @@ func aim_ray(screen_pos: Vector2, max_distance: float = 400.0, miss_distance: fl
 	var origin: Vector3 = project_ray_origin(screen_pos)
 	var direction: Vector3 = project_ray_normal(screen_pos)
 	var query := PhysicsRayQueryParameters3D.create(origin, origin + direction * max_distance,
-			LandmarkTarget.PICK_LAYER | Obstacle.PICK_LAYER)
+			LandmarkTarget.PICK_LAYER | Obstacle.PICK_LAYER | FuelTank.PICK_LAYER)
 	query.collide_with_areas = true
 	query.collide_with_bodies = false
 	var hit: Dictionary = get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():
-		return {"target": null, "obstacle": null, "point": origin + direction * miss_distance}
-	return {"target": hit["collider"] as LandmarkTarget, "obstacle": hit["collider"] as Obstacle, "point": hit["position"]}
+		return {"target": null, "obstacle": null, "tank": null, "point": origin + direction * miss_distance}
+	return {"target": hit["collider"] as LandmarkTarget, "obstacle": hit["collider"] as Obstacle,
+			"tank": hit["collider"] as FuelTank, "point": hit["position"]}
 
 func pick_target(screen_pos: Vector2, max_distance: float = 400.0) -> LandmarkTarget:
 	return aim_ray(screen_pos, max_distance)["target"]

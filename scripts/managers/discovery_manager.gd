@@ -21,6 +21,7 @@ const POINTS_PER_WONDER: int = 500
 const POINTS_PER_PLANET: int = 150
 const POINTS_PER_ROCK: int = 25
 const POINTS_PER_METRE: int = 1
+const POINTS_PER_TANK: int = 20
 
 @export var max_hearts: int = 3
 
@@ -30,6 +31,9 @@ var missed_count: int = 0
 var obstacles_hit: int = 0
 var obstacles_destroyed: int = 0
 var planets_reached: int = 0
+var tanks_collected: int = 0
+## Why the run ended: "hearts" or "fuel".
+var end_reason: String = "hearts"
 var run_distance: float = 0.0
 var elapsed_time: float = 0.0
 var is_active: bool = false
@@ -49,6 +53,8 @@ func reset_run() -> void:
 	obstacles_hit = 0
 	obstacles_destroyed = 0
 	planets_reached = 0
+	tanks_collected = 0
+	end_reason = "hearts"
 	run_distance = 0.0
 	elapsed_time = 0.0
 	is_active = true
@@ -93,7 +99,20 @@ func register_planet_arrival() -> void:
 ## The run's score so far.
 func score() -> int:
 	return discovered_wonders.size() * POINTS_PER_WONDER + planets_reached * POINTS_PER_PLANET \
-		+ obstacles_destroyed * POINTS_PER_ROCK + int(run_distance) * POINTS_PER_METRE
+		+ obstacles_destroyed * POINTS_PER_ROCK + tanks_collected * POINTS_PER_TANK + int(run_distance) * POINTS_PER_METRE
+
+## A gas tank was shot.
+func register_tank() -> void:
+	if is_active:
+		tanks_collected += 1
+
+## The ship ran dry and came to a stop: the run ends.
+func register_out_of_fuel() -> void:
+	if not is_active:
+		return
+	is_active = false
+	end_reason = "fuel"
+	game_over_reached.emit(stats())
 
 func register_obstacle_destroyed() -> void:
 	if not is_active:
@@ -107,6 +126,8 @@ func stats() -> Dictionary:
 		"obstacles_destroyed": obstacles_destroyed,
 		"obstacles_hit": obstacles_hit,
 		"planets": planets_reached,
+		"tanks": tanks_collected,
+		"reason": end_reason,
 		"score": score(),
 		"distance": run_distance,
 		"time": elapsed_time,

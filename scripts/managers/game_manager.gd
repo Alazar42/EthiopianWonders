@@ -8,6 +8,7 @@ extends Node3D
 @export var route: RouteGenerator
 @export var world_environment: WorldEnvironment
 @export var discovery_manager: DiscoveryManager
+@export var fuel: FuelSystem
 @export var game_hud: GameHUD
 @export var discovery_popup: DiscoveryPopup
 @export var pause_menu: PauseMenu
@@ -16,6 +17,11 @@ extends Node3D
 @export_file("*.tscn") var main_menu_scene: String = "res://scenes/menus/main_menu.tscn"
 ## Seconds the sky and fog take to blend into the next world's mood during a flight.
 @export var mood_blend_time: float = 4.0
+@export_group("Fuel")
+## Arcade only: the ship burns fuel, gas tanks refill it, and an empty tank ends the run.
+@export var fuel_enabled: bool = true
+## Seconds the ship must sit still with an empty tank before the run is over.
+@export var stall_seconds: float = 0.8
 @export_group("Lasers")
 ## Half-angle of the cone ahead of the ship that Space aims at.
 @export_range(5.0, 60.0) var aim_assist_degrees: float = 30.0
@@ -34,12 +40,17 @@ var state: GameState.State = GameState.State.MAIN_MENU
 var _state_before_pause: GameState.State = GameState.State.RUNNING
 var _mood_tween: Tween
 var _runs_started: int = 0
+var _stall_time: float = 0.0
 var leaderboard: Leaderboard
 
 func _ready() -> void:
 	leaderboard = Leaderboard.new(leaderboard_path)
 	route.target_spawned.connect(_on_target_spawned)
 	route.segment_entered.connect(_on_segment_entered)
+	route.tank_spawned.connect(_on_tank_spawned)
+	fuel.changed.connect(game_hud.update_fuel)
+	fuel.low_fuel.connect(_on_low_fuel)
+	fuel.ran_out.connect(_on_ran_out)
 	discovery_manager.wonder_discovered.connect(_on_wonder_discovered)
 	discovery_manager.wonder_missed.connect(_on_wonder_missed)
 	discovery_manager.obstacle_hit.connect(_on_obstacle_hit)
@@ -77,6 +88,9 @@ func start_new_run() -> void:
 	if not set_state(GameState.State.STARTING_RUN):
 		return
 	discovery_manager.reset_run()
+	_stall_time = 0.0
+	fuel.reset()
+	game_hud.set_fuel_visible(fuel_enabled)
 	route.begin_run(randi() if random_seed_each_run else -1)
 	apply_mood(route.start_planet, true)
 	player.begin_run(route)
@@ -89,7 +103,7 @@ func start_new_run() -> void:
 	game_hud.update_wonders(0)
 	game_hud.update_distance(0.0)
 	game_hud.play_intro()
-	game_hud.show_toast("Steer with A and D, speed with W and S. Shoot the glowing targets and rocks!")
+	game_hud.show_toast("A and D steer, W and S set speed. Shoot targets, rocks and gas tanks!")
 	if _runs_started > 0:
 		screen_fade.blink()
 	else:
@@ -129,6 +143,10 @@ func _process(delta: float) -> void:
 func tick(delta: float) -> void:
 	if not is_playing():
 		return
+	if fuel_enabled:
+		_update_fuel(delta)
+		if not is_playing():
+			return
 	# Generate before moving so the ship can never reach the end of the route.
 	route.update(player.distance + player.current_speed() * delta)
 	player.advance(delta)
@@ -136,12 +154,30 @@ func tick(delta: float) -> void:
 	for target in route.targets:
 		if is_instance_valid(target):
 			target.update_window(player.distance)
+	for tank in route.fuel_tanks:
+		if is_instance_valid(tank):
+			tank.update_window(player.distance)
 	_check_obstacle_collisions()
 	if not is_playing():
 		return
 	discovery_manager.update_stats(delta, player.distance)
 	game_hud.update_distance(player.distance)
 	game_hud.update_score(discovery_manager.score())
+
+## Burns fuel. With an empty tank the ship slows down and stops, and once it has stood still for a
+## moment the run is over. A tank shot while it is still rolling brings the engine back.
+func _update_fuel(delta: float) -> void:
+	fuel.drain(delta, player.speed_scale)
+	var empty: bool = fuel.is_empty()
+	if empty != player.engine_cut:
+		player.engine_cut = empty
+		GameSound.set_engine(not empty)
+	if empty and player.is_stopped():
+		_stall_time += delta
+		if _stall_time >= stall_seconds:
+			discovery_manager.register_out_of_fuel()
+	else:
+		_stall_time = 0.0
 
 func _check_obstacle_collisions() -> void:
 	for obstacle in route.obstacles:
@@ -179,6 +215,10 @@ func click_at(screen_pos: Vector2) -> bool:
 	if obstacle != null:
 		blast_obstacle(obstacle)
 		return false
+	var tank: FuelTank = aim["tank"]
+	if tank != null:
+		shoot_tank(tank)
+		return false
 	var target: LandmarkTarget = aim["target"]
 	if target == null:
 		return false
@@ -200,6 +240,23 @@ func fire_forward() -> bool:
 		if angle < best_angle:
 			best_angle = angle
 			best = target
+	var best_tank: FuelTank = null
+	var tank_angle: float = deg_to_rad(aim_assist_degrees)
+	for tank in route.fuel_tanks:
+		if not is_instance_valid(tank) or not tank.is_active():
+			continue
+		var to_tank: Vector3 = tank.global_position - player.global_position
+		if to_tank.length() > aim_assist_range:
+			continue
+		var angle_to_tank: float = forward.angle_to(to_tank)
+		if angle_to_tank < tank_angle:
+			tank_angle = angle_to_tank
+			best_tank = tank
+	# A gas tank wins over a wonder when it is closer to the aim, or when the fuel is low.
+	if best_tank != null and (best == null or tank_angle < best_angle or fuel.is_low()):
+		player.fire_laser(best_tank.global_position)
+		shoot_tank(best_tank)
+		return false
 	if best != null:
 		player.fire_laser(best.global_position)
 		return best.attempt_interact(player.distance)
@@ -210,6 +267,10 @@ func fire_forward() -> bool:
 		return false
 	player.fire_laser(player.global_position + forward * 80.0)
 	return false
+
+## A laser hit a gas tank: it explodes into fuel.
+func shoot_tank(tank: FuelTank) -> void:
+	tank.collect()
 
 func blast_obstacle(obstacle: Obstacle) -> void:
 	if obstacle.is_active():
@@ -233,6 +294,25 @@ func _nearest_obstacle_ahead() -> Obstacle:
 	return best
 
 # --- events -----------------------------------------------------------------------------------------
+
+func _on_tank_spawned(tank: FuelTank) -> void:
+	tank.collected.connect(_on_tank_collected, CONNECT_ONE_SHOT)
+
+func _on_tank_collected(tank: FuelTank) -> void:
+	var added: float = fuel.add(tank.amount)
+	discovery_manager.register_tank()
+	GameSound.play(&"discover", 1.3)
+	game_hud.show_toast("Fuel +%d" % int(round(added)))
+
+func _on_low_fuel() -> void:
+	if fuel_enabled:
+		GameSound.play(&"heart_lost")
+		game_hud.show_toast("Low fuel! Shoot a gas tank")
+
+func _on_ran_out() -> void:
+	if fuel_enabled:
+		game_hud.flash_damage()
+		game_hud.show_toast("Out of fuel! Shoot a gas tank before you stop!")
 
 func _on_target_spawned(target: LandmarkTarget) -> void:
 	target.discovered.connect(_on_target_discovered, CONNECT_ONE_SHOT)
@@ -299,6 +379,7 @@ func _on_segment_entered(segment: RouteSegment) -> void:
 
 func _on_game_over(stats: Dictionary) -> void:
 	set_state(GameState.State.GAME_OVER)
+	player.engine_cut = false
 	player.stop()
 	route.disable_targets()
 	discovery_popup.hide_popup(false)

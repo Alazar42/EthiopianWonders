@@ -110,6 +110,7 @@ pause_game={
 [layer_names]
 
 3d_physics/layer_4="landmark_targets"
+3d_physics/layer_6="fuel_tanks"
 
 [rendering]
 

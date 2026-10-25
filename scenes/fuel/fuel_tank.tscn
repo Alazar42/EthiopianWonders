@@ -1,0 +1,189 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/fuel/fuel_tank.gd" id="1_tank"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_pick"]
+radius = 1.7
+
+[sub_resource type="StandardMaterial3D" id="Material_barrel"]
+albedo_color = Color(0.85, 0.12, 0.1, 1)
+roughness = 0.5
+emission_enabled = true
+emission = Color(0.5, 0.04, 0.03, 1)
+
+[sub_resource type="StandardMaterial3D" id="Material_band"]
+albedo_color = Color(1, 0.82, 0.2, 1)
+roughness = 0.6
+emission_enabled = true
+emission = Color(0.5, 0.35, 0.05, 1)
+
+[sub_resource type="StandardMaterial3D" id="Material_halo"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+albedo_color = Color(0.5, 0.3, 0.08, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_barrel"]
+material = SubResource("Material_barrel")
+top_radius = 0.7
+bottom_radius = 0.7
+height = 1.5
+radial_segments = 16
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_band"]
+material = SubResource("Material_band")
+top_radius = 0.74
+bottom_radius = 0.74
+height = 0.3
+radial_segments = 16
+rings = 1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_cap"]
+material = SubResource("Material_band")
+top_radius = 0.22
+bottom_radius = 0.3
+height = 0.35
+radial_segments = 10
+rings = 1
+
+[sub_resource type="SphereMesh" id="SphereMesh_halo"]
+material = SubResource("Material_halo")
+radius = 1.6
+height = 3.2
+radial_segments = 20
+rings = 10
+
+[sub_resource type="Animation" id="Animation_idle"]
+resource_name = "idle"
+length = 2.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visuals:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1, 2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0.4, 0), Vector3(0, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Visuals/Spin:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 6.28319, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_collected"]
+resource_name = "collected"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visuals:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.15, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(1, 1, 1), Vector3(1.7, 1.7, 1.7), Vector3(0.01, 0.01, 0.01)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Visuals:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+
+[sub_resource type="Animation" id="Animation_missed"]
+resource_name = "missed"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visuals:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(1, 1, 1), Vector3(0.01, 0.01, 0.01)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Visuals:visible")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_tank"]
+_data = {
+&"collected": SubResource("Animation_collected"),
+&"idle": SubResource("Animation_idle"),
+&"missed": SubResource("Animation_missed")
+}
+
+[node name="FuelTank" type="Area3D"]
+collision_layer = 32
+collision_mask = 0
+script = ExtResource("1_tank")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_pick")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Spin" type="Node3D" parent="Visuals"]
+
+[node name="Barrel" type="MeshInstance3D" parent="Visuals/Spin"]
+mesh = SubResource("CylinderMesh_barrel")
+
+[node name="BandLow" type="MeshInstance3D" parent="Visuals/Spin"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.35, 0)
+mesh = SubResource("CylinderMesh_band")
+
+[node name="BandHigh" type="MeshInstance3D" parent="Visuals/Spin"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+mesh = SubResource("CylinderMesh_band")
+
+[node name="Cap" type="MeshInstance3D" parent="Visuals/Spin"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("CylinderMesh_cap")
+
+[node name="Halo" type="MeshInstance3D" parent="Visuals"]
+cast_shadow = 0
+mesh = SubResource("SphereMesh_halo")
+
+[node name="Glow" type="OmniLight3D" parent="Visuals"]
+light_color = Color(1, 0.45, 0.2, 1)
+light_energy = 1.2
+omni_range = 7.0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_tank")
+}
+autoplay = "idle"

@@ -9,6 +9,7 @@ const T = RouteTypes.SegmentType
 signal segment_entered(segment: RouteSegment)
 signal target_spawned(target: LandmarkTarget)
 signal planet_spawned(planet: PlanetController)
+signal tank_spawned(tank: FuelTank)
 
 @export var start_planet: PlanetController
 @export var planet_scenes: Array[PackedScene] = []
@@ -40,6 +41,16 @@ signal planet_spawned(planet: PlanetController)
 @export var gap_reach: float = 5.0
 ## No obstacles before this route distance, so the tutorial planet stays calm.
 @export var obstacle_min_start: float = 70.0
+@export_group("Fuel")
+@export var fuel_scene: PackedScene
+@export var fuel_tanks_enabled: bool = true
+## Route distance of the first gas tank.
+@export var fuel_first_distance: float = 55.0
+## Gap between gas tanks; it grows a little on every planet.
+@export var fuel_spacing_min: float = 85.0
+@export var fuel_spacing_max: float = 125.0
+@export var fuel_spacing_growth: float = 6.0
+@export var fuel_height: float = 3.0
 @export_group("Space traffic")
 ## Ethiopian stations and satellites drifting beside the flight path between planets.
 @export var traffic_scenes: Array[PackedScene] = []
@@ -60,10 +71,14 @@ var rng := RandomNumberGenerator.new()
 var _obstacle_rng := RandomNumberGenerator.new()
 ## Another separate stream for decoration, so space traffic never changes the route.
 var _decor_rng := RandomNumberGenerator.new()
+## Its own stream too, so gas tanks never change the route or the rocks.
+var _fuel_rng := RandomNumberGenerator.new()
+var _fuel_next: float = 0.0
 var segments: Array[RouteSegment] = []
 var planets: Array[PlanetController] = []
 var targets: Array[LandmarkTarget] = []
 var obstacles: Array[Obstacle] = []
+var fuel_tanks: Array[FuelTank] = []
 ## End of the generated route.
 var head := RouteFrame.new()
 var head_planet: PlanetController
@@ -96,6 +111,8 @@ func begin_run(p_seed: int = -1) -> void:
 		first_wonder = all[rng.randi() % all.size()].id
 	_obstacle_rng.seed = rng.seed + 777
 	_decor_rng.seed = rng.seed + 4242
+	_fuel_rng.seed = rng.seed + 1313
+	_fuel_next = fuel_first_distance
 	_last_gap_center = 99999.0
 	planets.append(start_planet)
 	head_planet = start_planet
@@ -148,6 +165,9 @@ func disable_targets() -> void:
 	for target in targets:
 		if is_instance_valid(target):
 			target.disable()
+	for tank in fuel_tanks:
+		if is_instance_valid(tank):
+			tank.disable()
 
 # --- generation ---------------------------------------------------------------------------------
 
@@ -231,6 +251,7 @@ func _append_surface(type: RouteTypes.SegmentType, forced_landmark: String = "")
 	elif type != T.PLANET_ARRIVAL:
 		_since_landmark += 1
 	_spawn_obstacles(seg)
+	_spawn_fuel(seg)
 	_last_type = type
 	if seg.planet:
 		(seg.planet as PlanetController).clear_decorations_near(seg.positions, corridor_clearance)
@@ -283,6 +304,7 @@ func _append_transition() -> void:
 	_last_type = RouteTypes.SegmentType.PLANET_TRANSITION
 	_spawn_gate(seg, departure.position, departure.right, departure.up, departure.forward)
 	_spawn_space_traffic(seg)
+	_spawn_fuel(seg)
 	_spawn_gate(seg, head.position, head.right, head.up, head.forward)
 	dest.clear_decorations_near(PackedVector3Array([head.position]), 14.0)
 	_append_surface(RouteTypes.SegmentType.PLANET_ARRIVAL)
@@ -417,6 +439,35 @@ func _spawn_landmark(seg: RouteSegment, forced_id: String) -> void:
 			planet.clear_decorations_near(PackedVector3Array([target.global_position]), 4.0)
 		target_spawned.emit(target)
 
+## Gas tanks beside the route, spaced by route distance. A tank is never put on top of the wonder
+## target of the same segment.
+func _spawn_fuel(seg: RouteSegment) -> void:
+	if not fuel_tanks_enabled or fuel_scene == null:
+		return
+	while _fuel_next < seg.end_distance() - 2.0:
+		var at: float = maxf(_fuel_next, seg.start_distance + 2.0)
+		if seg.target != null:
+			var target_at: float = seg.start_distance + seg.length * 0.55
+			if absf(at - target_at) < 9.0:
+				at = target_at + 9.0
+		if at >= seg.end_distance() - 2.0:
+			break
+		_place_tank(seg, at)
+		_fuel_next = at + _fuel_rng.randf_range(fuel_spacing_min, fuel_spacing_max) \
+				+ fuel_spacing_growth * float(mini(planet_index, 8))
+
+func _place_tank(seg: RouteSegment, distance: float) -> void:
+	var frame := RouteFrame.new()
+	seg.sample(distance, frame)
+	var offset: float = _fuel_rng.randf_range(-steer_band + 2.0, steer_band - 2.0)
+	var tank := fuel_scene.instantiate() as FuelTank
+	add_child(tank)
+	tank.global_transform = frame.lane_transform(offset, fuel_height)
+	tank.setup(distance, offset)
+	seg.props.append(tank)
+	fuel_tanks.append(tank)
+	tank_spawned.emit(tank)
+
 ## Rocks scattered across the whole steering band. Every row of rocks leaves a gap wide enough to
 ## fly through, and that gap is never further from the previous row's gap than the ship can slide in
 ## the time between rows, so there is always a way through.
@@ -503,6 +554,9 @@ func _cleanup(route_distance: float) -> void:
 	for i in range(obstacles.size() - 1, -1, -1):
 		if not is_instance_valid(obstacles[i]) or obstacles[i].is_queued_for_deletion():
 			obstacles.remove_at(i)
+	for i in range(fuel_tanks.size() - 1, -1, -1):
+		if not is_instance_valid(fuel_tanks[i]) or fuel_tanks[i].is_queued_for_deletion():
+			fuel_tanks.remove_at(i)
 	for i in range(planets.size() - 1, -1, -1):
 		var planet: PlanetController = planets[i]
 		# The start planet stays alive so an in-place restart can reuse it.
@@ -523,6 +577,7 @@ func _clear() -> void:
 	segments.clear()
 	targets.clear()
 	obstacles.clear()
+	fuel_tanks.clear()
 	for planet in planets:
 		if is_instance_valid(planet) and planet != start_planet:
 			planet.queue_free()

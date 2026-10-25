@@ -18,6 +18,9 @@ extends Node3D
 @export var spawn_drop: float = 0.8
 @export var bob_height: float = 0.08
 @export var bob_rate: float = 3.0
+@export_group("Fuel")
+## How fast the ship slows down (as throttle per second) once the fuel has run out.
+@export var stall_deceleration: float = 0.5
 @export_group("Crashing")
 ## Half extents of the ship's hit box in lane space.
 @export var hit_half_width: float = 0.55
@@ -41,6 +44,8 @@ var frame := RouteFrame.new()
 
 var _run_time: float = 0.0
 
+## Set by the game manager when the tank is empty: the ship stops pulling and coasts to a halt.
+var engine_cut: bool = false
 var invulnerable: float = 0.0
 ## Current throttle as a multiple of `run_speed`.
 var speed_scale: float = 1.0
@@ -60,6 +65,7 @@ func begin_run(p_route: RouteGenerator) -> void:
 	lane.max_offset = steer_band
 	lane.reset()
 	speed_scale = 1.0
+	engine_cut = false
 	invulnerable = 0.0
 	_kick = 0.0
 	gravity.reset(spawn_drop)
@@ -69,6 +75,10 @@ func begin_run(p_route: RouteGenerator) -> void:
 
 func stop() -> void:
 	running = false
+
+## True once the ship has all but stopped.
+func is_stopped() -> bool:
+	return current_speed() < 0.15
 
 ## Forward speed along the route right now.
 func current_speed() -> float:
@@ -83,7 +93,11 @@ func advance(delta: float) -> void:
 		lane.steer = Input.get_axis("move_left", "move_right") if pilot else 0.0
 		var throttle: float = Input.get_axis("move_back", "move_forward") if pilot else 0.0
 		var target_scale: float = lerpf(1.0, max_speed_scale, throttle) if throttle > 0.0 else lerpf(1.0, min_speed_scale, -throttle)
-		speed_scale = move_toward(speed_scale, target_scale, 2.2 * delta)
+		var rate: float = 2.2
+		if engine_cut:
+			target_scale = 0.0
+			rate = stall_deceleration
+		speed_scale = move_toward(speed_scale, target_scale, rate * delta)
 		distance += current_speed() * delta
 		_run_time += delta
 	route.sample(distance, frame)
