@@ -1,2 +1,4 @@
-okay now make changes to the arcade game like the hill climbing car game with gas tanks on the way so you have to shoot a gas tank to get fuel if you ran out of gas 
-it will stop and game over the stoping will be slowing down and stop and game over this is for arcade only, 
+use the image i attached the spaceship make a 3d model with lowpoly and polish the enviroment to look cozy and nice with and add some effects and sounds to make the game more jucie effects with camera shake and for the ui 
+so starting ammo for arcade mode have to be 10 and it have to not be clutsered make it on bottom left like best UI ways, 
+and ammos can be claimed like gases and make it so scarce the goal is not to shoot everyway out of it and at the same time to have an ammo to shoot the targets and gases and ammos too, and make it harder after 3 planets like makeing it faster per level up to max 
+speed and the user have to be graet and the highscore only works for arcade.
