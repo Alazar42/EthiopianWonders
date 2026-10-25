@@ -21,6 +21,10 @@ const LOCKED_COLOR: Color = Color(1.0, 0.6, 0.4)
 @onready var _pause_button: Button = %PauseButton
 @onready var _prompt_panel: Control = %PromptPanel
 @onready var _prompt_label: Label = %PromptLabel
+@onready var _preview_panel: Control = %PreviewPanel
+@onready var _preview_picture: TextureRect = %PreviewPicture
+@onready var _preview_caption: Label = %PreviewCaption
+@onready var _preview_timer: Timer = %PreviewTimer
 @onready var _toast_panel: Control = %ToastPanel
 @onready var _toast_label: Label = %ToastLabel
 @onready var _toast_timer: Timer = %ToastTimer
@@ -32,6 +36,7 @@ const LOCKED_COLOR: Color = Color(1.0, 0.6, 0.4)
 @onready var _flight_group: Control = %FlightGroup
 @onready var _animation: AnimationPlayer = $AnimationPlayer
 
+var _preview_fade: Tween
 var _toast_open: bool = false
 var _shown_captured: int = -1
 
@@ -40,8 +45,10 @@ func _ready() -> void:
 	_toast_timer.timeout.connect(func() -> void:
 		_toast_open = false
 		UiMotion.slide_out(_toast_panel, TOAST_OFFSET, 0.3))
+	_preview_timer.timeout.connect(_hide_preview)
 	_viewfinder.visible = false
 	_prompt_panel.visible = false
+	_preview_panel.visible = false
 	play_intro()
 
 ## The status panel slides in and the pause button follows.
@@ -73,9 +80,32 @@ func set_prompt(text: String) -> void:
 	if show_it != _prompt_panel.visible and not _viewfinder.visible:
 		_prompt_panel.visible = show_it
 		if show_it:
-			UiMotion.pop_in(_prompt_panel, 0.0, 0.35)
+			UiMotion.fade_in(_prompt_panel, 0.0, 0.35)
 	elif _viewfinder.visible:
 		_prompt_panel.visible = false
+
+## Shows the picture just taken in a small window in the top right corner for a few seconds.
+func show_photo_preview(image: Image, caption: String, seconds: float = 3.5) -> void:
+	if image == null or image.is_empty():
+		return
+	var small: Image = image.duplicate()
+	if small.get_width() > 640:
+		small.resize(640, int(640.0 * float(small.get_height()) / float(small.get_width())), Image.INTERPOLATE_BILINEAR)
+	_preview_picture.texture = ImageTexture.create_from_image(small)
+	_preview_caption.text = caption
+	if _preview_fade:
+		_preview_fade.kill()
+	_preview_panel.visible = true
+	UiMotion.fade_in(_preview_panel, 0.0, 0.25)
+	_preview_timer.start(seconds)
+
+func is_preview_visible() -> bool:
+	return _preview_panel.visible
+
+func _hide_preview() -> void:
+	_preview_fade = create_tween()
+	_preview_fade.tween_property(_preview_panel, "modulate:a", 0.0, 0.3)
+	_preview_fade.tween_callback(func() -> void: _preview_panel.visible = false)
 
 func show_toast(text: String) -> void:
 	_toast_label.text = text

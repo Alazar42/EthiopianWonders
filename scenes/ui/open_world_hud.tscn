@@ -127,30 +127,59 @@ grow_horizontal = 0
 focus_mode = 0
 text = "PAUSE"
 
-[node name="PromptPanel" type="PanelContainer" parent="FlightGroup"]
+[node name="TopRight" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -340.0
+offset_top = 96.0
+offset_right = -20.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="PromptPanel" type="PanelContainer" parent="TopRight"]
 unique_name_in_owner = true
 visible = false
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -300.0
-offset_top = -190.0
-offset_right = 300.0
-offset_bottom = -120.0
-grow_horizontal = 2
-grow_vertical = 0
+layout_mode = 2
 mouse_filter = 2
 theme_type_variation = &"HudPanel"
 
-[node name="PromptLabel" type="Label" parent="FlightGroup/PromptPanel"]
+[node name="PromptLabel" type="Label" parent="TopRight/PromptPanel"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_font")
 horizontal_alignment = 1
 vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="PreviewPanel" type="PanelContainer" parent="TopRight"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"HudPanel"
+
+[node name="Rows" type="VBoxContainer" parent="TopRight/PreviewPanel"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="PreviewPicture" type="TextureRect" parent="TopRight/PreviewPanel/Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 158)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PreviewCaption" type="Label" parent="TopRight/PreviewPanel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+theme_override_fonts/font = ExtResource("3_font")
+horizontal_alignment = 1
 
 [node name="Viewfinder" type="Control" parent="."]
 unique_name_in_owner = true
@@ -268,6 +297,11 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
 custom_minimum_size = Vector2(540, 0)
+
+[node name="PreviewTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+wait_time = 3.5
+one_shot = true
 
 [node name="ToastTimer" type="Timer" parent="."]
 unique_name_in_owner = true

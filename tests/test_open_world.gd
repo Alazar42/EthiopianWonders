@@ -238,6 +238,10 @@ func _test_detector_and_camera() -> void:
 	world.tick(DT)
 	check("close to an artifact the detector triggers", target.in_range)
 	check("the HUD prompts the player to take a picture", world.hud.get_node("%PromptPanel").visible)
+	var prompt: Control = world.hud.get_node("%PromptPanel")
+	check("the 'press C' prompt sits in the top right corner", prompt.global_position.x > world.hud.get_viewport_rect().size.x * 0.6
+		and prompt.global_position.y < world.hud.get_viewport_rect().size.y * 0.4, str(prompt.global_position))
+	check("the prompt says to press C", world.hud.get_node("%PromptLabel").text.contains("Press C"))
 	_park_near(world, target, 80.0)
 	world.tick(DT)
 	check("the detector switches off when the jet leaves", not target.in_range)
@@ -319,6 +323,17 @@ func _test_photos_and_challenge() -> void:
 	var saved := Image.load_from_file(world.last_photo_path)
 	check("the saved file is a readable PNG", saved != null and saved.get_width() == 32 and saved.get_height() == 24)
 	check("the file name mentions the artifact", world.last_photo_path.get_file().begins_with(PhotoStore.slug(target.artifact_name)))
+	check("the picture just taken appears in a small window", world.hud.is_preview_visible())
+	var preview: Control = world.hud.get_node("%PreviewPanel")
+	var screen: Vector2 = world.hud.get_viewport_rect().size
+	check("the window is in the top right corner", preview.global_position.x > screen.x * 0.6 and preview.global_position.y < screen.y * 0.4,
+		str(preview.global_position))
+	check("the preview shows the picture and names the artifact", (world.hud.get_node("%PreviewPicture") as TextureRect).texture != null
+		and world.hud.get_node("%PreviewCaption").text == target.artifact_name)
+	world.hud._preview_timer.stop()
+	world.hud._preview_timer.timeout.emit()
+	await create_timer(0.5).timeout
+	check("the preview goes away after a short time", not world.hud.is_preview_visible())
 	check("the artifact counts as captured", target.is_captured and world.captured_count == 1 and world.total_photos == 1)
 	check("the HUD updates the picture count", world.hud.get_node("%ChallengeLabel").text.begins_with("Pictures  1"), world.hud.get_node("%ChallengeLabel").text)
 	check("the same artifact cannot be counted twice", not world.register_shot(target, _synthetic_image()) and world.captured_count == 1)

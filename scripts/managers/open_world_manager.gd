@@ -338,7 +338,7 @@ func _update_hud() -> void:
 	var nearest: ArtifactNode = nearest_artifact()
 	var near: ArtifactNode = nearest_in_range()
 	if near != null:
-		hud.set_prompt("%s detected! Press C or right-click to open the camera" % near.artifact_name)
+		hud.set_prompt("%s detected!\nPress C or right-click to take a picture" % near.artifact_name)
 	else:
 		hud.set_prompt("")
 	if nearest != null:
@@ -464,6 +464,7 @@ func register_shot(target: ArtifactNode, image: Image) -> bool:
 	total_photos += 1
 	hud.set_progress(captured_count, required)
 	hud.flash_shutter()
+	hud.show_photo_preview(image, target.artifact_name)
 	GameSound.play(&"discover")
 	artifact_captured.emit(target, captured_count, required)
 	if captured_count >= required:
