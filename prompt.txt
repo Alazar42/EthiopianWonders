@@ -1,4 +1,4 @@
-make the teleportation just like its on arcade
+make adjustment on the photo capturing feature
 
-make the speed for the get slower and introduce dash mode with will be fixed amount and refills
-again on empty or decreased
+1. let the current taken picture be visible at the top right side in small window for a limited time
+2. the to take the capture press 'C' thing notification should aslo be posioned at the top right corenr keeping the same theme
