@@ -9,11 +9,15 @@ const TOAST_OFFSET: Vector2 = Vector2(0, 40)
 ## Tints of the frame and of the panel under it: green when a picture would count, red otherwise.
 const FRAMED_COLOR: Color = Color(0.4, 1.0, 0.55)
 const LOOSE_COLOR: Color = Color(1.0, 0.45, 0.35)
+const DASH_COLOR: Color = Color(0.6, 0.9, 1.0)
+const LOCKED_COLOR: Color = Color(1.0, 0.6, 0.4)
 
 @onready var _status_panel: Control = %StatusPanel
 @onready var _planet_label: Label = %PlanetLabel
 @onready var _challenge_label: Label = %ChallengeLabel
 @onready var _detector_label: Label = %DetectorLabel
+@onready var _dash_bar: ProgressBar = %DashBar
+@onready var _dash_label: Label = %DashLabel
 @onready var _pause_button: Button = %PauseButton
 @onready var _prompt_panel: Control = %PromptPanel
 @onready var _prompt_label: Label = %PromptLabel
@@ -100,6 +104,12 @@ func set_framed(framed: bool, artifact_name: String) -> void:
 	_frame.modulate = FRAMED_COLOR if framed else LOOSE_COLOR
 	_bottom_panel.modulate = FRAMED_COLOR if framed else LOOSE_COLOR
 	_framed_label.text = ("Framed: %s  -  shoot!" % artifact_name) if framed else "Fit the whole artifact inside the frame"
+
+## The dash meter: `fraction` is 0 to 1. While it is empty and refilling the label says so.
+func set_dash(fraction: float, dashing: bool, locked: bool) -> void:
+	_dash_bar.value = fraction * 100.0
+	_dash_label.text = "Dash (Shift)" if not locked else "Dash recharging"
+	_dash_bar.modulate = DASH_COLOR if dashing else (LOCKED_COLOR if locked else Color.WHITE)
 
 func set_zoom(factor: float) -> void:
 	_zoom_label.text = "Zoom  x%.1f" % factor

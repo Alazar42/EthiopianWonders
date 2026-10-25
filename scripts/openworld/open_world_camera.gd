@@ -14,6 +14,12 @@ enum Mode { CHASE, PHOTO }
 @export var look_height: float = 0.8
 @export var follow_speed: float = 7.0
 @export var chase_fov: float = 65.0
+## Extra field of view while dashing, for a sense of speed.
+@export var dash_fov_boost: float = 12.0
+## The camera pulls back a little while the jet flies between worlds.
+@export var transit_extra_distance: float = 4.0
+@export var transit_extra_height: float = 3.0
+@export var transit_follow_speed: float = 2.6
 @export_group("Photo")
 ## Where the lens sits, relative to the jet.
 @export var lens_offset: Vector3 = Vector3(0.0, 0.5, -1.4)
@@ -31,7 +37,11 @@ var photo_pitch: float = 0.0
 var photo_fov: float = 55.0
 ## 0 in the chase view, 1 once the photo camera is fully in place.
 var blend: float = 0.0
+## Set by the game while the jet flies between worlds.
+var in_transit: bool = false
 
+var _transit_blend: float = 0.0
+var _dash_blend: float = 0.0
 var _rotation := Quaternion.IDENTITY
 var _initialized: bool = false
 
@@ -56,15 +66,19 @@ func update_follow(delta: float) -> void:
 		_rotation = target
 		_initialized = true
 	else:
-		_rotation = _rotation.slerp(target, 1.0 - exp(-follow_speed * delta)).normalized()
+		var speed: float = transit_follow_speed if in_transit else follow_speed
+		_rotation = _rotation.slerp(target, 1.0 - exp(-speed * delta)).normalized()
+	_transit_blend = move_toward(_transit_blend, 1.0 if in_transit else 0.0, delta * 0.8)
+	_dash_blend = move_toward(_dash_blend, 1.0 if ship.dashing else 0.0, delta * 4.0)
 	blend = move_toward(blend, 1.0 if mode == Mode.PHOTO else 0.0, delta / maxf(blend_time, 0.01))
 	var chase_basis := Basis(_rotation)
-	var chase_origin: Vector3 = ship.global_position + chase_basis * Vector3(0.0, follow_height, follow_distance)
+	var chase_origin: Vector3 = ship.global_position + chase_basis * Vector3(0.0, follow_height + transit_extra_height * _transit_blend,
+			follow_distance + transit_extra_distance * _transit_blend)
 	var chase_look: Vector3 = ship.global_position + chase_basis * Vector3(0.0, look_height, -look_ahead)
 	var chase_pose := Transform3D(chase_basis, chase_origin).looking_at(chase_look, chase_basis.y)
 	if blend <= 0.0:
 		global_transform = chase_pose
-		fov = chase_fov
+		fov = chase_fov + dash_fov_boost * _dash_blend
 		return
 	var photo_basis: Basis = ship_basis * Basis(Vector3.UP, photo_yaw) * Basis(Vector3.RIGHT, photo_pitch)
 	var photo_pose := Transform3D(photo_basis, ship.global_position + ship_basis * lens_offset)
@@ -72,7 +86,7 @@ func update_follow(delta: float) -> void:
 	global_transform = Transform3D(
 			Basis(chase_pose.basis.get_rotation_quaternion().slerp(photo_pose.basis.get_rotation_quaternion(), t)),
 			chase_pose.origin.lerp(photo_pose.origin, t))
-	fov = lerpf(chase_fov, photo_fov, t)
+	fov = lerpf(chase_fov + dash_fov_boost * _dash_blend, photo_fov, t)
 
 func is_photo_ready() -> bool:
 	return mode == Mode.PHOTO and blend >= 0.95

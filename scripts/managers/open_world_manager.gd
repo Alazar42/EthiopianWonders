@@ -2,10 +2,11 @@ class_name OpenWorldManager
 extends Node3D
 ## Open-world mode. The jet flies freely over a planet. Each planet sets a challenge: photograph
 ## a random handful of its artifacts (their models come from assets/artifacts). Once the challenge
-## is done the gate opens, and flying through it teleports the jet to another world.
+## is done the gate opens, and flying through it launches the jet on an arc through space to
+## another world, the same flight the arcade mode has.
 ## All simulation goes through tick(), so tests can step the game without a real clock.
 
-enum Mode { FLYING, PHOTO, PAUSED, TELEPORTING }
+enum Mode { FLYING, PHOTO, PAUSED, TRANSIT }
 
 signal planet_entered(planet: PlanetController, required: int)
 signal artifact_captured(artifact: ArtifactNode, captured: int, required: int)
@@ -22,6 +23,8 @@ signal challenge_completed(planet_name: String)
 @export var planet_scenes: Array[PackedScene] = []
 @export var artifact_scene: PackedScene
 @export var gate_scene: PackedScene
+## Ethiopian stations and satellites drifting beside the flight between worlds.
+@export var traffic_scenes: Array[PackedScene] = []
 @export_file("*.tscn") var main_menu_scene: String = "res://scenes/menus/main_menu.tscn"
 @export_group("Challenge")
 ## How many artifacts a planet hides: a random number from `min_artifacts` to `max_artifacts`.
@@ -33,6 +36,18 @@ signal challenge_completed(planet_name: String)
 @export var scenery_clearance: float = 12.0
 ## When off, the gate is open from the start.
 @export var gate_requires_challenge: bool = true
+@export_group("Flight between worlds")
+@export var flight_speed: float = 16.0
+## Seconds the sky and fog take to blend into the next world's mood during the flight.
+@export var mood_blend_time: float = 4.0
+## Distance between one planet and the next.
+@export var transition_gap_min: float = 56.0
+@export var transition_gap_max: float = 84.0
+@export var transition_clearance: float = 14.0
+@export var transition_attempts: int = 32
+@export_range(0.0, 90.0) var max_launch_yaw: float = 40.0
+@export var traffic_min: int = 2
+@export var traffic_max: int = 4
 @export_group("Photo camera")
 @export var mouse_sensitivity: float = 0.0028
 @export var photo_look_sensitivity: float = 0.0022
@@ -65,6 +80,15 @@ var _mode_before_pause: Mode = Mode.FLYING
 var _capturing: bool = false
 var _gate_toast_cooldown: float = 0.0
 var _model_paths: PackedStringArray = PackedStringArray()
+var _mood_tween: Tween
+var _transit_segment: RouteSegment
+var _transit_distance: float = 0.0
+var _transit_planet: PlanetController
+var _transit_scene: PackedScene
+var _transit_end_up: Vector3 = Vector3.UP
+var _transit_end_forward: Vector3 = Vector3.FORWARD
+var _transit_ring: Node3D
+var _transit_frame := RouteFrame.new()
 
 func _ready() -> void:
 	hud.pause_requested.connect(toggle_pause)
@@ -87,6 +111,8 @@ func start_new_run() -> void:
 	planets_cleared = 0
 	_current_scene = null
 	_capturing = false
+	_end_transit_state()
+	ship.reset_dash()
 	pause_menu.hide_pause()
 	hud.show_viewfinder(false)
 	open_camera.exit_photo()
@@ -97,39 +123,48 @@ func start_new_run() -> void:
 	screen_fade.fade_in()
 	GameSound.start_music()
 	GameSound.set_engine(true)
-	hud.show_toast("Welcome pilot! Mouse turns the jet, W and S drive, Space brakes. Follow the beams of light.")
+	hud.show_toast("Welcome pilot! Mouse turns the jet, W and S drive, Shift dashes, Space brakes. Follow the beams of light.")
 
 ## Replaces the current world with `scene`'s planet and sets its challenge.
 func enter_planet(scene: PackedScene) -> void:
 	_clear_world()
+	_end_transit_state()
 	_current_scene = scene
 	planet = scene.instantiate() as PlanetController
 	world_root.add_child(planet)
 	planet.global_transform = Transform3D(Basis.from_euler(Vector3(rng.randf() * TAU, rng.randf() * TAU, rng.randf() * TAU)), Vector3.ZERO)
-	apply_mood(planet)
+	apply_mood(planet, true)
+	var start_dir: Vector3 = _random_direction()
+	ship.place_on(planet.global_position, planet.radius, start_dir, _random_tangent(start_dir))
+	_begin_challenge(true)
+	open_camera.snap()
+
+## Sets the challenge on `planet`: counts, artifacts and the gate. The jet must already be placed
+## above the planet; the artifacts keep their distance from where it is.
+func _begin_challenge(first_visit_toast: bool) -> void:
 	planets_visited += 1
 	required = rng.randi_range(mini(min_artifacts, max_artifacts), maxi(min_artifacts, max_artifacts))
 	captured_count = 0
 	challenge_complete = false
 	_model_paths = ArtifactLibrary.list_models()
-
-	var start_dir: Vector3 = _random_direction()
-	ship.place_on(planet.global_position, planet.radius, start_dir, _random_tangent(start_dir))
-	var occupied: Array[Vector3] = [start_dir]
+	var occupied: Array[Vector3] = [ship.direction]
 	var spots: Array[Vector3] = _scatter(required + 1, occupied)
 	var gate_dir: Vector3 = spots.pop_back()
 	_spawn_artifacts(spots)
 	_spawn_gate(gate_dir)
-	open_camera.snap()
 	hud.set_planet(planet.planet_name, required)
 	hud.set_detector("Detector: searching")
-	hud.show_toast("%s: photograph %d artifact%s" % [planet.planet_name, required, "" if required == 1 else "s"])
+	hud.show_toast(("%s: photograph %d artifact%s" if first_visit_toast else "Arrived at %s! Photograph %d artifact%s")
+			% [planet.planet_name, required, "" if required == 1 else "s"])
 	planet_entered.emit(planet, required)
 
-func _clear_world() -> void:
+## Frees everything in the world except the nodes in `keep`.
+func _clear_world(keep: Array[Node] = []) -> void:
 	artifacts.clear()
 	gate = null
 	for child in world_root.get_children():
+		if child in keep:
+			continue
 		child.queue_free()
 		world_root.remove_child(child)
 
@@ -206,11 +241,19 @@ func _scatter(count: int, existing: Array[Vector3]) -> Array[Vector3]:
 	return picked
 
 ## Tints the ambient light and fog to a world's mood.
-func apply_mood(target: PlanetController) -> void:
+func apply_mood(target: PlanetController, instant: bool = false) -> void:
 	if target == null or world_environment == null or world_environment.environment == null:
 		return
-	world_environment.environment.ambient_light_color = target.ambient_color
-	world_environment.environment.fog_light_color = target.fog_color
+	var env: Environment = world_environment.environment
+	if _mood_tween:
+		_mood_tween.kill()
+	if instant:
+		env.ambient_light_color = target.ambient_color
+		env.fog_light_color = target.fog_color
+		return
+	_mood_tween = create_tween().set_parallel(true)
+	_mood_tween.tween_property(env, "ambient_light_color", target.ambient_color, mood_blend_time)
+	_mood_tween.tween_property(env, "fog_light_color", target.fog_color, mood_blend_time)
 
 # --- state -------------------------------------------------------------------------------------------
 
@@ -223,7 +266,7 @@ func is_flying() -> bool:
 	return mode == Mode.FLYING
 
 func toggle_pause() -> void:
-	if mode == Mode.FLYING:
+	if mode == Mode.FLYING or mode == Mode.TRANSIT:
 		_mode_before_pause = mode
 		_set_mode(Mode.PAUSED)
 		get_tree().paused = true
@@ -255,13 +298,17 @@ func tick(delta: float) -> void:
 			_tick_flying(delta)
 		Mode.PHOTO:
 			_tick_photo(delta)
+		Mode.TRANSIT:
+			_tick_transit(delta)
 
 func _tick_flying(delta: float) -> void:
 	var pilot: bool = is_inside_tree() and not get_tree().paused
 	var throttle: float = Input.get_axis("move_back", "move_forward") if pilot else 0.0
 	var steer: float = Input.get_axis("move_left", "move_right") if pilot else 0.0
 	var braking: bool = pilot and Input.is_action_pressed("ship_stop")
-	ship.advance(delta, throttle, braking, steer)
+	var dash: bool = pilot and Input.is_action_pressed("dash")
+	ship.advance(delta, throttle, braking, steer, dash)
+	hud.set_dash(ship.dash_fraction(), ship.dashing, ship.is_dash_locked())
 	_update_detectors()
 	_update_hud()
 	if gate and gate.crossed_by(ship.global_position):
@@ -269,6 +316,7 @@ func _tick_flying(delta: float) -> void:
 
 func _tick_photo(delta: float) -> void:
 	ship.advance(delta, 0.0, true, 0.0)
+	hud.set_dash(ship.dash_fraction(), false, ship.is_dash_locked())
 	var zoom_input: float = Input.get_axis("move_back", "move_forward") if not get_tree().paused else 0.0
 	if zoom_input != 0.0:
 		open_camera.zoom(zoom_input * zoom_per_second * delta)
@@ -429,7 +477,7 @@ func _complete_challenge() -> void:
 	hud.show_toast("Challenge complete! Pictures are in %s. Fly through the glowing gate to reach the next world." % PhotoStore.folder_on_disk(photo_folder))
 	challenge_completed.emit(planet.planet_name)
 
-# --- teleport ----------------------------------------------------------------------------------------
+# --- flight between worlds ---------------------------------------------------------------------------
 
 func _on_gate_crossed() -> void:
 	if gate.unlocked or not gate_requires_challenge:
@@ -440,19 +488,132 @@ func _on_gate_crossed() -> void:
 		hud.show_toast("The gate is shut. Photograph %d more artifact%s first." % [left, "" if left == 1 else "s"])
 		GameSound.play(&"hit")
 
-## Flies the jet through to another planet. `animated` fades the screen out and back in.
-func teleport_to_next_world(animated: bool = true) -> void:
+## Launches the jet through the gate on an arc through space to the next planet, the same hop the
+## arcade route makes: the new world waits at the end of the arc, with a ring to fly through and
+## Ethiopian satellites drifting by. The jet arrives at rest above the new planet.
+func teleport_to_next_world() -> void:
 	if mode != Mode.FLYING:
 		return
-	_set_mode(Mode.TELEPORTING)
+	var scene: PackedScene = _pick_planet_scene()
+	var dest := scene.instantiate() as PlanetController
+	var start := RouteFrame.new()
+	start.center = planet.global_position
+	start.radius = ship.altitude_radius()
+	start.planet = planet
+	start.set_frame(ship.global_position, ship.heading, ship.direction)
+	var plan: Dictionary = _plan_transition(dest, start)
+	world_root.add_child(dest)
+	dest.global_position = plan["center"]
+	dest.global_basis = Basis(Vector3.UP, rng.randf() * TAU)
+	_transit_planet = dest
+	_transit_scene = scene
+	_transit_end_up = plan["up"]
+	_transit_end_forward = plan["forward"]
+	_transit_segment = RouteSegment.build_transition(
+			start, plan["landing"], plan["up"], plan["forward"], plan["lift"],
+			dest, dest.global_position, dest.radius + ship.hover_height)
+	_transit_distance = 0.0
+	_spawn_arrival_ring(plan["landing"], plan["up"], plan["forward"])
+	_spawn_traffic(_transit_segment)
+	apply_mood(dest)
+	hud.set_prompt("")
+	hud.set_detector("Flying to %s" % dest.planet_name)
+	hud.show_toast("Launching to %s!" % dest.planet_name)
+	open_camera.in_transit = true
+	ship.speed = 0.0
+	ship.dashing = false
+	_set_mode(Mode.TRANSIT)
 	GameSound.play(&"launch")
-	if animated:
-		await screen_fade.fade_out(0.35).finished
-	enter_planet(_pick_planet_scene())
+
+## Looks for a landing that keeps the new planet clear of the one being left. Varies the launch
+## heading, tilt, gap and lift, and returns the best candidate found.
+func _plan_transition(dest: PlanetController, start: RouteFrame) -> Dictionary:
+	var best_clearance: float = -INF
+	var best: Dictionary = {}
+	for attempt in transition_attempts:
+		var yaw: float = rng.randf_range(-deg_to_rad(max_launch_yaw), deg_to_rad(max_launch_yaw))
+		var phi: float = deg_to_rad(rng.randf_range(38.0, 62.0))
+		var gap: float = rng.randf_range(transition_gap_min, transition_gap_max + 1.5 * float(attempt))
+		var lift: float = rng.randf_range(0.0, 3.0)
+		var launch_forward: Vector3 = start.forward.rotated(start.up, yaw)
+		var launch_right: Vector3 = launch_forward.cross(start.up)
+		var landing: Vector3 = start.position + launch_forward * gap + start.up * lift
+		var landing_up: Vector3 = start.up.rotated(launch_right, phi)
+		var landing_forward: Vector3 = launch_forward.rotated(launch_right, phi)
+		var dest_center: Vector3 = landing - landing_up * (dest.radius + ship.hover_height)
+		var clearance: float = dest_center.distance_to(planet.global_position) - planet.radius - dest.radius
+		if clearance > best_clearance:
+			best_clearance = clearance
+			best = {
+				"landing": landing, "up": landing_up, "forward": landing_forward,
+				"center": dest_center, "lift": lift, "clearance": clearance,
+			}
+		if clearance >= transition_clearance:
+			break
+	return best
+
+## The ring the jet flies through as it reaches the new world.
+func _spawn_arrival_ring(landing: Vector3, up: Vector3, forward: Vector3) -> void:
+	_transit_ring = gate_scene.instantiate() as Node3D
+	world_root.add_child(_transit_ring)
+	var ring := _transit_ring as OpenWorldGate
+	var base: Vector3 = landing - up * ring.ring_height
+	_transit_ring.global_transform = Transform3D(Basis(forward.cross(up).normalized(), up, -forward), base)
+	ring.set_unlocked(true)
+
+## Scatters stations and satellites beside the flight, never on the path and never inside a planet.
+func _spawn_traffic(seg: RouteSegment) -> void:
+	if traffic_scenes.is_empty():
+		return
+	var frame := RouteFrame.new()
+	var last_kind: int = -1
+	for i in rng.randi_range(traffic_min, traffic_max):
+		seg.sample(seg.start_distance + seg.length * rng.randf_range(0.18, 0.82), frame)
+		var side: float = 1.0 if rng.randf() < 0.5 else -1.0
+		var pos: Vector3 = frame.position + frame.right * side * rng.randf_range(24.0, 42.0) \
+				+ frame.up * rng.randf_range(-8.0, 14.0) + frame.forward * rng.randf_range(-8.0, 8.0)
+		if pos.distance_to(planet.global_position) < planet.radius + 16.0 \
+				or pos.distance_to(_transit_planet.global_position) < _transit_planet.radius + 16.0:
+			continue
+		var kind: int = rng.randi() % traffic_scenes.size()
+		if kind == last_kind and traffic_scenes.size() > 1:
+			kind = (kind + 1) % traffic_scenes.size()
+		last_kind = kind
+		var craft := traffic_scenes[kind].instantiate() as Node3D
+		world_root.add_child(craft)
+		craft.global_position = pos
+		craft.global_basis = Basis.from_euler(Vector3(rng.randf() * 0.6, rng.randf() * TAU, rng.randf() * 0.6)) \
+				* Basis.from_scale(Vector3.ONE * rng.randf_range(0.8, 1.25))
+
+func _tick_transit(delta: float) -> void:
+	ship.recharge(delta)
+	hud.set_dash(ship.dash_fraction(), false, ship.is_dash_locked())
+	_transit_distance += flight_speed * delta
+	_transit_segment.sample(minf(_transit_distance, _transit_segment.length), _transit_frame)
+	ship.fly_pose(_transit_frame)
+	if _transit_distance >= _transit_segment.length:
+		_arrive()
+
+## The flight is over: the old world and its things are removed and the new world sets its challenge.
+func _arrive() -> void:
+	var dest: PlanetController = _transit_planet
+	var keep: Array[Node] = [dest]
+	if _transit_ring:
+		keep.append(_transit_ring)
+	_clear_world(keep)
+	_current_scene = _transit_scene
+	planet = dest
+	ship.place_on(dest.global_position, dest.radius, _transit_end_up, _transit_end_forward)
+	_end_transit_state()
+	_begin_challenge(false)
 	_set_mode(Mode.FLYING)
-	if animated:
-		screen_fade.fade_in(0.7)
 	GameSound.play(&"arrive")
+
+func _end_transit_state() -> void:
+	_transit_segment = null
+	_transit_planet = null
+	_transit_ring = null
+	open_camera.in_transit = false
 
 # --- input -------------------------------------------------------------------------------------------
 

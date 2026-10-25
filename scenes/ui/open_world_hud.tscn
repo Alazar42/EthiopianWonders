@@ -65,7 +65,7 @@ layout_mode = 1
 offset_left = 20.0
 offset_top = 16.0
 offset_right = 380.0
-offset_bottom = 150.0
+offset_bottom = 196.0
 mouse_filter = 2
 theme_type_variation = &"HudPanel"
 
@@ -91,6 +91,26 @@ layout_mode = 2
 theme_type_variation = &"HintLabel"
 theme_override_fonts/font = ExtResource("3_font")
 text = "Detector"
+
+[node name="DashRow" type="HBoxContainer" parent="FlightGroup/StatusPanel/Rows"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="DashLabel" type="Label" parent="FlightGroup/StatusPanel/Rows/DashRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+theme_override_fonts/font = ExtResource("3_font")
+text = "Dash (Shift)"
+
+[node name="DashBar" type="ProgressBar" parent="FlightGroup/StatusPanel/Rows/DashRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 22)
+layout_mode = 2
+size_flags_vertical = 4
+value = 100.0
+show_percentage = false
 
 [node name="PauseButton" type="Button" parent="FlightGroup"]
 unique_name_in_owner = true
@@ -232,9 +252,9 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -380.0
+offset_left = -290.0
 offset_top = 96.0
-offset_right = 380.0
+offset_right = 290.0
 offset_bottom = 182.0
 grow_horizontal = 2
 mouse_filter = 2
@@ -247,7 +267,7 @@ theme_override_fonts/font = ExtResource("3_font")
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
-custom_minimum_size = Vector2(700, 0)
+custom_minimum_size = Vector2(540, 0)
 
 [node name="ToastTimer" type="Timer" parent="."]
 unique_name_in_owner = true

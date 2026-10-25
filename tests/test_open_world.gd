@@ -32,6 +32,7 @@ func _run() -> void:
 	await _test_detector_and_camera()
 	await _test_photos_and_challenge()
 	await _test_gate_and_teleport()
+	await _test_speed_and_dash()
 	await _test_random_counts()
 	await _test_pause_and_input()
 	_clean_photos()
@@ -333,42 +334,154 @@ func _test_photos_and_challenge() -> void:
 	check("the planet counts as cleared", world.planets_cleared == 1)
 	await _free_world(world)
 
+func _fly_into_gate(world: OpenWorldManager, approach: Vector3) -> void:
+	world.ship.place_on(world.planet.global_position, world.planet.radius, approach, world.gate.axis())
+	world.gate.crossed_by(world.ship.global_position) # primes the crossing test at the new spot
+	world.tick(DT)
+
 func _test_gate_and_teleport() -> void:
-	print("gate and teleport")
+	print("gate and flight to the next world")
 	var world := await _new_world()
 	var first_planet: PlanetController = world.planet
-	var gate_dir: Vector3 = (world.gate.global_position - world.planet.global_position).normalized()
+	var fade_at_start: float = world.screen_fade.opacity()
 	var approach: Vector3 = (world.gate.global_position - world.gate.axis() * 9.0 - world.planet.global_position).normalized()
-	world.ship.place_on(world.planet.global_position, world.planet.radius, approach, world.gate.axis())
-	world.tick(DT)
+	_fly_into_gate(world, approach)
 	check("the ship starts in front of the gate", (world.ship.global_position - world.gate.ring_center()).dot(world.gate.axis()) < -4.0)
 	Input.action_press("move_forward")
-	_step(world, 2.0)
+	_step(world, 4.0)
 	Input.action_release("move_forward")
-	check("a shut gate does not teleport", world.planet == first_planet and world.mode == OpenWorldManager.Mode.FLYING)
+	check("a shut gate does not launch the jet", world.planet == first_planet and world.mode == OpenWorldManager.Mode.FLYING)
 	check("a shut gate tells the player why", world.hud.get_node("%ToastLabel").text.contains("shut"), world.hud.get_node("%ToastLabel").text)
 	for artifact in world.artifacts:
 		world.register_shot(artifact, _synthetic_image())
 	check("the challenge is done", world.gate.unlocked)
 	var scene_before := world._current_scene
-	world.ship.place_on(world.planet.global_position, world.planet.radius, approach, world.gate.axis())
-	world.tick(DT)
+	var old_center: Vector3 = world.planet.global_position
+	var old_radius: float = world.planet.radius
+	_fly_into_gate(world, approach)
 	Input.action_press("move_forward")
-	_step(world, 0.8)
+	var steps: int = 0
+	while world.mode == OpenWorldManager.Mode.FLYING and steps < 600:
+		world.tick(DT)
+		steps += 1
 	Input.action_release("move_forward")
-	await create_timer(1.2).timeout
-	check("flying through the open gate teleports to another world", world.planet != first_planet and world._current_scene != scene_before)
-	check("the old world is gone", not is_instance_valid(first_planet) or first_planet.is_queued_for_deletion() or first_planet.get_parent() == null)
+	check("flying through the open gate launches the jet into space", world.mode == OpenWorldManager.Mode.TRANSIT, str(world.mode))
+	check("the next world waits at the end of the flight", world._transit_planet != null and world._transit_planet != first_planet)
+	var dest: PlanetController = world._transit_planet
+	check("the new planet does not overlap the old one",
+		dest.global_position.distance_to(old_center) > old_radius + dest.radius + 4.0, str(dest.global_position.distance_to(old_center)))
+	check("the camera pulls back for the flight", world.open_camera.in_transit)
+	check("the old world is still in view during the flight", is_instance_valid(first_planet) and first_planet.is_inside_tree())
+	check("an arrival ring waits above the new planet", world._transit_ring != null and world._transit_ring.is_inside_tree())
+	var traffic: int = 0
+	for child in world.world_root.get_children():
+		if child is Node3D and not child is PlanetController and not child is OpenWorldGate and not child is ArtifactNode:
+			traffic += 1
+	check("Ethiopian satellites drift beside the flight", traffic >= 1, str(traffic))
+	var upright: bool = true
+	var ticks_in_flight: int = 0
+	var closest_to_old: float = INF
+	while world.mode == OpenWorldManager.Mode.TRANSIT and ticks_in_flight < 1500:
+		world.tick(DT)
+		world.open_camera.update_follow(DT)
+		ticks_in_flight += 1
+		var near_center: Vector3 = old_center if world.ship.global_position.distance_to(old_center) - old_radius < world.ship.global_position.distance_to(dest.global_position) - dest.radius else dest.global_position
+		var radial: Vector3 = (world.ship.global_position - near_center).normalized()
+		upright = upright and world.ship.global_basis.y.dot(radial) > 0.0 and absf(world.ship.global_basis.determinant() - 1.0) < 0.01
+		closest_to_old = minf(closest_to_old, world.ship.global_position.distance_to(old_center) - old_radius)
+	check("the flight takes a few seconds, not an instant", ticks_in_flight > 120, str(ticks_in_flight))
+	check("the jet is never upside down during the flight", upright)
+	check("the flight ends", world.mode == OpenWorldManager.Mode.FLYING, str(world.mode))
+	check("the jet arrives on the new world", world.planet == dest and world._current_scene != scene_before)
+	check("the old world is gone", first_planet.is_queued_for_deletion() or first_planet.get_parent() == null)
+	check("the jet sits above the new planet", absf(world.ship.global_position.distance_to(dest.global_position) - (dest.radius + world.ship.hover_height)) < 0.05)
+	check("the jet arrives at rest and upright", absf(world.ship.speed) < 0.01 and world.ship.get_up().dot((world.ship.global_position - dest.global_position).normalized()) > 0.999)
 	check("the new world has its own challenge", world.captured_count == 0 and not world.challenge_complete and world.artifacts.size() == world.required)
-	check("the new world's gate is shut again", not world.gate.unlocked)
-	check("the player is flying again", world.mode == OpenWorldManager.Mode.FLYING)
+	check("the new world's gate is shut again", world.gate != null and not world.gate.unlocked)
 	check("the new planet counts as a visit", world.planets_visited == 2)
-	check("the jet sits above the new planet", absf(world.ship.global_position.distance_to(world.planet.global_position) - (world.planet.radius + world.ship.hover_height)) < 0.01)
 	check("the total picture count is kept", world.total_photos > 0)
-	check("the screen fades back in", world.screen_fade.opacity() < 0.5, str(world.screen_fade.opacity()))
+	check("the camera returns to the normal chase", not world.open_camera.in_transit)
+	check("the screen was never blacked out", world.screen_fade.opacity() <= fade_at_start + 0.001, str(world.screen_fade.opacity()))
 	world.gate_requires_challenge = false
 	world.gate.set_unlocked(true)
 	check("the gate can be set to always open", world.gate.unlocked)
+	# The next hop works from the new world's own gate.
+	var first_dest: PlanetController = world.planet
+	world.teleport_to_next_world()
+	check("another flight can start from the new world", world.mode == OpenWorldManager.Mode.TRANSIT)
+	steps = 0
+	while world.mode == OpenWorldManager.Mode.TRANSIT and steps < 1500:
+		world.tick(DT)
+		steps += 1
+	check("and lands on a third world", world.planet != first_dest and world.mode == OpenWorldManager.Mode.FLYING)
+	await _free_world(world)
+
+func _test_speed_and_dash() -> void:
+	print("slower jet and dash")
+	var world := await _new_world()
+	var ship := world.ship
+	check("the normal top speed is slow", ship.max_speed <= 11.0, str(ship.max_speed))
+	check("the dash meter starts full", is_equal_approx(ship.dash_fraction(), 1.0))
+	Input.action_press("move_forward")
+	_step(world, 4.0)
+	check("without dashing the jet tops out at the slow speed", absf(ship.speed - ship.max_speed) < 0.05, str(ship.speed))
+	Input.action_press("dash")
+	_step(world, 0.5)
+	check("holding Shift dashes faster than normal", ship.speed > ship.max_speed * 1.4 and ship.dashing, str(ship.speed))
+	check("dashing drains the meter", ship.dash_fraction() < 0.95 and ship.dash_fraction() > 0.0, str(ship.dash_fraction()))
+	check("the HUD shows the dash meter", world.hud.get_node("%DashBar").value < 95.0, str(world.hud.get_node("%DashBar").value))
+	var before: float = ship.dash_fraction()
+	_step(world, 0.5)
+	check("the meter keeps draining", ship.dash_fraction() < before)
+	var guard: int = 0
+	while not ship.is_dash_locked() and guard < 600:
+		world.tick(DT)
+		guard += 1
+	check("the dash runs out after a fixed amount", ship.is_dash_locked() and guard > 60 and guard < 400, str(guard))
+	world.tick(DT)
+	check("an empty meter ends the dash", not ship.dashing and ship.dash_fraction() < 0.01)
+	var empty_speed: float = ship.speed
+	_step(world, 0.2)
+	check("holding Shift on an empty meter does nothing", not ship.dashing and ship.speed <= empty_speed + 0.01)
+	check("the meter is locked while it recharges", ship.is_dash_locked())
+	Input.action_release("dash")
+	_step(world, 1.5)
+	check("the meter refills after the dash", ship.dash_energy > 0.0 and ship.dash_fraction() > 0.0)
+	var level: float = ship.dash_fraction()
+	_step(world, 2.0)
+	check("it keeps refilling over time", ship.dash_fraction() > level)
+	_step(world, 8.0)
+	check("it refills completely", is_equal_approx(ship.dash_fraction(), 1.0), str(ship.dash_fraction()))
+	check("the lock is lifted once it has refilled", not ship.is_dash_locked())
+	Input.action_press("dash")
+	_step(world, 0.5)
+	check("the dash works again after refilling", ship.dashing and ship.speed > ship.max_speed * 1.2)
+	Input.action_release("dash")
+	_step(world, 0.2)
+	var partial: float = ship.dash_fraction()
+	_step(world, 3.0)
+	check("a part-used meter refills too", ship.dash_fraction() > partial)
+	_step(world, 2.0)
+	Input.action_release("move_forward")
+	Input.action_press("dash")
+	_step(world, 0.3)
+	check("dash also pushes the jet forward without W", ship.dashing)
+	Input.action_release("dash")
+	Input.action_press("ship_stop")
+	Input.action_press("dash")
+	_step(world, 0.3)
+	check("braking beats dashing", not ship.dashing)
+	Input.action_release("ship_stop")
+	Input.action_release("dash")
+	var cam := world.open_camera
+	Input.action_press("move_forward")
+	Input.action_press("dash")
+	_step(world, 1.0)
+	check("the view widens while dashing", cam.fov > cam.chase_fov + 3.0, str(cam.fov))
+	Input.action_release("dash")
+	Input.action_release("move_forward")
+	_step(world, 1.5)
+	check("and settles back", cam.fov < cam.chase_fov + 1.0, str(cam.fov))
 	await _free_world(world)
 
 func _test_random_counts() -> void:

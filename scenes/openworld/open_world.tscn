@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scripts/managers/open_world_manager.gd" id="1_manager"]
 [ext_resource type="Script" path="res://scripts/openworld/open_world_camera.gd" id="2_camera"]
@@ -15,6 +15,9 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/open_world_hud.tscn" id="13_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="14_pause"]
 [ext_resource type="PackedScene" path="res://scenes/ui/screen_fade.tscn" id="15_fade"]
+[ext_resource type="PackedScene" path="res://scenes/space/space_nss12.tscn" id="16_nss12"]
+[ext_resource type="PackedScene" path="res://scenes/space/space_etrss1.tscn" id="17_etrss1"]
+[ext_resource type="PackedScene" path="res://scenes/space/space_selam_relay.tscn" id="18_selam"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_world"]
 panorama = ExtResource("3_sky")
@@ -46,6 +49,7 @@ screen_fade = NodePath("ScreenFade")
 planet_scenes = Array[PackedScene]([ExtResource("8_highland"), ExtResource("9_rift"), ExtResource("10_simien"), ExtResource("11_danakil"), ExtResource("12_bale")])
 artifact_scene = ExtResource("6_artifact")
 gate_scene = ExtResource("7_gate")
+traffic_scenes = Array[PackedScene]([ExtResource("16_nss12"), ExtResource("17_etrss1"), ExtResource("18_selam")])
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_world")
