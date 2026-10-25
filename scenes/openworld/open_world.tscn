@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://scripts/managers/open_world_manager.gd" id="1_manager"]
 [ext_resource type="Script" path="res://scripts/openworld/open_world_camera.gd" id="2_camera"]
@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/open_world_hud.tscn" id="13_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="14_pause"]
 [ext_resource type="PackedScene" path="res://scenes/ui/screen_fade.tscn" id="15_fade"]
+[ext_resource type="PackedScene" path="res://scenes/ui/photo_album.tscn" id="19_album"]
 [ext_resource type="PackedScene" path="res://scenes/space/space_nss12.tscn" id="16_nss12"]
 [ext_resource type="PackedScene" path="res://scenes/space/space_etrss1.tscn" id="17_etrss1"]
 [ext_resource type="PackedScene" path="res://scenes/space/space_selam_relay.tscn" id="18_selam"]
@@ -37,7 +38,7 @@ fog_light_color = Color(0.72, 0.84, 0.96, 1)
 fog_density = 0.00028
 fog_sky_affect = 0.3
 
-[node name="OpenWorld" type="Node3D" node_paths=PackedStringArray("ship", "open_camera", "world_environment", "world_root", "hud", "pause_menu", "screen_fade")]
+[node name="OpenWorld" type="Node3D" node_paths=PackedStringArray("ship", "open_camera", "world_environment", "world_root", "hud", "pause_menu", "photo_album", "screen_fade")]
 script = ExtResource("1_manager")
 ship = NodePath("Ship")
 open_camera = NodePath("OpenWorldCamera")
@@ -45,6 +46,7 @@ world_environment = NodePath("WorldEnvironment")
 world_root = NodePath("WorldRoot")
 hud = NodePath("UI/OpenWorldHUD")
 pause_menu = NodePath("UI/PauseMenu")
+photo_album = NodePath("UI/PhotoAlbum")
 screen_fade = NodePath("ScreenFade")
 planet_scenes = Array[PackedScene]([ExtResource("8_highland"), ExtResource("9_rift"), ExtResource("10_simien"), ExtResource("11_danakil"), ExtResource("12_bale")])
 artifact_scene = ExtResource("6_artifact")
@@ -84,3 +86,6 @@ directional_shadow_max_distance = 60.0
 [node name="OpenWorldHUD" parent="UI" instance=ExtResource("13_hud")]
 
 [node name="PauseMenu" parent="UI" instance=ExtResource("14_pause")]
+album_enabled = true
+
+[node name="PhotoAlbum" parent="UI" instance=ExtResource("19_album")]

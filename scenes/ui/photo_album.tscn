@@ -1,0 +1,166 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/photo_album.gd" id="1_album"]
+[ext_resource type="Theme" path="res://assets/ui/game_theme.tres" id="2_theme"]
+
+[node name="PhotoAlbum" type="Control"]
+process_mode = 3
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_album")
+
+[node name="Dim" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.01, 0.02, 0.06, 0.78)
+
+[node name="Center" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Card" type="PanelContainer" parent="Center"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"CardPanel"
+
+[node name="Content" type="VBoxContainer" parent="Center/Card"]
+custom_minimum_size = Vector2(800, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Header" type="Label" parent="Center/Card/Content"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "PHOTO ALBUM"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Stack" type="Control" parent="Center/Card/Content"]
+custom_minimum_size = Vector2(0, 400)
+layout_mode = 2
+
+[node name="GridScroll" type="ScrollContainer" parent="Center/Card/Content/Stack"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="Grid" type="GridContainer" parent="Center/Card/Content/Stack/GridScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 4
+
+[node name="EmptyLabel" type="Label" parent="Center/Card/Content/Stack"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -50.0
+offset_right = 300.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"HintLabel"
+text = "No pictures yet. Fly in Open World, get close to an artifact and press C to take one."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Viewer" type="VBoxContainer" parent="Center/Card/Content/Stack"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="Picture" type="TextureRect" parent="Center/Card/Content/Stack/Viewer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Caption" type="Label" parent="Center/Card/Content/Stack/Viewer"]
+unique_name_in_owner = true
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="Buttons" type="HBoxContainer" parent="Center/Card/Content/Stack/Viewer"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="PrevButton" type="Button" parent="Center/Card/Content/Stack/Viewer/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "PREVIOUS"
+
+[node name="NextButton" type="Button" parent="Center/Card/Content/Stack/Viewer/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "NEXT"
+
+[node name="GridButton" type="Button" parent="Center/Card/Content/Stack/Viewer/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ALL PICTURES"
+
+[node name="DeleteButton" type="Button" parent="Center/Card/Content/Stack/Viewer/Buttons"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"GreyButton"
+text = "DELETE"
+
+[node name="Hint" type="Label" parent="Center/Card/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = "0 pictures"
+horizontal_alignment = 1
+
+[node name="Footer" type="HBoxContainer" parent="Center/Card/Content"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="FolderButton" type="Button" parent="Center/Card/Content/Footer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "OPEN FOLDER"
+
+[node name="CloseButton" type="Button" parent="Center/Card/Content/Footer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+text = "BACK"

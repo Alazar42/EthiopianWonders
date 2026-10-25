@@ -9,6 +9,8 @@ extends Control
 
 @onready var _play_button: Button = %PlayButton
 @onready var _open_world_button: Button = %OpenWorldButton
+@onready var _album_button: Button = %AlbumButton
+@onready var _album: PhotoAlbum = %PhotoAlbum
 @onready var _quit_button: Button = %QuitButton
 @onready var _board_button: Button = %BoardButton
 @onready var _board_panel: LeaderboardPanel = %LeaderboardPanel
@@ -22,6 +24,8 @@ func _ready() -> void:
 	_open_world_button.pressed.connect(_start.bind(open_world_scene))
 	_board_button.pressed.connect(func() -> void: _board_panel.show_board(Leaderboard.new()))
 	_board_panel.closed.connect(func() -> void: _board_button.grab_focus())
+	_album_button.pressed.connect(_album.show_album)
+	_album.closed.connect(func() -> void: _album_button.grab_focus())
 	_quit_button.pressed.connect(func() -> void: get_tree().quit())
 	_quit_button.visible = not OS.has_feature("web")
 	GameSound.start_music()

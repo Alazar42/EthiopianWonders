@@ -31,6 +31,29 @@ static func list_photos(folder: String = FOLDER) -> PackedStringArray:
 	paths.sort()
 	return paths
 
+## Every picture, the most recently taken first.
+static func list_newest(folder: String = FOLDER) -> PackedStringArray:
+	var paths: Array = Array(list_photos(folder))
+	paths.sort_custom(func(a: String, b: String) -> bool:
+		var time_a: int = FileAccess.get_modified_time(a)
+		var time_b: int = FileAccess.get_modified_time(b)
+		return time_a > time_b if time_a != time_b else a > b)
+	return PackedStringArray(paths)
+
+## "axum_2026-10-25_13-00-05_13600.png" -> "Axum  -  2026-10-25 13:00".
+static func describe(path: String) -> String:
+	var regex := RegEx.new()
+	regex.compile("^(.*)_(\\d{4}-\\d{2}-\\d{2})_(\\d{2})-(\\d{2})-\\d{2}_\\d+$")
+	var found: RegExMatch = regex.search(path.get_file().get_basename())
+	if found == null:
+		return path.get_file().get_basename().replace("_", " ").capitalize()
+	return "%s  -  %s %s:%s" % [found.get_string(1).replace("_", " ").capitalize(), found.get_string(2), found.get_string(3), found.get_string(4)]
+
+## Opens the folder in the system's file browser.
+static func open_folder(folder: String = FOLDER) -> void:
+	DirAccess.make_dir_recursive_absolute(folder)
+	OS.shell_open(folder_on_disk(folder))
+
 ## The folder as the operating system sees it, for telling the player where to look.
 static func folder_on_disk(folder: String = FOLDER) -> String:
 	return ProjectSettings.globalize_path(folder)

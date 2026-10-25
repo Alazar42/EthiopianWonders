@@ -19,6 +19,7 @@ signal challenge_completed(planet_name: String)
 @export var world_root: Node3D
 @export var hud: OpenWorldHUD
 @export var pause_menu: PauseMenu
+@export var photo_album: PhotoAlbum
 @export var screen_fade: ScreenFade
 @export var planet_scenes: Array[PackedScene] = []
 @export var artifact_scene: PackedScene
@@ -95,6 +96,9 @@ func _ready() -> void:
 	pause_menu.resume_requested.connect(toggle_pause)
 	pause_menu.restart_requested.connect(start_new_run)
 	pause_menu.main_menu_requested.connect(return_to_main_menu)
+	photo_album.folder = photo_folder
+	pause_menu.album_requested.connect(photo_album.show_album)
+	photo_album.closed.connect(func() -> void: pause_menu.grab_focus_on_resume())
 	start_new_run()
 
 func _exit_tree() -> void:

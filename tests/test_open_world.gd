@@ -33,6 +33,7 @@ func _run() -> void:
 	await _test_photos_and_challenge()
 	await _test_gate_and_teleport()
 	await _test_speed_and_dash()
+	await _test_album()
 	await _test_random_counts()
 	await _test_pause_and_input()
 	_clean_photos()
@@ -483,6 +484,94 @@ func _test_speed_and_dash() -> void:
 	_step(world, 1.5)
 	check("and settles back", cam.fov < cam.chase_fov + 1.0, str(cam.fov))
 	await _free_world(world)
+
+func _test_album() -> void:
+	print("photo album")
+	var folder := "user://test_album"
+	for file in PhotoStore.list_photos(folder):
+		DirAccess.remove_absolute(file)
+	var names: Array[String] = ["axum_2026-10-25_13-00-05_1.png", "lalibela_2026-10-25_13-05-10_2.png", "fasiledes_gondor_2026-10-25_13-09-30_3.png"]
+	check("a photo name is described nicely", PhotoStore.describe(folder + "/fasiledes_gondor_2026-10-25_13-09-30_3.png") == "Fasiledes Gondor  -  2026-10-25 13:09",
+		PhotoStore.describe(folder + "/fasiledes_gondor_2026-10-25_13-09-30_3.png"))
+	check("an odd file name still gets a title", PhotoStore.describe("user://x/holiday_snap.png") == "Holiday Snap")
+	var album := (load("res://scenes/ui/photo_album.tscn") as PackedScene).instantiate() as PhotoAlbum
+	album.folder = folder
+	root.add_child(album)
+	await process_frame
+	album.show_album()
+	await process_frame
+	check("an empty album says so", album.visible and album.get_node("%EmptyLabel").visible and album.get_node("%Grid").get_child_count() == 0)
+	DirAccess.make_dir_recursive_absolute(folder)
+	for i in names.size():
+		var image := Image.create(160, 90, false, Image.FORMAT_RGB8)
+		image.fill(Color(0.2 * float(i + 1), 0.4, 0.6))
+		image.save_png(folder.path_join(names[i]))
+	album.reload()
+	await process_frame
+	var grid: GridContainer = album.get_node("%Grid")
+	check("every picture gets a thumbnail", grid.get_child_count() == 3, str(grid.get_child_count()))
+	check("thumbnails show the picture", (grid.get_child(0) as Button).icon != null)
+	check("the album hides its empty message", not album.get_node("%EmptyLabel").visible and album.get_node("%GridScroll").visible)
+	check("the hint counts the pictures", album.get_node("%Hint").text.begins_with("3 pictures"), album.get_node("%Hint").text)
+	check("thumbnails have names to hover over", (grid.get_child(0) as Button).tooltip_text != "")
+	(grid.get_child(1) as Button).pressed.emit()
+	check("a click opens the picture large", album.index == 1 and album.get_node("%Viewer").visible and not album.get_node("%GridScroll").visible)
+	check("the large picture is loaded", (album.get_node("%Picture") as TextureRect).texture != null)
+	check("its caption has the title and place in the album", album.get_node("%Caption").text.contains("(2 of 3)"), album.get_node("%Caption").text)
+	album.step(1)
+	check("next shows the next picture", album.index == 2)
+	album.step(1)
+	check("next wraps around", album.index == 0)
+	album.step(-1)
+	check("previous wraps the other way", album.index == 2)
+	var escape := InputEventKey.new()
+	escape.keycode = KEY_ESCAPE
+	escape.pressed = true
+	album._unhandled_input(escape)
+	check("Escape returns from a picture to the grid", album.visible and album.index == -1 and album.get_node("%GridScroll").visible)
+	album.open_photo(0)
+	var doomed: String = album.photos[0]
+	album.delete_current()
+	check("deleting removes the file", not FileAccess.file_exists(doomed))
+	check("the album shows the rest", album.photos.size() == 2 and grid.get_child_count() == 2 and album.index == -1)
+	var closed_flag: Array[bool] = [false]
+	album.closed.connect(func() -> void: closed_flag[0] = true)
+	album._unhandled_input(escape)
+	check("Escape on the grid closes the album", not album.visible and closed_flag[0])
+	album.queue_free()
+	for file in PhotoStore.list_photos(folder):
+		DirAccess.remove_absolute(file)
+	await process_frame
+	var newest: PackedStringArray = PackedStringArray()
+	check("newest-first listing works on an empty folder", PhotoStore.list_newest("user://does_not_exist") == newest)
+
+	# Entry points.
+	var menu := (load(MENU_SCENE) as PackedScene).instantiate() as MainMenu
+	root.add_child(menu)
+	await process_frame
+	check("the main menu has a photo album button", menu.get_node("%AlbumButton") is Button and (menu.get_node("%AlbumButton") as Button).text == "PHOTO ALBUM")
+	(menu.get_node("%AlbumButton") as Button).pressed.emit()
+	await process_frame
+	check("the button opens the album", (menu.get_node("%PhotoAlbum") as PhotoAlbum).visible)
+	(menu.get_node("%PhotoAlbum") as PhotoAlbum).close()
+	menu.queue_free()
+	await process_frame
+	var world := await _new_world()
+	check("the open world pause menu offers the album", world.pause_menu.get_node("%AlbumButton").visible)
+	check("the album reads the same folder the pictures are saved to", world.photo_album.folder == TEST_PHOTOS)
+	world.toggle_pause()
+	world.pause_menu.album_requested.emit()
+	await process_frame
+	check("the pause menu's album button opens the album", world.photo_album.visible)
+	world.photo_album.close()
+	world.toggle_pause()
+	await _free_world(world)
+	var arcade := (load("res://scenes/game/game_world.tscn") as PackedScene).instantiate()
+	root.add_child(arcade)
+	await process_frame
+	check("the arcade pause menu has no album button", not arcade.get_node("UI/PauseMenu/Center/Card/Content/AlbumButton").visible)
+	arcade.queue_free()
+	await process_frame
 
 func _test_random_counts() -> void:
 	print("random challenge sizes")

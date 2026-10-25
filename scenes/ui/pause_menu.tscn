@@ -60,6 +60,12 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "RESTART"
 
+[node name="AlbumButton" type="Button" parent="Center/Card/Content"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "PHOTO ALBUM"
+
 [node name="MainMenuButton" type="Button" parent="Center/Card/Content"]
 unique_name_in_owner = true
 layout_mode = 2

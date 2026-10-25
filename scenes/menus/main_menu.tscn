@@ -10,6 +10,7 @@
 [ext_resource type="ArrayMesh" path="res://assets/meshes/props/spaceship.res" id="8_ship"]
 [ext_resource type="Material" path="res://assets/materials/terrain.tres" id="9_mat"]
 [ext_resource type="PackedScene" path="res://scenes/ui/leaderboard_panel.tscn" id="10_board"]
+[ext_resource type="PackedScene" path="res://scenes/ui/photo_album.tscn" id="11_album"]
 [ext_resource type="FontFile" uid="uid://cyx4b5a33e2cv" path="res://assets/fonts/New_Rocker/NewRocker-Regular.ttf" id="10_bre17"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_menu"]
@@ -222,6 +223,12 @@ custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 text = "LEADERBOARD"
 
+[node name="AlbumButton" type="Button" parent="Center/MenuCard"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+text = "PHOTO ALBUM"
+
 [node name="QuitButton" type="Button" parent="Center/MenuCard" unique_id=546245018]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(300, 0)
@@ -230,6 +237,10 @@ theme_type_variation = &"GreyButton"
 text = "QUIT"
 
 [node name="LeaderboardPanel" parent="." unique_id=136280127 instance=ExtResource("10_board")]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="PhotoAlbum" parent="." instance=ExtResource("11_album")]
 unique_name_in_owner = true
 layout_mode = 1
 
