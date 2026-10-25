@@ -1,13 +1,4 @@
-lets have a two mode on inital arcade which is already implementaed and open world mode which i will explain as follows
-so in open world the player and game logic will have a slight change from before like
-- player can move around anywhere in the space unlike the arcade mode and the movements are the player can rotate the jet only side ways using the mouse
-and up to move forward and back for backwards and space to stop
+make the teleportation just like its on arcade
 
-- still keep the teleport to other world feature as the jet pass through it
-- in the openworld mode let the player take a picture of the artifacts and those artifact nodes will have a detector feature
-where the deteoctor deteacted a jet is nearby to let the player take a capture which in that feature will switch the view mode 
-from a jet pov to camera pov just like in gta san andrias when the player try to take a picture so which means player can zoom in and out of the artifact and take a picture which that picture will be saved locally this time
-
-- remove the stone obstacles in the oepn world mode and replace it with challenge in openworld mode where when the player enters every planet to be challenged
-to take a short amount of artifact pictures the numbers should be random and doesnt have to be much more than 6 and so there has to be that number of amount artifacts in the planet where the player is at
-and make sure the artifacts are in the  assets/artifacts folder so we might add artifacts fbx files so make sure it adapts that.
+make the speed for the get slower and introduce dash mode with will be fixed amount and refills
+again on empty or decreased
