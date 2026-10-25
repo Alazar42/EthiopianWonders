@@ -207,7 +207,14 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 theme_type_variation = &"RedButton"
-text = "PLAY"
+text = "ARCADE"
+
+[node name="OpenWorldButton" type="Button" parent="Center/MenuCard"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_type_variation = &"RedButton"
+text = "OPEN WORLD"
 
 [node name="BoardButton" type="Button" parent="Center/MenuCard" unique_id=2018047571]
 unique_name_in_owner = true

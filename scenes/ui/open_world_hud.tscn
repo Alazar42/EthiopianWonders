@@ -1,0 +1,270 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/open_world_hud.gd" id="1_hud"]
+[ext_resource type="Theme" path="res://assets/ui/game_theme.tres" id="2_theme"]
+[ext_resource type="FontFile" path="res://assets/fonts/New_Rocker/NewRocker-Regular.ttf" id="3_font"]
+[ext_resource type="Texture2D" path="res://assets/ui/kenney/cursors/crosshair.png" id="4_cross"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_frame"]
+draw_center = false
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="Animation" id="Animation_shutter"]
+resource_name = "shutter"
+length = 0.35
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ShutterFlash:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.35),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0.9), Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_hud"]
+_data = {
+&"shutter": SubResource("Animation_shutter")
+}
+
+[node name="OpenWorldHUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("2_theme")
+script = ExtResource("1_hud")
+
+[node name="FlightGroup" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StatusPanel" type="PanelContainer" parent="FlightGroup"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+offset_left = 20.0
+offset_top = 16.0
+offset_right = 380.0
+offset_bottom = 150.0
+mouse_filter = 2
+theme_type_variation = &"HudPanel"
+
+[node name="Rows" type="VBoxContainer" parent="FlightGroup/StatusPanel"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="PlanetLabel" type="Label" parent="FlightGroup/StatusPanel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+text = "Planet"
+
+[node name="ChallengeLabel" type="Label" parent="FlightGroup/StatusPanel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+text = "Pictures  0 / 0"
+
+[node name="DetectorLabel" type="Label" parent="FlightGroup/StatusPanel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+theme_override_fonts/font = ExtResource("3_font")
+text = "Detector"
+
+[node name="PauseButton" type="Button" parent="FlightGroup"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -170.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 78.0
+grow_horizontal = 0
+focus_mode = 0
+text = "PAUSE"
+
+[node name="PromptPanel" type="PanelContainer" parent="FlightGroup"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -190.0
+offset_right = 300.0
+offset_bottom = -120.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_type_variation = &"HudPanel"
+
+[node name="PromptLabel" type="Label" parent="FlightGroup/PromptPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Viewfinder" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Frame" type="Panel" parent="Viewfinder"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_left = 0.06
+anchor_top = 0.08
+anchor_right = 0.94
+anchor_bottom = 0.86
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
+
+[node name="Crosshair" type="TextureRect" parent="Viewfinder"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.47
+anchor_right = 0.5
+anchor_bottom = 0.47
+offset_left = -24.0
+offset_top = -24.0
+offset_right = 24.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_cross")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ZoomLabel" type="Label" parent="Viewfinder"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 28.0
+offset_right = 150.0
+offset_bottom = 70.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_fonts/font = ExtResource("3_font")
+text = "Zoom  x1.0"
+horizontal_alignment = 1
+
+[node name="BottomPanel" type="PanelContainer" parent="Viewfinder"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -480.0
+offset_top = -128.0
+offset_right = 480.0
+offset_bottom = -18.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_type_variation = &"HudPanel"
+
+[node name="Rows" type="VBoxContainer" parent="Viewfinder/BottomPanel"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="FramedLabel" type="Label" parent="Viewfinder/BottomPanel/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+text = "Fit the whole artifact inside the frame"
+horizontal_alignment = 1
+
+[node name="HelpLabel" type="Label" parent="Viewfinder/BottomPanel/Rows"]
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+theme_override_fonts/font = ExtResource("3_font")
+text = "Mouse: look around   W / S or wheel: zoom   Click or Space: take picture   C or Esc: back to the jet"
+horizontal_alignment = 1
+
+[node name="ToastPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -380.0
+offset_top = 96.0
+offset_right = 380.0
+offset_bottom = 182.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_type_variation = &"HudPanel"
+
+[node name="ToastLabel" type="Label" parent="ToastPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_font")
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+custom_minimum_size = Vector2(700, 0)
+
+[node name="ToastTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+wait_time = 4.0
+one_shot = true
+
+[node name="ShutterFlash" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_hud")
+}

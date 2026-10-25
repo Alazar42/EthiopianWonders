@@ -1,0 +1,76 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/openworld/free_flight_ship.gd" id="1_ship"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/props/spaceship.res" id="2_ship"]
+[ext_resource type="Material" path="res://assets/materials/terrain.tres" id="3_mat"]
+[ext_resource type="Material" path="res://assets/materials/engine_flame.tres" id="4_flame"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_flame"]
+material = ExtResource("4_flame")
+top_radius = 0.0
+bottom_radius = 0.11
+height = 0.6
+radial_segments = 8
+rings = 1
+
+[sub_resource type="Animation" id="Animation_flicker"]
+resource_name = "flicker"
+length = 0.3
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Visuals/FlameLeft:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.15, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(1, 1, 1), Vector3(0.85, 1.7, 0.85), Vector3(1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Visuals/FlameRight:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.15, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.85, 1.7, 0.85), Vector3(1, 1, 1), Vector3(0.85, 1.7, 0.85)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ship"]
+_data = {
+&"flicker": SubResource("Animation_flicker")
+}
+
+[node name="OpenWorldShip" type="Node3D"]
+script = ExtResource("1_ship")
+
+[node name="Visuals" type="Node3D" parent="."]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 0, 0, 0)
+
+[node name="Ship" type="MeshInstance3D" parent="Visuals"]
+material_override = ExtResource("3_mat")
+mesh = ExtResource("2_ship")
+
+[node name="FlameLeft" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.27, 0, 1.35)
+rotation_degrees = Vector3(90, 0, 0)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_flame")
+
+[node name="FlameRight" type="MeshInstance3D" parent="Visuals"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.27, 0, 1.35)
+rotation_degrees = Vector3(90, 0, 0)
+cast_shadow = 0
+mesh = SubResource("CylinderMesh_flame")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_ship")
+}
+autoplay = "flicker"
