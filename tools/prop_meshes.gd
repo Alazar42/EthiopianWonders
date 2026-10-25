@@ -322,28 +322,99 @@ static func lobelia_spike() -> ArrayMesh:
 	b.frustum(Vector3(0, 0.6, 0), 0.3, 0.3, 0.5, 6, Color(0.60, 0.58, 0.50))
 	return b.commit()
 
-## The player's spaceship, about 2 units long. Local -Z is forward. Wing stripes use the Ethiopian
-## colours; the cockpit and engine discs glow.
+## The player's spaceship, drawn from the Ethiopian fighter concept: a dark charcoal fuselage with a
+## glass canopy, swept wings striped green, yellow and red with the blue star roundel, glowing
+## wingtip pods and rear engines, and a tail fin in the flag colours. About 3 units wide and 2.9
+## long. Local -Z is forward. Colours with alpha below 1 glow (canopy and engines).
 static func spaceship() -> ArrayMesh:
 	var b := Builder.new(81)
-	var hull := Color(0.84, 0.88, 0.96)
-	var dark := Color(0.30, 0.33, 0.40)
-	b.box(Vector3(0, 0, 0.1), Vector3(0.5, 0.3, 1.4), hull)
-	b.pyramid(Vector3(0, 0, -0.6), Vector3(0, 0, -1), 0.85, 0.25, Color(0.92, 0.94, 1.0))
-	b.blob(Vector3(0, 0.2, -0.15), Vector3(0.2, 0.15, 0.38), Color(0.3, 0.85, 1.0, 0.45), Color(0.6, 0.95, 1.0, 0.45), 1, 0.02)
+	var charcoal := Color(0.24, 0.25, 0.30)
+	var steel := Color(0.40, 0.42, 0.48)
+	var light := Color(0.55, 0.57, 0.60)
+	var green := Color(0.10, 0.55, 0.22)
+	var yellow := Color(0.98, 0.80, 0.12)
+	var red := Color(0.86, 0.15, 0.12)
+	var engine_glow := Color(0.45, 0.92, 1.0, 0.1)
+	# Fuselage: body, raised spine, nose wedge, glass canopy and a belly plate.
+	b.box(Vector3(0, 0.02, 0.35), Vector3(0.56, 0.30, 1.5), charcoal)
+	b.box(Vector3(0, 0.2, 0.62), Vector3(0.38, 0.14, 0.95), steel)
+	b.box(Vector3(0, -0.14, 0.38), Vector3(0.42, 0.12, 1.25), steel)
+	b.pyramid(Vector3(0, 0.0, -0.4), Vector3(0, 0, -1), 1.05, 0.28, charcoal)
+	b.box(Vector3(0, 0.09, -0.78), Vector3(0.12, 0.02, 0.5), yellow)
+	b.blob(Vector3(0, 0.27, -0.12), Vector3(0.2, 0.14, 0.42), Color(0.15, 0.3, 0.45, 0.8), Color(0.45, 0.7, 0.9, 0.7), 1, 0.02)
 	for side in [-1.0, 1.0]:
-		var sweep := Basis(Vector3.UP, -0.35 * side)
-		b.box(Vector3(side * 0.95, -0.03, 0.3), Vector3(1.5, 0.07, 0.7), Color(0.72, 0.78, 0.9), sweep)
-		var stripes: Array = [Color(0.10, 0.62, 0.25), Color(0.98, 0.82, 0.10), Color(0.86, 0.16, 0.16)]
-		for i in 3:
-			b.box(Vector3(side * (0.7 + 0.32 * float(i)), -0.0, 0.52 + 0.11 * float(i)),
-				Vector3(0.3, 0.085, 0.14), stripes[i], sweep)
-		b.box(Vector3(side * 1.18, -0.03, -0.1), Vector3(0.07, 0.07, 0.55), dark)
-		b.box(Vector3(side * 0.27, 0, 0.8), Vector3(0.22, 0.22, 0.4), dark)
-		b.box(Vector3(side * 0.27, 0, 1.02), Vector3(0.17, 0.17, 0.05), Color(0.4, 0.9, 1.0, 0.1))
-		b.box(Vector3(side * 0.5, 0.17, 0.62), Vector3(0.05, 0.3, 0.4), Color(0.78, 0.2, 0.2), Basis(Vector3.BACK, 0.3 * side))
-	b.box(Vector3(0, 0.3, 0.62), Vector3(0.06, 0.42, 0.5), Color(0.86, 0.2, 0.2))
+		b.box(Vector3(side * 0.285, 0.05, 0.1), Vector3(0.02, 0.07, 0.46), light)
+	# Rear engine block with two glowing nozzles.
+	b.box(Vector3(0, 0.03, 0.98), Vector3(0.72, 0.30, 0.45), charcoal)
+	for side in [-1.0, 1.0]:
+		b.box(Vector3(side * 0.28, 0.03, 1.2), Vector3(0.34, 0.34, 0.36), steel)
+		b.box(Vector3(side * 0.28, 0.03, 1.39), Vector3(0.24, 0.24, 0.04), engine_glow)
+	# Swept wings, wingtip pods and the star roundel.
+	for side in [-1.0, 1.0]:
+		_ship_wing(b, side, charcoal, steel, green, yellow, red)
+		b.box(Vector3(side * 1.5, -0.03, 0.62), Vector3(0.30, 0.24, 0.84), steel)
+		b.box(Vector3(side * 1.5, -0.03, 0.21), Vector3(0.24, 0.07, 0.04), engine_glow)
+		b.box(Vector3(side * 1.5, -0.03, 1.05), Vector3(0.22, 0.14, 0.04), engine_glow)
+		b.box(Vector3(side * 1.5, 0.1, 0.6), Vector3(0.1, 0.05, 0.5), charcoal)
+		var center: Vector3 = _wing_point(side, 0.33, 0.46) + Vector3(0, 0.037, 0)
+		b.frustum(center, 0.21, 0.21, 0.012, 14, Color(0.08, 0.18, 0.6), Color(0.08, 0.18, 0.6))
+		for k in 2:
+			var star_center: Vector3 = center + Vector3(0, 0.02, 0)
+			var points := PackedVector3Array()
+			for i in 3:
+				var angle: float = TAU * float(i) / 3.0 + float(k) * PI / 3.0
+				points.append(star_center + Vector3(cos(angle), 0.0, sin(angle)) * 0.16)
+			b.tri(points[0], points[1], points[2], yellow, Vector3.UP)
+	# Tail fin in the flag colours.
+	_ship_fin(b, charcoal, green, yellow, red)
 	return b.commit()
+
+## A point on a wing: `s` runs from the root (0) to the tip (1), `f` from the leading edge (0) to the
+## trailing edge (1). `side` is -1 for the left wing and 1 for the right.
+static func _wing_point(side: float, s: float, f: float) -> Vector3:
+	var lead: Vector3 = Vector3(0.24, 0.0, -0.55).lerp(Vector3(1.5, -0.04, 0.38), s)
+	var trail: Vector3 = Vector3(0.24, 0.0, 0.98).lerp(Vector3(1.5, -0.04, 0.86), s)
+	var p: Vector3 = lead.lerp(trail, f)
+	return Vector3(p.x * side, p.y, p.z)
+
+static func _ship_wing(b: Builder, side: float, trim: Color, belly: Color, green: Color, yellow: Color, red: Color) -> void:
+	var up := Vector3(0, 0.035, 0)
+	var bands: Array = [[0.0, 0.06, trim], [0.06, 0.30, green], [0.30, 0.58, yellow], [0.58, 0.80, red], [0.80, 1.0, trim]]
+	for band in bands:
+		var f0: float = band[0]
+		var f1: float = band[1]
+		b.quad(_wing_point(side, 0.0, f0) + up, _wing_point(side, 1.0, f0) + up,
+				_wing_point(side, 1.0, f1) + up, _wing_point(side, 0.0, f1) + up, band[2], Vector3.UP)
+	b.quad(_wing_point(side, 0.0, 0.0) - up, _wing_point(side, 1.0, 0.0) - up,
+			_wing_point(side, 1.0, 1.0) - up, _wing_point(side, 0.0, 1.0) - up, belly, Vector3.DOWN)
+	# Leading edge, trailing edge and tip.
+	b.quad(_wing_point(side, 0.0, 0.0) + up, _wing_point(side, 1.0, 0.0) + up,
+			_wing_point(side, 1.0, 0.0) - up, _wing_point(side, 0.0, 0.0) - up, trim, Vector3(0, 0, -1))
+	b.quad(_wing_point(side, 0.0, 1.0) + up, _wing_point(side, 1.0, 1.0) + up,
+			_wing_point(side, 1.0, 1.0) - up, _wing_point(side, 0.0, 1.0) - up, trim, Vector3(0, 0, 1))
+	b.quad(_wing_point(side, 1.0, 0.0) + up, _wing_point(side, 1.0, 1.0) + up,
+			_wing_point(side, 1.0, 1.0) - up, _wing_point(side, 1.0, 0.0) - up, trim, Vector3(side, 0, 0))
+
+static func _ship_fin(b: Builder, trim: Color, green: Color, yellow: Color, red: Color) -> void:
+	var root_front := Vector3(0, 0.17, 0.52)
+	var root_rear := Vector3(0, 0.17, 1.02)
+	var tip_front := Vector3(0, 0.98, 0.98)
+	var tip_rear := Vector3(0, 0.98, 1.2)
+	var bands: Array = [[0.0, 0.18, trim], [0.18, 0.46, green], [0.46, 0.74, yellow], [0.74, 1.0, red]]
+	for side in [-1.0, 1.0]:
+		var thick := Vector3(side * 0.02, 0, 0)
+		for band in bands:
+			var h0: float = band[0]
+			var h1: float = band[1]
+			var f0: Vector3 = root_front.lerp(tip_front, h0)
+			var r0: Vector3 = root_rear.lerp(tip_rear, h0)
+			var f1: Vector3 = root_front.lerp(tip_front, h1)
+			var r1: Vector3 = root_rear.lerp(tip_rear, h1)
+			b.quad(f0 + thick, r0 + thick, r1 + thick, f1 + thick, band[2], Vector3(side, 0, 0))
+	# Front and rear edges close the fin.
+	b.quad(root_front + Vector3(-0.02, 0, 0), root_front + Vector3(0.02, 0, 0), tip_front + Vector3(0.02, 0, 0), tip_front + Vector3(-0.02, 0, 0), trim, Vector3(0, 0, -1))
+	b.quad(root_rear + Vector3(-0.02, 0, 0), root_rear + Vector3(0.02, 0, 0), tip_rear + Vector3(0.02, 0, 0), tip_rear + Vector3(-0.02, 0, 0), trim, Vector3(0, 0, 1))
+	b.quad(tip_front + Vector3(-0.02, 0, 0), tip_front + Vector3(0.02, 0, 0), tip_rear + Vector3(0.02, 0, 0), tip_rear + Vector3(-0.02, 0, 0), trim, Vector3.UP)
 
 ## Obstacle: a jagged basalt boulder. Dark on purpose, so it stands out against every world.
 static func obstacle_boulder() -> ArrayMesh:

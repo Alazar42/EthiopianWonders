@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://c10skfxa4uos3" path="res://assets/ui/heart_half.svg" id="4_half"]
 [ext_resource type="Texture2D" uid="uid://dhinrt7ljoadi" path="res://assets/ui/heart_empty.svg" id="5_empty"]
 [ext_resource type="Texture2D" uid="uid://cq85wrjpcq2s0" path="res://assets/ui/kenney/icons/star.png" id="6_star"]
+[ext_resource type="Texture2D" path="res://assets/ui/ammo.svg" id="9_ammo"]
 [ext_resource type="FontFile" uid="uid://cyx4b5a33e2cv" path="res://assets/fonts/New_Rocker/NewRocker-Regular.ttf" id="7_n5j44"]
 
 [sub_resource type="Animation" id="Animation_flash"]
@@ -154,6 +155,45 @@ layout_mode = 2
 size_flags_vertical = 4
 value = 100.0
 show_percentage = false
+
+[node name="AmmoPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -92.0
+offset_right = 150.0
+offset_bottom = -20.0
+grow_vertical = 0
+mouse_filter = 2
+theme = ExtResource("2_theme")
+theme_type_variation = &"HudPanel"
+
+[node name="Row" type="HBoxContainer" parent="AmmoPanel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="AmmoIcon" type="TextureRect" parent="AmmoPanel/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("9_ammo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AmmoLabel" type="Label" parent="AmmoPanel/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+theme = ExtResource("2_theme")
+theme_type_variation = &"NumberLabel"
+theme_override_fonts/font = ExtResource("7_n5j44")
+text = "10"
 
 [node name="PauseButton" type="Button" parent="." unique_id=806971706]
 unique_name_in_owner = true

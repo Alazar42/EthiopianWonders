@@ -56,8 +56,8 @@ _data = {
 script = ExtResource("1_script")
 planet_name = "Bale Afro-alpine Moor"
 radius = 41.0
-ambient_color = Color(0.620000, 0.740000, 0.800000, 1)
-fog_color = Color(0.800000, 0.900000, 0.950000, 1)
+ambient_color = Color(0.660000, 0.760000, 0.780000, 1)
+fog_color = Color(0.860000, 0.900000, 0.880000, 1)
 
 [node name="Terrain" type="MeshInstance3D" parent="."]
 transform = Transform3D(41, 0, 0, 0, 41, 0, 0, 0, 41, 0, 0, 0)

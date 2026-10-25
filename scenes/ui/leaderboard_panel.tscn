@@ -50,7 +50,7 @@ theme_override_constants/separation = 6
 custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 theme_type_variation = &"HeaderLabel"
-text = "TOP 10 PILOTS"
+text = "ARCADE TOP 10"
 horizontal_alignment = 1
 vertical_alignment = 1
 

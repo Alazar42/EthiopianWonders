@@ -18,6 +18,7 @@ extends Control
 @onready var _animation: AnimationPlayer = $AnimationPlayer
 @onready var _title_items: Array[Control] = [%TitleTop, %TitleBottom]
 @onready var _card: Control = %MenuCard
+@onready var _greeting: Label = %GreetingLabel
 
 func _ready() -> void:
 	_play_button.pressed.connect(_start.bind(game_scene))
@@ -28,6 +29,7 @@ func _ready() -> void:
 	_album.closed.connect(func() -> void: _album_button.grab_focus())
 	_quit_button.pressed.connect(func() -> void: get_tree().quit())
 	_quit_button.visible = not OS.has_feature("web")
+	_greeting.text = greeting_text(Leaderboard.new())
 	GameSound.start_music()
 	UiCursor.set_arrow()
 	# Containers sort over a couple of frames; animate once the buttons have their real places.
@@ -39,9 +41,17 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_planet.rotate_y(delta * planet_spin_speed)
 
+## "Welcome back, NAME" for a returning pilot, with their arcade best; "Welcome, pilot!" otherwise.
+static func greeting_text(board: Leaderboard) -> String:
+	var hello: String = "Welcome back, %s!" % board.last_name if not board.last_name.is_empty() else "Welcome, pilot!"
+	if board.best_score() > 0:
+		hello += "   Arcade best: %s" % Leaderboard.format_score(board.best_score())
+	return hello
+
 func _play_intro() -> void:
 	for i in _title_items.size():
 		UiMotion.pop_in(_title_items[i], 0.25 + 0.14 * float(i), 0.5)
+	UiMotion.fade_in(_greeting, 0.55, 0.5)
 	UiMotion.slide_in(_card, Vector2(0, 90), 0.6, 0.55)
 
 func _start(scene: String) -> void:

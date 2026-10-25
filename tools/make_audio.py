@@ -195,6 +195,53 @@ def game_over():
     return fade(buf, 14)
 
 
+def ammo_pickup():
+    d = 0.7
+    buf = np.zeros(int(d * SR))
+    for i, n in enumerate(['E5', 'A5', 'E6']):
+        place(buf, bell(note_hz(n), 0.5, 0.45), 0.07 * i)
+    t = tt(d)
+    clack = highpass(noise(d), 2500) * np.exp(-60 * t) * 0.25
+    return fade(buf * 0.9 + clack, 8)
+
+
+def fuel_pickup():
+    d = 0.8
+    t = tt(d)
+    glug = sweep(180, 520, 0.5) * np.exp(-4 * tt(0.5))
+    sparkle = np.zeros(int(d * SR))
+    for i, n in enumerate(['G5', 'C6', 'G6']):
+        place(sparkle, bell(note_hz(n), 0.45, 0.3), 0.1 + 0.08 * i)
+    buf = np.zeros(int(d * SR))
+    place(buf, glug * 0.6, 0.0)
+    return fade(buf + sparkle, 8)
+
+
+def empty_click():
+    d = 0.14
+    t = tt(d)
+    tick = np.sin(2 * np.pi * 220 * t) * np.exp(-60 * t) + highpass(noise(d), 1800) * np.exp(-110 * t) * 0.6
+    return fade(0.7 * tick, 2)
+
+
+def level_up():
+    d = 1.3
+    buf = np.zeros(int(d * SR))
+    for i, n in enumerate(['D5', 'G5', 'A5', 'D6']):
+        place(buf, bell(note_hz(n), 0.9, 0.4), 0.11 * i)
+    place(buf, sweep(220, 880, 0.5) * np.exp(-3 * tt(0.5)) * 0.25, 0.0)
+    return fade(buf, 10)
+
+
+def low_warning():
+    d = 0.5
+    buf = np.zeros(int(d * SR))
+    for start in (0.0, 0.22):
+        t = tt(0.18)
+        place(buf, np.sin(2 * np.pi * 660 * t) * np.exp(-14 * t) * 0.5, start)
+    return fade(buf, 4)
+
+
 def engine_loop():
     d = 1.0
     t = tt(d)
@@ -306,7 +353,8 @@ def main():
     for name, fn in [
         ('laser', laser), ('laser_hit', laser_hit), ('discover', discover), ('hit', hit),
         ('explosion', explosion), ('heart_lost', heart_lost), ('launch', launch), ('arrive', arrive),
-        ('game_over', game_over), ('engine', engine_loop),
+        ('game_over', game_over), ('engine', engine_loop), ('ammo_pickup', ammo_pickup),
+        ('fuel_pickup', fuel_pickup), ('empty_click', empty_click), ('level_up', level_up), ('low_warning', low_warning),
     ]:
         save(name + '.wav', fn())
     save('music.wav', music(), MUSIC_SR)

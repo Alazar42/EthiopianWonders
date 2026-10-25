@@ -65,6 +65,8 @@ func _new_world(with_obstacles: bool = false) -> GameManager:
 	# Fuel has its own tests; long autoplay runs must not run dry.
 	world.fuel_enabled = false
 	world.route.fuel_tanks_enabled = false
+	world.ammo_enabled = false
+	world.route.ammo_crates_enabled = false
 	world.pause_on_discovery = false # long autoplay runs must not stall on a popup
 	world.start_new_run()
 	return world
@@ -132,7 +134,7 @@ func _test_movement_basics() -> void:
 	check("player starts on the first planet's top",
 		player.global_position.distance_to(start_planet.global_position + Vector3.UP * (start_planet.radius + player.body_height + player.spawn_drop)) < 0.05,
 		str(player.global_position))
-	var ship_length: float = (player.get_node("Visuals/Ship") as MeshInstance3D).get_aabb().size.z
+	var ship_length: float = (player.get_node("Visuals/Ship") as MeshInstance3D).get_aabb().size.z * (player.get_node("Visuals") as Node3D).scale.z
 	check("planet is much larger than the ship", start_planet.radius >= 35.0 and start_planet.radius > ship_length * 15.0,
 		"radius %f, ship %f" % [start_planet.radius, ship_length])
 	var before_distance: float = player.distance
@@ -490,33 +492,26 @@ func _test_lasers() -> void:
 	_key(KEY_SPACE, true)
 	await process_frame
 	_key(KEY_SPACE, false)
-	check("Space fires a laser", _live_bolts() == 1)
+	check("Space no longer fires: shooting is by mouse only", _live_bolts() == 0)
 	check("firing at nothing discovers nothing", world.discovery_manager.discovered_wonders.is_empty())
 	_mouse(true, Vector2(4, 4))
 	await process_frame
 	_mouse(false, Vector2(4, 4))
-	check("a click on empty space still fires a laser but discovers nothing",
-		_live_bolts() == 2 and world.discovery_manager.discovered_wonders.is_empty())
+	check("a click on empty space fires a laser but discovers nothing",
+		_live_bolts() == 1 and world.discovery_manager.discovered_wonders.is_empty())
 	for i in 40:
 		player.fire_laser(player.global_position + player.get_forward() * 50.0)
 	check("live bolts are capped", _live_bolts() <= player.max_bolts, "%d bolts" % _live_bolts())
 
-	# Space locks on to a target inside the aim-assist cone.
+	# There is no auto-aim: an open target is only discovered by clicking on it.
 	var target: LandmarkTarget = world.route.targets[0]
 	while not target.is_active():
 		world.tick(DT)
-	var angle: float = player.get_forward().angle_to(target.global_position - player.global_position)
-	check("an open target is inside the aim-assist cone", rad_to_deg(angle) < world.aim_assist_degrees, "%f deg" % rad_to_deg(angle))
-	var bolts_before: int = _live_bolts()
 	_key(KEY_SPACE, true)
 	await process_frame
 	_key(KEY_SPACE, false)
-	check("Space locks on and discovers the target", target.state == LandmarkTarget.State.DISCOVERED 		and world.discovery_manager.discovered_wonders.size() == 1)
-	check("the lock-on shot fired a bolt too", _live_bolts() >= mini(bolts_before + 1, player.max_bolts))
-	_key(KEY_SPACE, true)
-	await process_frame
-	_key(KEY_SPACE, false)
-	check("firing again does not award the wonder twice", world.discovery_manager.discovered_wonders.size() == 1)
+	check("Space does not lock on to an open target", target.state == LandmarkTarget.State.ACTIVE and world.discovery_manager.discovered_wonders.is_empty())
+	check("the game has no lock-on function any more", not world.has_method("fire_forward"))
 	await _free_world(world)
 
 func _hud_heart_textures(world: GameManager) -> Array[Texture2D]:
@@ -677,8 +672,9 @@ func _test_obstacles() -> void:
 	_key(KEY_SPACE, true)
 	await process_frame
 	_key(KEY_SPACE, false)
-	check("Space blasts the nearest rock when no wonder is open", world.discovery_manager.obstacles_destroyed == 1)
-	check("blasting does not discover anything", world.discovery_manager.discovered_wonders.size() <= 1)
+	check("Space does not blast rocks for you", world.discovery_manager.obstacles_destroyed == 0)
+	check("a click on the rock still blasts it", world.click_at(world.gameplay_camera.unproject_position(lock_rock.global_position)) == false
+		and (world.discovery_manager.obstacles_destroyed == 1 or not lock_rock.is_active()))
 	await _free_world(world)
 
 func _test_ui_and_audio() -> void:
@@ -898,10 +894,10 @@ func _test_screen_animations() -> void:
 	check("the menu starts with its title and card hidden", title.modulate.a < 0.2 and card.modulate.a < 0.2)
 	await create_timer(2.6).timeout
 	var all_visible: bool = true
-	for node_name in ["%TitleTop", "%TitleBottom", "%MenuCard"]:
+	for node_name in ["%TitleTop", "%TitleBottom", "%GreetingLabel", "%MenuCard"]:
 		all_visible = all_visible and is_equal_approx((menu.get_node(node_name) as Control).modulate.a, 1.0)
 	check("the menu intro ends with every element fully visible", all_visible)
-	check("the menu is minimal: title, Play and Quit only", menu.get_node("Center").get_child_count() == 4 and not menu.has_node("%ControlsBar"))
+	check("the menu stays minimal: title, greeting and the button card", menu.get_node("Center").get_child_count() == 5 and not menu.has_node("%ControlsBar"))
 	check("the menu's buttons are clickable and focused", (menu.get_node("%PlayButton") as Button).has_focus())
 	menu.queue_free()
 	await process_frame

@@ -9,6 +9,9 @@ extends Node3D
 @export var world_environment: WorldEnvironment
 @export var discovery_manager: DiscoveryManager
 @export var fuel: FuelSystem
+@export var ammo: AmmoSystem
+## Puff of sparks for pickups and shattered rocks.
+@export var burst_scene: PackedScene
 @export var game_hud: GameHUD
 @export var discovery_popup: DiscoveryPopup
 @export var pause_menu: PauseMenu
@@ -22,13 +25,15 @@ extends Node3D
 @export var fuel_enabled: bool = true
 ## Seconds the ship must sit still with an empty tank before the run is over.
 @export var stall_seconds: float = 0.8
-@export_group("Lasers")
-## Half-angle of the cone ahead of the ship that Space aims at.
-@export_range(5.0, 60.0) var aim_assist_degrees: float = 30.0
-@export var aim_assist_range: float = 90.0
-## Rocks are only locked on to when they are this close.
-@export var obstacle_lock_range: float = 45.0
-
+@export_group("Ammo")
+## Arcade only: every shot costs a round, and ammo crates give a few back.
+@export var ammo_enabled: bool = true
+@export_group("Difficulty")
+## The run speeds up on every planet from this one on, up to `max_speed_multiplier`.
+@export var speed_up_after_planets: int = 3
+@export var speed_per_level: float = 0.12
+@export var max_speed_multiplier: float = 1.8
+@export_group("Run")
 ## The ship stops while a discovery popup is open so it can be read; off for long automated runs.
 @export var pause_on_discovery: bool = true
 ## Where the local high-score table is kept.
@@ -48,6 +53,10 @@ func _ready() -> void:
 	route.target_spawned.connect(_on_target_spawned)
 	route.segment_entered.connect(_on_segment_entered)
 	route.tank_spawned.connect(_on_tank_spawned)
+	route.crate_spawned.connect(_on_tank_spawned)
+	ammo.changed.connect(game_hud.update_ammo)
+	ammo.low_ammo.connect(_on_low_ammo)
+	ammo.emptied.connect(_on_ammo_emptied)
 	fuel.changed.connect(game_hud.update_fuel)
 	fuel.low_fuel.connect(_on_low_fuel)
 	fuel.ran_out.connect(_on_ran_out)
@@ -90,7 +99,10 @@ func start_new_run() -> void:
 	discovery_manager.reset_run()
 	_stall_time = 0.0
 	fuel.reset()
+	ammo.reset()
 	game_hud.set_fuel_visible(fuel_enabled)
+	game_hud.set_ammo_visible(ammo_enabled)
+	game_hud.update_level(0)
 	route.begin_run(randi() if random_seed_each_run else -1)
 	apply_mood(route.start_planet, true)
 	player.begin_run(route)
@@ -103,7 +115,7 @@ func start_new_run() -> void:
 	game_hud.update_wonders(0)
 	game_hud.update_distance(0.0)
 	game_hud.play_intro()
-	game_hud.show_toast("A and D steer, W and S set speed. Shoot targets, rocks and gas tanks!")
+	game_hud.show_toast("A and D steer, W and S set speed. Aim and click: every shot counts!")
 	if _runs_started > 0:
 		screen_fade.blink()
 	else:
@@ -202,20 +214,23 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventMouseButton and event.is_action_pressed("interact_target"):
 		if is_playing():
 			click_at((event as InputEventMouseButton).position)
-	elif event.is_action_pressed("fire") and not event.is_echo():
-		if is_playing():
-			fire_forward()
 
+## Shooting is by mouse only: aim with the cursor and click. There is no auto-aim.
 ## Fires a laser at the cursor. A wonder is only discovered by hitting its target inside its open
-## window; a rock is destroyed by hitting it. Returns true only for a discovery.
+## window; a rock is destroyed by hitting it; a gas tank or an ammo crate is claimed. Every shot
+## costs a round (a crate may be shot for free when the magazine is empty). Returns true only for a
+## discovery.
 func click_at(screen_pos: Vector2) -> bool:
 	var aim: Dictionary = gameplay_camera.aim_ray(screen_pos)
+	var tank: FuelTank = aim["tank"]
+	if not _spend_ammo(tank is AmmoCrate):
+		return false
 	player.fire_laser(aim["point"])
+	_on_laser_fired()
 	var obstacle: Obstacle = aim["obstacle"]
 	if obstacle != null:
 		blast_obstacle(obstacle)
 		return false
-	var tank: FuelTank = aim["tank"]
 	if tank != null:
 		shoot_tank(tank)
 		return false
@@ -224,49 +239,25 @@ func click_at(screen_pos: Vector2) -> bool:
 		return false
 	return target.attempt_interact(player.distance)
 
-## Fires straight ahead. Open wonder targets in the aim-assist cone come first; otherwise it locks
-## on to the nearest rock ahead. Returns true only for a discovery.
-func fire_forward() -> bool:
-	var forward: Vector3 = player.get_forward()
-	var best: LandmarkTarget = null
-	var best_angle: float = deg_to_rad(aim_assist_degrees)
-	for target in route.targets:
-		if not is_instance_valid(target) or not target.is_active():
-			continue
-		var to_target: Vector3 = target.global_position - player.global_position
-		if to_target.length() > aim_assist_range:
-			continue
-		var angle: float = forward.angle_to(to_target)
-		if angle < best_angle:
-			best_angle = angle
-			best = target
-	var best_tank: FuelTank = null
-	var tank_angle: float = deg_to_rad(aim_assist_degrees)
-	for tank in route.fuel_tanks:
-		if not is_instance_valid(tank) or not tank.is_active():
-			continue
-		var to_tank: Vector3 = tank.global_position - player.global_position
-		if to_tank.length() > aim_assist_range:
-			continue
-		var angle_to_tank: float = forward.angle_to(to_tank)
-		if angle_to_tank < tank_angle:
-			tank_angle = angle_to_tank
-			best_tank = tank
-	# A gas tank wins over a wonder when it is closer to the aim, or when the fuel is low.
-	if best_tank != null and (best == null or tank_angle < best_angle or fuel.is_low()):
-		player.fire_laser(best_tank.global_position)
-		shoot_tank(best_tank)
-		return false
-	if best != null:
-		player.fire_laser(best.global_position)
-		return best.attempt_interact(player.distance)
-	var rock: Obstacle = _nearest_obstacle_ahead()
-	if rock != null:
-		player.fire_laser(rock.global_position)
-		blast_obstacle(rock)
-		return false
-	player.fire_laser(player.global_position + forward * 80.0)
+## Takes one round for a shot. Returns false, with a dry click, when the magazine is empty.
+func _spend_ammo(free: bool) -> bool:
+	if not ammo_enabled or free and ammo.is_empty():
+		return true
+	if ammo.spend():
+		return true
+	_dry_fire()
 	return false
+
+func _dry_fire() -> void:
+	GameSound.play(&"empty_click")
+	game_hud.pulse_ammo()
+	game_hud.show_toast("Out of ammo! Shoot an ammo crate.")
+	gameplay_camera.add_shake(0.05)
+
+## Every shot nudges the camera.
+func _on_laser_fired() -> void:
+	gameplay_camera.add_shake(0.07)
+	gameplay_camera.kick_fov(1.3)
 
 ## A laser hit a gas tank: it explodes into fuel.
 func shoot_tank(tank: FuelTank) -> void:
@@ -274,24 +265,11 @@ func shoot_tank(tank: FuelTank) -> void:
 
 func blast_obstacle(obstacle: Obstacle) -> void:
 	if obstacle.is_active():
+		_spawn_burst(obstacle.global_position + Vector3.UP * 0.8, Color(1.0, 0.55, 0.25))
+		gameplay_camera.add_shake(0.3)
 		obstacle.destroy(true)
 		discovery_manager.register_obstacle_destroyed()
 		GameSound.play(&"explosion")
-
-func _nearest_obstacle_ahead() -> Obstacle:
-	var best: Obstacle = null
-	var best_distance: float = obstacle_lock_range
-	for obstacle in route.obstacles:
-		if not is_instance_valid(obstacle) or not obstacle.is_active():
-			continue
-		var ahead: float = obstacle.route_distance - player.distance
-		if ahead < 0.0 or ahead >= best_distance:
-			continue
-		if absf(obstacle.lane_offset - player.lane.offset) > route.lane_width * 1.6:
-			continue
-		best_distance = ahead
-		best = obstacle
-	return best
 
 # --- events -----------------------------------------------------------------------------------------
 
@@ -299,10 +277,37 @@ func _on_tank_spawned(tank: FuelTank) -> void:
 	tank.collected.connect(_on_tank_collected, CONNECT_ONE_SHOT)
 
 func _on_tank_collected(tank: FuelTank) -> void:
-	var added: float = fuel.add(tank.amount)
-	discovery_manager.register_tank()
-	GameSound.play(&"discover", 1.3)
-	game_hud.show_toast("Fuel +%d" % int(round(added)))
+	if tank is AmmoCrate:
+		var rounds: int = ammo.add(int(tank.amount))
+		GameSound.play(&"ammo_pickup")
+		game_hud.show_toast("Ammo +%d" % rounds)
+		_spawn_burst(tank.global_position, Color(0.4, 0.8, 1.0))
+	else:
+		var added: float = fuel.add(tank.amount)
+		discovery_manager.register_tank()
+		GameSound.play(&"fuel_pickup")
+		game_hud.show_toast("Fuel +%d" % int(round(added)))
+		_spawn_burst(tank.global_position, Color(1.0, 0.6, 0.2))
+	gameplay_camera.add_shake(0.2)
+	gameplay_camera.kick_fov(2.0)
+
+func _on_low_ammo() -> void:
+	if ammo_enabled:
+		GameSound.play(&"low_warning")
+		game_hud.show_toast("Low ammo! Make every shot count.")
+
+func _on_ammo_emptied() -> void:
+	if ammo_enabled:
+		game_hud.show_toast("Out of ammo! Shoot an ammo crate.")
+
+## A puff of sparks where something was shot.
+func _spawn_burst(at: Vector3, tint: Color) -> void:
+	if burst_scene == null or not is_inside_tree():
+		return
+	var burst := burst_scene.instantiate() as BurstEffect
+	burst.tint = tint
+	add_child(burst)
+	burst.global_position = at
 
 func _on_low_fuel() -> void:
 	if fuel_enabled:
@@ -374,8 +379,24 @@ func _on_segment_entered(segment: RouteSegment) -> void:
 		GameSound.play(&"launch")
 	if segment.type == RouteTypes.SegmentType.PLANET_ARRIVAL and segment.planet is PlanetController:
 		discovery_manager.register_planet_arrival()
+		_apply_difficulty()
 		game_hud.show_toast("Arrived at %s" % (segment.planet as PlanetController).planet_name)
 		GameSound.play(&"arrive")
+
+## From the third planet on every planet makes the run faster, up to a top speed.
+func speed_level() -> int:
+	return maxi(0, discovery_manager.planets_reached - speed_up_after_planets + 1)
+
+func _apply_difficulty() -> void:
+	var level: int = speed_level()
+	var multiplier: float = minf(1.0 + speed_per_level * float(level), max_speed_multiplier)
+	var faster: bool = multiplier > player.level_speed_target + 0.001
+	player.level_speed_target = multiplier
+	game_hud.update_level(level)
+	if faster:
+		GameSound.play(&"level_up")
+		game_hud.show_toast("Faster! Level %d" % level if multiplier < max_speed_multiplier else "Top speed! Level %d" % level)
+		gameplay_camera.add_shake(0.25)
 
 func _on_game_over(stats: Dictionary) -> void:
 	set_state(GameState.State.GAME_OVER)

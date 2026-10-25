@@ -83,7 +83,7 @@ func show_game_over(stats: Dictionary, board: Leaderboard = null) -> void:
 	UiMotion.fade_in(_main_menu_button, buttons_delay + 0.2, 0.3)
 	if qualifies:
 		_rank_label.text = "NEW HIGH SCORE  -  PLACE #%d" % board.rank_for(score)
-		_name_field.text = ""
+		_name_field.text = board.last_name
 		_name_field.editable = true
 		_save_button.disabled = false
 		UiMotion.fade_in(_name_entry, after_rows, 0.35)

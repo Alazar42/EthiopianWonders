@@ -58,8 +58,8 @@ _data = {
 script = ExtResource("1_script")
 planet_name = "Highland Farmland"
 radius = 40.0
-ambient_color = Color(0.620000, 0.700000, 0.820000, 1)
-fog_color = Color(0.720000, 0.840000, 0.960000, 1)
+ambient_color = Color(0.720000, 0.700000, 0.780000, 1)
+fog_color = Color(0.920000, 0.840000, 0.800000, 1)
 
 [node name="Terrain" type="MeshInstance3D" parent="."]
 transform = Transform3D(40, 0, 0, 0, 40, 0, 0, 0, 40, 0, 0, 0)

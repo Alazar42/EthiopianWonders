@@ -30,7 +30,7 @@ func show_board(board: Leaderboard, highlight_rank: int = 0) -> void:
 		_rows.add_child(row)
 		var entry: Dictionary = board.entries[i] if i < board.entries.size() else {}
 		row.set_entry(i + 1, entry, i + 1 == highlight_rank)
-	_hint.text = "Scores are kept on this device only." if not board.entries.is_empty() \
+	_hint.text = "Arcade scores only, kept on this device." if not board.entries.is_empty() \
 		else "No scores yet - fly a mission to claim the first place!"
 	visible = true
 	UiCursor.set_arrow()

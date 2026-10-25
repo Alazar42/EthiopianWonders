@@ -45,6 +45,8 @@ func _new_world() -> GameManager:
 	world.pause_on_discovery = false
 	world.fuel_enabled = true
 	world.route.fuel_tanks_enabled = true
+	world.ammo_enabled = false
+	world.route.ammo_crates_enabled = false
 	world.start_new_run()
 	return world
 
@@ -198,17 +200,22 @@ func _test_burning_and_refuelling() -> void:
 	world.shoot_tank(next)
 	check("a full tank cannot overflow", is_equal_approx(world.fuel.fuel, world.fuel.capacity))
 
-	# Aiming straight ahead locks on to a tank in the cone.
+	# A tank is shot by aiming the mouse at it and clicking.
 	var ahead: FuelTank = _first_tank(world)
 	if ahead != null:
 		var player: PlayerController = world.player
-		player.distance = ahead.route_distance - 25.0
+		player.distance = ahead.route_distance - 18.0
 		player.advance(0.0)
 		world.route.update(player.distance)
+		await physics_frame
+		await physics_frame
+		world.gameplay_camera.snap()
+		var screen: Vector2 = world.gameplay_camera.unproject_position(ahead.global_position)
+		check("the mouse ray picks the tank", world.gameplay_camera.aim_ray(screen)["tank"] == ahead)
 		var before_shot: float = world.fuel.fuel
 		world.fuel.fuel = 20.0
-		world.fire_forward()
-		check("the Space lock-on shoots a gas tank ahead", ahead.state == FuelTank.State.COLLECTED or not ahead.is_active(), str(ahead.state))
+		world.click_at(screen)
+		check("a click on a gas tank shoots it", ahead.state == FuelTank.State.COLLECTED, str(ahead.state))
 		check("and it refuels", world.fuel.fuel > 20.0, str(world.fuel.fuel))
 		world.fuel.fuel = before_shot
 

@@ -16,6 +16,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/pause_menu.tscn" id="14_pause"]
 [ext_resource type="PackedScene" path="res://scenes/ui/screen_fade.tscn" id="15_fade"]
 [ext_resource type="PackedScene" path="res://scenes/ui/photo_album.tscn" id="19_album"]
+[ext_resource type="PackedScene" path="res://scenes/effects/ambient_motes.tscn" id="20_motes"]
 [ext_resource type="PackedScene" path="res://scenes/space/space_nss12.tscn" id="16_nss12"]
 [ext_resource type="PackedScene" path="res://scenes/space/space_etrss1.tscn" id="17_etrss1"]
 [ext_resource type="PackedScene" path="res://scenes/space/space_selam_relay.tscn" id="18_selam"]
@@ -30,11 +31,18 @@ sky_material = SubResource("PanoramaSkyMaterial_world")
 background_mode = 2
 sky = SubResource("Sky_world")
 ambient_light_source = 2
-ambient_light_color = Color(0.62, 0.68, 0.8, 1)
-ambient_light_energy = 0.35
-tonemap_mode = 0
+ambient_light_color = Color(0.72, 0.70, 0.78, 1)
+ambient_light_energy = 0.45
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 0.7
+glow_bloom = 0.06
+glow_hdr_threshold = 0.9
+adjustment_enabled = true
+adjustment_contrast = 1.05
+adjustment_saturation = 1.14
 fog_enabled = true
-fog_light_color = Color(0.72, 0.84, 0.96, 1)
+fog_light_color = Color(0.92, 0.84, 0.80, 1)
 fog_density = 0.00028
 fog_sky_affect = 0.3
 
@@ -69,10 +77,12 @@ far = 9000.0
 script = ExtResource("2_camera")
 ship = NodePath("../Ship")
 
+[node name="AmbientMotes" parent="OpenWorldCamera" instance=ExtResource("20_motes")]
+
 [node name="Sun" type="DirectionalLight3D" parent="OpenWorldCamera"]
 transform = Transform3D(0.906308, 0.17101, -0.386, 0, 0.906308, 0.42262, 0.42262, -0.383022, 0.821394, 0, 0, 0)
-light_color = Color(1, 0.96, 0.86, 1)
-light_energy = 0.7
+light_color = Color(1, 0.9, 0.72, 1)
+light_energy = 0.85
 shadow_enabled = true
 shadow_bias = 0.08
 shadow_normal_bias = 1.5

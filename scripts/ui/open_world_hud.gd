@@ -139,7 +139,7 @@ func set_framed(framed: bool, artifact_name: String) -> void:
 func set_dash(fraction: float, dashing: bool, locked: bool) -> void:
 	_dash_bar.value = fraction * 100.0
 	_dash_label.text = "Dash (Shift)" if not locked else "Dash recharging"
-	_dash_bar.modulate = DASH_COLOR if dashing else (LOCKED_COLOR if locked else Color.WHITE)
+	_dash_bar.modulate = DASH_COLOR if dashing else (LOCKED_COLOR if locked else Color(0.55, 0.8, 1.0))
 
 func set_zoom(factor: float) -> void:
 	_zoom_label.text = "Zoom  x%.1f" % factor

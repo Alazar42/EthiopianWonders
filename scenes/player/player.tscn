@@ -6,6 +6,7 @@
 [ext_resource type="Material" path="res://assets/materials/engine_flame.tres" id="4_flame"]
 [ext_resource type="PackedScene" path="res://scenes/player/laser_bolt.tscn" id="5_bolt"]
 [ext_resource type="PackedScene" path="res://scenes/player/laser_impact.tscn" id="6_impact"]
+[ext_resource type="PackedScene" path="res://scenes/effects/engine_trail.tscn" id="7_trail"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_flame"]
 material = ExtResource("4_flame")
@@ -69,31 +70,37 @@ laser_scene = ExtResource("5_bolt")
 impact_scene = ExtResource("6_impact")
 
 [node name="Visuals" type="Node3D" parent="."]
-transform = Transform3D(0.62, 0, 0, 0, 0.62, 0, 0, 0, 0.62, 0, 0, 0)
+transform = Transform3D(0.56, 0, 0, 0, 0.56, 0, 0, 0, 0.56, 0, 0, 0)
 
 [node name="Ship" type="MeshInstance3D" parent="Visuals"]
 material_override = ExtResource("3_mat")
 mesh = ExtResource("2_ship")
 
 [node name="FlameLeft" type="MeshInstance3D" parent="Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.27, 0, 1.35)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0.03, 1.62)
 rotation_degrees = Vector3(90, 0, 0)
 cast_shadow = 0
 mesh = SubResource("CylinderMesh_flame")
 
 [node name="FlameRight" type="MeshInstance3D" parent="Visuals"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.27, 0, 1.35)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0.03, 1.62)
 rotation_degrees = Vector3(90, 0, 0)
 cast_shadow = 0
 mesh = SubResource("CylinderMesh_flame")
 
+[node name="TrailLeft" parent="Visuals" instance=ExtResource("7_trail")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28, 0.03, 1.5)
+
+[node name="TrailRight" parent="Visuals" instance=ExtResource("7_trail")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.28, 0.03, 1.5)
+
 [node name="Cannons" type="Node3D" parent="Visuals"]
 
 [node name="CannonLeft" type="Marker3D" parent="Visuals/Cannons"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.18, -0.03, -0.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.95, -0.02, -0.12)
 
 [node name="CannonRight" type="Marker3D" parent="Visuals/Cannons"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.18, -0.03, -0.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, -0.02, -0.12)
 
 [node name="BlobShadow" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.98, 0)

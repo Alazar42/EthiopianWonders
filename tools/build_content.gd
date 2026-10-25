@@ -50,7 +50,7 @@ const BIOMES: Dictionary = {
 		"patch": [Color(0.74, 0.62, 0.34), Color(0.62, 0.50, 0.28)], "patch_threshold": 0.38,
 		"fields": {"colors": [Color(0.86, 0.74, 0.30), Color(0.66, 0.78, 0.32), Color(0.58, 0.40, 0.26)], "scale": 4.5, "probability": 0.34},
 		"atmosphere": Color(0.55, 0.82, 1.0), "grass": 2800, "clouds": 10,
-		"mood": {"ambient": Color(0.62, 0.70, 0.82), "fog": Color(0.72, 0.84, 0.96)},
+		"mood": {"ambient": Color(0.72, 0.70, 0.78), "fog": Color(0.92, 0.84, 0.80)},
 		"counts": {"eucalyptus": 70, "tukul": 7, "tree_high": 30, "tree": 10, "rocks": 20, "stones": 120, "plant": 220, "amba": 5, "flower": 1500},
 	},
 	"rift": {
@@ -59,7 +59,7 @@ const BIOMES: Dictionary = {
 		"patch": [Color(0.52, 0.56, 0.30), Color(0.46, 0.30, 0.24)], "patch_threshold": 0.32,
 		"lake": {"color": Color(0.30, 0.62, 0.52), "shore": Color(0.86, 0.74, 0.52), "threshold": 0.42, "scale": 1.7},
 		"atmosphere": Color(1.0, 0.72, 0.5), "grass": 1300, "clouds": 8,
-		"mood": {"ambient": Color(0.72, 0.68, 0.66), "fog": Color(0.90, 0.80, 0.68)},
+		"mood": {"ambient": Color(0.78, 0.68, 0.62), "fog": Color(0.95, 0.80, 0.64)},
 		"counts": {"acacia": 60, "tree": 6, "rocks": 40, "stones": 170, "plant": 100, "tukul": 6, "amba": 3},
 	},
 	"simien": {
@@ -67,7 +67,7 @@ const BIOMES: Dictionary = {
 		"palette": [Color(0.62, 0.52, 0.38), Color(0.70, 0.60, 0.44), Color(0.54, 0.46, 0.34)],
 		"patch": [Color(0.46, 0.54, 0.30), Color(0.34, 0.33, 0.34)], "patch_threshold": 0.22,
 		"atmosphere": Color(0.7, 0.85, 1.0), "grass": 900, "clouds": 14,
-		"mood": {"ambient": Color(0.60, 0.70, 0.88), "fog": Color(0.78, 0.86, 0.96)},
+		"mood": {"ambient": Color(0.66, 0.70, 0.86), "fog": Color(0.84, 0.84, 0.94)},
 		"counts": {"columns": 14, "amba": 7, "lobelia": 30, "tree_high": 10, "rocks": 80, "stones": 180, "plant": 70},
 	},
 	"danakil": {
@@ -77,7 +77,7 @@ const BIOMES: Dictionary = {
 		"pools": {"colors": [Color(0.55, 0.80, 0.15, 0.4), Color(0.96, 0.52, 0.10, 0.35), Color(0.98, 0.88, 0.20, 0.4), Color(0.25, 0.72, 0.55, 0.4)],
 			"rim": Color(0.95, 0.93, 0.84), "threshold": 0.60},
 		"atmosphere": Color(1.0, 0.65, 0.4), "grass": 400, "clouds": 5,
-		"mood": {"ambient": Color(0.74, 0.66, 0.62), "fog": Color(0.92, 0.72, 0.56)},
+		"mood": {"ambient": Color(0.80, 0.66, 0.58), "fog": Color(0.96, 0.72, 0.52)},
 		"counts": {"volcano": 3, "steam": 4, "columns": 16, "rocks": 70, "stones": 160, "plant": 20, "tent": 4},
 	},
 	"bale": {
@@ -86,7 +86,7 @@ const BIOMES: Dictionary = {
 		"patch": [Color(0.74, 0.78, 0.76), Color(0.64, 0.68, 0.66)], "patch_threshold": 0.10,
 		"lake": {"color": Color(0.36, 0.52, 0.58), "shore": Color(0.62, 0.66, 0.60), "threshold": 0.58, "scale": 1.8},
 		"atmosphere": Color(0.75, 0.88, 0.95), "grass": 1700, "clouds": 12,
-		"mood": {"ambient": Color(0.62, 0.74, 0.80), "fog": Color(0.80, 0.90, 0.95)},
+		"mood": {"ambient": Color(0.66, 0.76, 0.78), "fog": Color(0.86, 0.90, 0.88)},
 		"counts": {"lobelia": 90, "lobelia_spike": 50, "helichrysum": 260, "rocks": 50, "stones": 150, "plant": 70, "amba": 2},
 	},
 }

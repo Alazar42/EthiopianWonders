@@ -11,6 +11,8 @@ const DEFAULT_NAME: String = "PILOT"
 var path: String
 ## Best first. Each entry: {"name": String, "score": int, "wonders": int, "distance": int}.
 var entries: Array[Dictionary] = []
+## The name used for the most recent saved run, so the game can greet the pilot.
+var last_name: String = ""
 
 func _init(p_path: String = "user://leaderboard.json") -> void:
 	path = p_path
@@ -43,8 +45,13 @@ func add(player_name: String, score: int, wonders: int, distance: int) -> int:
 	})
 	while entries.size() > MAX_ENTRIES:
 		entries.pop_back()
+	last_name = clean_name(player_name)
 	save()
 	return rank
+
+## The best score on the board, or 0 when it is empty.
+func best_score() -> int:
+	return int(entries[0]["score"]) if not entries.is_empty() else 0
 
 func clear() -> void:
 	entries.clear()
@@ -72,7 +79,7 @@ func save() -> void:
 	if file == null:
 		push_warning("Could not save the leaderboard to %s" % path)
 		return
-	file.store_string(JSON.stringify({"version": 1, "entries": entries}, "\t"))
+	file.store_string(JSON.stringify({"version": 1, "last_name": last_name, "entries": entries}, "\t"))
 
 func load_from_disk() -> void:
 	entries.clear()
@@ -81,6 +88,7 @@ func load_from_disk() -> void:
 	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 	if not parsed is Dictionary or not (parsed as Dictionary).get("entries") is Array:
 		return
+	last_name = str((parsed as Dictionary).get("last_name", ""))
 	for item in (parsed as Dictionary)["entries"]:
 		if item is Dictionary and (item as Dictionary).has("score"):
 			entries.append({

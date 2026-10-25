@@ -153,7 +153,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -95, 34, -150)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 110, 58, -230)
 
 [node name="MenuShip" type="MeshInstance3D" parent="BackgroundContainer/SubViewport/World" unique_id=633216382]
-transform = Transform3D(1.6, 0, 0, 0, 1.6, 0, 0, 0, 1.6, 7, 12, 14)
+transform = Transform3D(1.1, 0, 0, 0, 1.1, 0, 0, 0, 1.1, 7, 12, 14)
 material_override = ExtResource("9_mat")
 mesh = ExtResource("8_ship")
 
@@ -190,6 +190,14 @@ layout_mode = 2
 theme_type_variation = &"TitleLabel"
 theme_override_fonts/font = ExtResource("10_bre17")
 text = "WONDERS"
+horizontal_alignment = 1
+
+[node name="GreetingLabel" type="Label" parent="Center"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+theme_type_variation = &"FloatLabel"
+text = "Welcome, pilot!"
 horizontal_alignment = 1
 
 [node name="Gap" type="Control" parent="Center" unique_id=442726109]

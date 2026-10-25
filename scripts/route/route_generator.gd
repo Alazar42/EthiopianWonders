@@ -10,6 +10,7 @@ signal segment_entered(segment: RouteSegment)
 signal target_spawned(target: LandmarkTarget)
 signal planet_spawned(planet: PlanetController)
 signal tank_spawned(tank: FuelTank)
+signal crate_spawned(crate: AmmoCrate)
 
 @export var start_planet: PlanetController
 @export var planet_scenes: Array[PackedScene] = []
@@ -51,6 +52,14 @@ signal tank_spawned(tank: FuelTank)
 @export var fuel_spacing_max: float = 125.0
 @export var fuel_spacing_growth: float = 6.0
 @export var fuel_height: float = 3.0
+@export_group("Ammo")
+@export var ammo_scene: PackedScene
+@export var ammo_crates_enabled: bool = true
+## Ammo is meant to be scarce: crates are far apart, and further apart on later planets.
+@export var ammo_first_distance: float = 120.0
+@export var ammo_spacing_min: float = 150.0
+@export var ammo_spacing_max: float = 200.0
+@export var ammo_spacing_growth: float = 8.0
 @export_group("Space traffic")
 ## Ethiopian stations and satellites drifting beside the flight path between planets.
 @export var traffic_scenes: Array[PackedScene] = []
@@ -74,11 +83,14 @@ var _decor_rng := RandomNumberGenerator.new()
 ## Its own stream too, so gas tanks never change the route or the rocks.
 var _fuel_rng := RandomNumberGenerator.new()
 var _fuel_next: float = 0.0
+var _ammo_rng := RandomNumberGenerator.new()
+var _ammo_next: float = 0.0
 var segments: Array[RouteSegment] = []
 var planets: Array[PlanetController] = []
 var targets: Array[LandmarkTarget] = []
 var obstacles: Array[Obstacle] = []
 var fuel_tanks: Array[FuelTank] = []
+var ammo_crates: Array[AmmoCrate] = []
 ## End of the generated route.
 var head := RouteFrame.new()
 var head_planet: PlanetController
@@ -113,6 +125,8 @@ func begin_run(p_seed: int = -1) -> void:
 	_decor_rng.seed = rng.seed + 4242
 	_fuel_rng.seed = rng.seed + 1313
 	_fuel_next = fuel_first_distance
+	_ammo_rng.seed = rng.seed + 2626
+	_ammo_next = ammo_first_distance
 	_last_gap_center = 99999.0
 	planets.append(start_planet)
 	head_planet = start_planet
@@ -168,6 +182,9 @@ func disable_targets() -> void:
 	for tank in fuel_tanks:
 		if is_instance_valid(tank):
 			tank.disable()
+	for crate in ammo_crates:
+		if is_instance_valid(crate):
+			crate.disable()
 
 # --- generation ---------------------------------------------------------------------------------
 
@@ -252,6 +269,7 @@ func _append_surface(type: RouteTypes.SegmentType, forced_landmark: String = "")
 		_since_landmark += 1
 	_spawn_obstacles(seg)
 	_spawn_fuel(seg)
+	_spawn_ammo(seg)
 	_last_type = type
 	if seg.planet:
 		(seg.planet as PlanetController).clear_decorations_near(seg.positions, corridor_clearance)
@@ -305,6 +323,7 @@ func _append_transition() -> void:
 	_spawn_gate(seg, departure.position, departure.right, departure.up, departure.forward)
 	_spawn_space_traffic(seg)
 	_spawn_fuel(seg)
+	_spawn_ammo(seg)
 	_spawn_gate(seg, head.position, head.right, head.up, head.forward)
 	dest.clear_decorations_near(PackedVector3Array([head.position]), 14.0)
 	_append_surface(RouteTypes.SegmentType.PLANET_ARRIVAL)
@@ -456,6 +475,38 @@ func _spawn_fuel(seg: RouteSegment) -> void:
 		_fuel_next = at + _fuel_rng.randf_range(fuel_spacing_min, fuel_spacing_max) \
 				+ fuel_spacing_growth * float(mini(planet_index, 8))
 
+## Ammo crates, spaced by route distance. A crate keeps clear of gas tanks and of the segment's
+## wonder target.
+func _spawn_ammo(seg: RouteSegment) -> void:
+	if not ammo_crates_enabled or ammo_scene == null:
+		return
+	while _ammo_next < seg.end_distance() - 2.0:
+		var at: float = maxf(_ammo_next, seg.start_distance + 2.0)
+		if seg.target != null:
+			var target_at: float = seg.start_distance + seg.length * 0.55
+			if absf(at - target_at) < 9.0:
+				at = target_at + 9.0
+		for tank in fuel_tanks:
+			if is_instance_valid(tank) and absf(tank.route_distance - at) < 10.0:
+				at = tank.route_distance + 10.0
+		if at >= seg.end_distance() - 2.0:
+			break
+		_place_crate(seg, at)
+		_ammo_next = at + _ammo_rng.randf_range(ammo_spacing_min, ammo_spacing_max) \
+				+ ammo_spacing_growth * float(mini(planet_index, 8))
+
+func _place_crate(seg: RouteSegment, distance: float) -> void:
+	var frame := RouteFrame.new()
+	seg.sample(distance, frame)
+	var offset: float = _ammo_rng.randf_range(-steer_band + 2.0, steer_band - 2.0)
+	var crate := ammo_scene.instantiate() as AmmoCrate
+	add_child(crate)
+	crate.global_transform = frame.lane_transform(offset, fuel_height)
+	crate.setup(distance, offset)
+	seg.props.append(crate)
+	ammo_crates.append(crate)
+	crate_spawned.emit(crate)
+
 func _place_tank(seg: RouteSegment, distance: float) -> void:
 	var frame := RouteFrame.new()
 	seg.sample(distance, frame)
@@ -557,6 +608,9 @@ func _cleanup(route_distance: float) -> void:
 	for i in range(fuel_tanks.size() - 1, -1, -1):
 		if not is_instance_valid(fuel_tanks[i]) or fuel_tanks[i].is_queued_for_deletion():
 			fuel_tanks.remove_at(i)
+	for i in range(ammo_crates.size() - 1, -1, -1):
+		if not is_instance_valid(ammo_crates[i]) or ammo_crates[i].is_queued_for_deletion():
+			ammo_crates.remove_at(i)
 	for i in range(planets.size() - 1, -1, -1):
 		var planet: PlanetController = planets[i]
 		# The start planet stays alive so an in-place restart can reuse it.
@@ -578,6 +632,7 @@ func _clear() -> void:
 	targets.clear()
 	obstacles.clear()
 	fuel_tanks.clear()
+	ammo_crates.clear()
 	for planet in planets:
 		if is_instance_valid(planet) and planet != start_planet:
 			planet.queue_free()

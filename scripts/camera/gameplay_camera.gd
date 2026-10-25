@@ -18,15 +18,24 @@ extends Camera3D
 ## Screen shake strength; add to it with add_shake(), it fades on its own.
 var shake: float = 0.0
 
+var _base_fov: float = 65.0
+var _fov_kick: float = 0.0
+var _speed_fov: float = 0.0
+
 var _frame_rotation := Quaternion.IDENTITY
 var _flight_blend: float = 0.0
 var _initialized: bool = false
 
 func _ready() -> void:
 	current = true
+	_base_fov = fov
 
 func add_shake(amount: float) -> void:
 	shake = minf(1.0, shake + amount)
+
+## A quick widening of the view that eases back (shots, pickups).
+func kick_fov(degrees: float) -> void:
+	_fov_kick = minf(8.0, _fov_kick + degrees)
 
 func snap() -> void:
 	shake = 0.0
@@ -50,6 +59,10 @@ func update_follow(delta: float) -> void:
 		var speed: float = flight_follow_speed if airborne else frame_follow_speed
 		_frame_rotation = _frame_rotation.slerp(target, 1.0 - exp(-speed * delta)).normalized()
 		_flight_blend = move_toward(_flight_blend, 1.0 if airborne else 0.0, delta * 0.8)
+	var speed_target: float = clampf((player.current_speed() / maxf(player.run_speed, 0.1) - 1.0) * 12.0, -2.0, 9.0)
+	_speed_fov = lerpf(_speed_fov, speed_target, 1.0 - exp(-3.0 * delta))
+	_fov_kick = move_toward(_fov_kick, 0.0, delta * 12.0)
+	fov = _base_fov + _speed_fov + _fov_kick
 	var basis := Basis(_frame_rotation)
 	var center: Vector3 = player.center_transform().origin
 	var anchor: Vector3 = center.lerp(player.global_position, lateral_follow)

@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scripts/audio/game_audio.gd" id="1_script"]
 [ext_resource type="AudioStream" path="res://assets/audio/laser.wav" id="s_laser"]
@@ -14,6 +14,11 @@
 [ext_resource type="AudioStream" path="res://assets/audio/game_over.wav" id="s_game_over"]
 [ext_resource type="AudioStream" path="res://assets/audio/engine.wav" id="s_engine"]
 [ext_resource type="AudioStream" path="res://audio/videoplayback.ogg" id="s_music"]
+[ext_resource type="AudioStream" path="res://assets/audio/ammo_pickup.wav" id="s_ammo_pickup"]
+[ext_resource type="AudioStream" path="res://assets/audio/fuel_pickup.wav" id="s_fuel_pickup"]
+[ext_resource type="AudioStream" path="res://assets/audio/empty_click.wav" id="s_empty_click"]
+[ext_resource type="AudioStream" path="res://assets/audio/level_up.wav" id="s_level_up"]
+[ext_resource type="AudioStream" path="res://assets/audio/low_warning.wav" id="s_low_warning"]
 
 [node name="GameAudio" type="Node"]
 process_mode = 3
@@ -83,6 +88,36 @@ bus = &"Effects"
 stream = ExtResource("s_game_over")
 volume_db = -3
 max_polyphony = 1
+bus = &"Effects"
+
+[node name="ammo_pickup" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_ammo_pickup")
+volume_db = -3
+max_polyphony = 3
+bus = &"Effects"
+
+[node name="fuel_pickup" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_fuel_pickup")
+volume_db = -3
+max_polyphony = 3
+bus = &"Effects"
+
+[node name="empty_click" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_empty_click")
+volume_db = -6
+max_polyphony = 3
+bus = &"Effects"
+
+[node name="level_up" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_level_up")
+volume_db = -3
+max_polyphony = 3
+bus = &"Effects"
+
+[node name="low_warning" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("s_low_warning")
+volume_db = -6
+max_polyphony = 3
 bus = &"Effects"
 
 [node name="engine" type="AudioStreamPlayer" parent="."]

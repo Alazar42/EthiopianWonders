@@ -46,6 +46,9 @@ var _run_time: float = 0.0
 
 ## Set by the game manager when the tank is empty: the ship stops pulling and coasts to a halt.
 var engine_cut: bool = false
+## Speed multiplier from the difficulty level, eased toward `level_speed_target`.
+var level_speed: float = 1.0
+var level_speed_target: float = 1.0
 var invulnerable: float = 0.0
 ## Current throttle as a multiple of `run_speed`.
 var speed_scale: float = 1.0
@@ -65,6 +68,8 @@ func begin_run(p_route: RouteGenerator) -> void:
 	lane.max_offset = steer_band
 	lane.reset()
 	speed_scale = 1.0
+	level_speed = 1.0
+	level_speed_target = 1.0
 	engine_cut = false
 	invulnerable = 0.0
 	_kick = 0.0
@@ -82,7 +87,7 @@ func is_stopped() -> bool:
 
 ## Forward speed along the route right now.
 func current_speed() -> float:
-	return run_speed * speed_scale
+	return run_speed * speed_scale * level_speed
 
 ## One simulation step. Driven by the game manager so tests can step it deterministically.
 func advance(delta: float) -> void:
@@ -98,6 +103,7 @@ func advance(delta: float) -> void:
 			target_scale = 0.0
 			rate = stall_deceleration
 		speed_scale = move_toward(speed_scale, target_scale, rate * delta)
+		level_speed = move_toward(level_speed, level_speed_target, 0.12 * delta)
 		distance += current_speed() * delta
 		_run_time += delta
 	route.sample(distance, frame)
