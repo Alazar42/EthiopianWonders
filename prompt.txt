@@ -1,4 +1,2 @@
-make adjustment on the photo capturing feature
-
-1. let the current taken picture be visible at the top right side in small window for a limited time
-2. the to take the capture press 'C' thing notification should aslo be posioned at the top right corenr keeping the same theme
+okay now make changes to the arcade game like the hill climbing car game with gas tanks on the way so you have to shoot a gas tank to get fuel if you ran out of gas 
+it will stop and game over the stoping will be slowing down and stop and game over this is for arcade only, 
