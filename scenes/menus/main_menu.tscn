@@ -1,15 +1,16 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene format=3 uid="uid://cryggrv16erv8"]
 
-[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
-[ext_resource type="Texture2D" path="res://assets/textures/skybox_galaxy.png" id="2_sky"]
+[ext_resource type="Script" uid="uid://chqkkdc66p2x7" path="res://scripts/ui/main_menu.gd" id="1_menu"]
+[ext_resource type="Texture2D" uid="uid://br7t01gkb6a1" path="res://assets/textures/skybox_galaxy.png" id="2_sky"]
 [ext_resource type="PackedScene" path="res://scenes/planets/planet_highland.tscn" id="3_highland"]
 [ext_resource type="PackedScene" path="res://scenes/planets/planet_rift.tscn" id="4_rift"]
 [ext_resource type="PackedScene" path="res://scenes/planets/planet_simien.tscn" id="5_simien"]
 [ext_resource type="PackedScene" path="res://scenes/game/space_backdrop.tscn" id="6_backdrop"]
-[ext_resource type="Theme" path="res://assets/ui/game_theme.tres" id="7_theme"]
+[ext_resource type="Theme" uid="uid://dxdttg67eo4dg" path="res://assets/ui/game_theme.tres" id="7_theme"]
 [ext_resource type="ArrayMesh" path="res://assets/meshes/props/spaceship.res" id="8_ship"]
 [ext_resource type="Material" path="res://assets/materials/terrain.tres" id="9_mat"]
 [ext_resource type="PackedScene" path="res://scenes/ui/leaderboard_panel.tscn" id="10_board"]
+[ext_resource type="FontFile" uid="uid://cyx4b5a33e2cv" path="res://assets/fonts/New_Rocker/NewRocker-Regular.ttf" id="10_bre17"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_menu"]
 panorama = ExtResource("2_sky")
@@ -23,35 +24,6 @@ sky = SubResource("Sky_menu")
 ambient_light_source = 2
 ambient_light_color = Color(0.6, 0.65, 0.75, 1)
 ambient_light_energy = 0.5
-
-[sub_resource type="Animation" id="Animation_float"]
-resource_name = "float"
-length = 4.0
-loop_mode = 1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("BackgroundContainer/SubViewport/World/MenuShip:position")
-tracks/0/interp = 2
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 2, 4),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [Vector3(7, 12, 14), Vector3(7, 12.7, 14), Vector3(7, 12, 14)]
-}
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("BackgroundContainer/SubViewport/World/MenuShip:rotation")
-tracks/1/interp = 2
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0, 2, 4),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [Vector3(0.12, 0.55, 0.12), Vector3(0.12, 0.55, -0.12), Vector3(0.12, 0.55, 0.12)]
-}
 
 [sub_resource type="Animation" id="Animation_fade_in"]
 resource_name = "fade_in"
@@ -91,12 +63,41 @@ _data = {
 &"fade_out": SubResource("Animation_fade_out")
 }
 
+[sub_resource type="Animation" id="Animation_float"]
+resource_name = "float"
+length = 4.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("BackgroundContainer/SubViewport/World/MenuShip:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 2, 4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(7, 12, 14), Vector3(7, 12.7, 14), Vector3(7, 12, 14)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("BackgroundContainer/SubViewport/World/MenuShip:rotation")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 2, 4),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.12, 0.55, 0.12), Vector3(0.12, 0.55, -0.12), Vector3(0.12, 0.55, 0.12)]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_ship"]
 _data = {
 &"float": SubResource("Animation_float")
 }
 
-[node name="MainMenu" type="Control"]
+[node name="MainMenu" type="Control" unique_id=2122183849]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -106,7 +107,7 @@ grow_vertical = 2
 theme = ExtResource("7_theme")
 script = ExtResource("1_menu")
 
-[node name="BackgroundContainer" type="SubViewportContainer" parent="."]
+[node name="BackgroundContainer" type="SubViewportContainer" parent="." unique_id=1939198445]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -116,46 +117,46 @@ grow_vertical = 2
 mouse_filter = 2
 stretch = true
 
-[node name="SubViewport" type="SubViewport" parent="BackgroundContainer"]
+[node name="SubViewport" type="SubViewport" parent="BackgroundContainer" unique_id=1875209597]
 own_world_3d = true
 handle_input_locally = false
 size = Vector2i(1280, 720)
 render_target_update_mode = 4
 
-[node name="World" type="Node3D" parent="BackgroundContainer/SubViewport"]
+[node name="World" type="Node3D" parent="BackgroundContainer/SubViewport" unique_id=427142755]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="BackgroundContainer/SubViewport/World"]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="BackgroundContainer/SubViewport/World" unique_id=1774086047]
 environment = SubResource("Environment_menu")
 
-[node name="Sun" type="DirectionalLight3D" parent="BackgroundContainer/SubViewport/World"]
+[node name="Sun" type="DirectionalLight3D" parent="BackgroundContainer/SubViewport/World" unique_id=1324983170]
 transform = Transform3D(0.9, 0.2, -0.4, 0, 0.9, 0.43, 0.44, -0.4, 0.81, 0, 0, 0)
 light_color = Color(1, 0.95, 0.85, 1)
 light_energy = 0.95
 
-[node name="Camera3D" type="Camera3D" parent="BackgroundContainer/SubViewport/World"]
+[node name="Camera3D" type="Camera3D" parent="BackgroundContainer/SubViewport/World" unique_id=1347858075]
 transform = Transform3D(1, 0, 0, 0, 0.9659, 0.2588, 0, -0.2588, 0.9659, 0, 14, 28)
 fov = 60.0
 near = 0.3
 far = 9000.0
 
-[node name="SpaceBackdrop" parent="BackgroundContainer/SubViewport/World" instance=ExtResource("6_backdrop")]
+[node name="SpaceBackdrop" parent="BackgroundContainer/SubViewport/World" unique_id=30993042 instance=ExtResource("6_backdrop")]
 
-[node name="MenuPlanet" parent="BackgroundContainer/SubViewport/World" instance=ExtResource("3_highland")]
+[node name="MenuPlanet" parent="BackgroundContainer/SubViewport/World" unique_id=879444518 instance=ExtResource("3_highland")]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, -44, -22)
 
-[node name="RiftPlanet" parent="BackgroundContainer/SubViewport/World" instance=ExtResource("4_rift")]
+[node name="RiftPlanet" parent="BackgroundContainer/SubViewport/World" unique_id=313265966 instance=ExtResource("4_rift")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -95, 34, -150)
 
-[node name="SimienPlanet" parent="BackgroundContainer/SubViewport/World" instance=ExtResource("5_simien")]
+[node name="SimienPlanet" parent="BackgroundContainer/SubViewport/World" unique_id=1019244450 instance=ExtResource("5_simien")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 110, 58, -230)
 
-[node name="MenuShip" type="MeshInstance3D" parent="BackgroundContainer/SubViewport/World"]
+[node name="MenuShip" type="MeshInstance3D" parent="BackgroundContainer/SubViewport/World" unique_id=633216382]
 transform = Transform3D(1.6, 0, 0, 0, 1.6, 0, 0, 0, 1.6, 7, 12, 14)
 material_override = ExtResource("9_mat")
 mesh = ExtResource("8_ship")
 
-[node name="Center" type="VBoxContainer" parent="."]
+[node name="Center" type="VBoxContainer" parent="." unique_id=910909382]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -172,57 +173,60 @@ mouse_filter = 2
 theme_override_constants/separation = 0
 alignment = 1
 
-[node name="TitleTop" type="Label" parent="Center"]
+[node name="TitleTop" type="Label" parent="Center" unique_id=526292305]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
+theme_override_fonts/font = ExtResource("10_bre17")
 text = "ETHIOPIAN"
 horizontal_alignment = 1
 
-[node name="TitleBottom" type="Label" parent="Center"]
+[node name="TitleBottom" type="Label" parent="Center" unique_id=197119863]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
+theme_override_fonts/font = ExtResource("10_bre17")
 text = "WONDERS"
 horizontal_alignment = 1
 
-[node name="Gap" type="Control" parent="Center"]
+[node name="Gap" type="Control" parent="Center" unique_id=442726109]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 
-[node name="MenuCard" type="VBoxContainer" parent="Center"]
+[node name="MenuCard" type="VBoxContainer" parent="Center" unique_id=638539402]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = 16
 
-[node name="PlayButton" type="Button" parent="Center/MenuCard"]
+[node name="PlayButton" type="Button" parent="Center/MenuCard" unique_id=1433000908]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 theme_type_variation = &"RedButton"
 text = "PLAY"
 
-[node name="BoardButton" type="Button" parent="Center/MenuCard"]
+[node name="BoardButton" type="Button" parent="Center/MenuCard" unique_id=2018047571]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 text = "LEADERBOARD"
 
-[node name="QuitButton" type="Button" parent="Center/MenuCard"]
+[node name="QuitButton" type="Button" parent="Center/MenuCard" unique_id=546245018]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 theme_type_variation = &"GreyButton"
 text = "QUIT"
 
-[node name="LeaderboardPanel" parent="." instance=ExtResource("10_board")]
+[node name="LeaderboardPanel" parent="." unique_id=136280127 instance=ExtResource("10_board")]
 unique_name_in_owner = true
+layout_mode = 1
 
-[node name="Fade" type="ColorRect" parent="."]
+[node name="Fade" type="ColorRect" parent="." unique_id=599850523]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -232,14 +236,10 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_fade")
-}
-autoplay = "fade_in"
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=2088939300]
+libraries/ = SubResource("AnimationLibrary_fade")
+autoplay = &"fade_in"
 
-[node name="ShipPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_ship")
-}
-autoplay = "float"
+[node name="ShipPlayer" type="AnimationPlayer" parent="." unique_id=1288062037]
+libraries/ = SubResource("AnimationLibrary_ship")
+autoplay = &"float"

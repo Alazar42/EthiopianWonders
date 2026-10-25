@@ -1,7 +1,7 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene format=3 uid="uid://cmniy76icx3h"]
 
-[ext_resource type="Script" path="res://scripts/ui/splash.gd" id="1_splash"]
-[ext_resource type="Texture2D" path="res://assets/ui/techawach.jpg" id="2_techawach"]
+[ext_resource type="Script" uid="uid://btxx4ph2dxd8h" path="res://scripts/ui/splash.gd" id="1_splash"]
+[ext_resource type="Texture2D" uid="uid://cwl4pv8cyrjld" path="res://assets/ui/techawach.jpg" id="2_techawach"]
 
 [sub_resource type="Gradient" id="Gradient_vignette"]
 offsets = PackedFloat32Array(0.5, 1)
@@ -15,7 +15,7 @@ fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
 
-[node name="Splash" type="Control"]
+[node name="Splash" type="Control" unique_id=833926048]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -24,7 +24,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_splash")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1459192541]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -33,9 +33,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(1, 1, 1, 1)
 
-[node name="Logo" type="TextureRect" parent="."]
+[node name="Logo" type="TextureRect" parent="." unique_id=1198041893]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 layout_mode = 1
@@ -55,7 +54,7 @@ texture = ExtResource("2_techawach")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Vignette" type="TextureRect" parent="."]
+[node name="Vignette" type="TextureRect" parent="." unique_id=1677044674]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -67,7 +66,7 @@ mouse_filter = 2
 texture = SubResource("GradientTexture2D_vignette")
 expand_mode = 1
 
-[node name="Rule" type="ColorRect" parent="."]
+[node name="Rule" type="ColorRect" parent="." unique_id=1604584533]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 layout_mode = 1
@@ -85,17 +84,16 @@ grow_vertical = 0
 mouse_filter = 2
 color = Color(0.6, 0.45, 0.2, 1)
 
-[node name="BarTop" type="ColorRect" parent="."]
+[node name="BarTop" type="ColorRect" parent="." unique_id=355890939]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-anchor_bottom = 0.0
 grow_horizontal = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
-[node name="BarBottom" type="ColorRect" parent="."]
+[node name="BarBottom" type="ColorRect" parent="." unique_id=1255546615]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 12

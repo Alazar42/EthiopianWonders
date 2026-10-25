@@ -28,8 +28,13 @@ UiHooks="*res://scripts/ui/ui_hooks.gd"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/size/mode=3
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+
+[gui]
+
+theme/custom_font="uid://cejqrg70jls18"
 
 [input]
 

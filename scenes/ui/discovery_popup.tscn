@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://vi3bl3n8w3p1"]
 
 [ext_resource type="Script" uid="uid://f5ywrlkdjum3" path="res://scripts/ui/discovery_popup.gd" id="1_popup"]
-[ext_resource type="Theme" path="res://assets/ui/game_theme.tres" id="2_theme"]
+[ext_resource type="Theme" uid="uid://dxdttg67eo4dg" path="res://assets/ui/game_theme.tres" id="2_theme"]
 [ext_resource type="Texture2D" uid="uid://cq85wrjpcq2s0" path="res://assets/ui/kenney/icons/star.png" id="3_star"]
+[ext_resource type="FontFile" uid="uid://cyx4b5a33e2cv" path="res://assets/fonts/New_Rocker/NewRocker-Regular.ttf" id="3_tgqrc"]
 
 [node name="DiscoveryPopup" type="Control" unique_id=404146911]
 layout_mode = 3
@@ -36,6 +37,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 theme_type_variation = &"HeaderLabel"
+theme_override_fonts/font = ExtResource("3_tgqrc")
 text = "ACHIEVEMENT UNLOCKED"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -60,6 +62,7 @@ size_flags_horizontal = 3
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"HintLabel"
+theme_override_fonts/font = ExtResource("3_tgqrc")
 text = "Achievement"
 
 [node name="WonderLabel" type="Label" parent="Panel/Content/Row/Text" unique_id=159761133]
@@ -67,6 +70,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(500, 0)
 layout_mode = 2
 theme_type_variation = &"StatLabel"
+theme_override_fonts/font = ExtResource("3_tgqrc")
 text = "Wonder"
 autowrap_mode = 3
 
@@ -74,6 +78,7 @@ autowrap_mode = 3
 unique_name_in_owner = true
 custom_minimum_size = Vector2(500, 0)
 layout_mode = 2
+theme_override_fonts/font = ExtResource("3_tgqrc")
 text = "Fact"
 autowrap_mode = 3
 
@@ -85,10 +90,12 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"HintLabel"
+theme_override_fonts/font = ExtResource("3_tgqrc")
 text = "Wonders discovered: 1"
 
 [node name="CloseButton" type="Button" parent="Panel/Content/Footer" unique_id=1549439630]
 unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
+theme_override_fonts/font = ExtResource("3_tgqrc")
 text = "CONTINUE"

@@ -1,11 +1,12 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene format=3 uid="uid://cgamehud001"]
 
-[ext_resource type="Script" path="res://scripts/ui/game_hud.gd" id="1_hud"]
-[ext_resource type="Theme" path="res://assets/ui/game_theme.tres" id="2_theme"]
-[ext_resource type="Texture2D" path="res://assets/ui/heart_full.svg" id="3_full"]
-[ext_resource type="Texture2D" path="res://assets/ui/heart_half.svg" id="4_half"]
-[ext_resource type="Texture2D" path="res://assets/ui/heart_empty.svg" id="5_empty"]
-[ext_resource type="Texture2D" path="res://assets/ui/kenney/icons/star.png" id="6_star"]
+[ext_resource type="Script" uid="uid://dj7j8uj4xswvm" path="res://scripts/ui/game_hud.gd" id="1_hud"]
+[ext_resource type="Theme" uid="uid://dxdttg67eo4dg" path="res://assets/ui/game_theme.tres" id="2_theme"]
+[ext_resource type="Texture2D" uid="uid://d1fqmsw28ttwb" path="res://assets/ui/heart_full.svg" id="3_full"]
+[ext_resource type="Texture2D" uid="uid://c10skfxa4uos3" path="res://assets/ui/heart_half.svg" id="4_half"]
+[ext_resource type="Texture2D" uid="uid://dhinrt7ljoadi" path="res://assets/ui/heart_empty.svg" id="5_empty"]
+[ext_resource type="Texture2D" uid="uid://cq85wrjpcq2s0" path="res://assets/ui/kenney/icons/star.png" id="6_star"]
+[ext_resource type="FontFile" uid="uid://cyx4b5a33e2cv" path="res://assets/fonts/New_Rocker/NewRocker-Regular.ttf" id="7_n5j44"]
 
 [sub_resource type="Animation" id="Animation_flash"]
 resource_name = "flash"
@@ -28,7 +29,7 @@ _data = {
 &"flash": SubResource("Animation_flash")
 }
 
-[node name="GameHUD" type="Control"]
+[node name="GameHUD" type="Control" unique_id=1272376140]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -42,7 +43,7 @@ heart_full = ExtResource("3_full")
 heart_half = ExtResource("4_half")
 heart_empty = ExtResource("5_empty")
 
-[node name="DamageFlash" type="ColorRect" parent="."]
+[node name="DamageFlash" type="ColorRect" parent="." unique_id=1814904098]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -52,7 +53,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(1, 0.12, 0.1, 0)
 
-[node name="StatusPanel" type="PanelContainer" parent="."]
+[node name="StatusPanel" type="PanelContainer" parent="." unique_id=1276142759]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 layout_mode = 1
@@ -61,18 +62,19 @@ offset_top = 16.0
 offset_right = 400.0
 offset_bottom = 100.0
 mouse_filter = 2
+theme = ExtResource("2_theme")
 theme_type_variation = &"HudPanel"
 
-[node name="Row" type="HBoxContainer" parent="StatusPanel"]
+[node name="Row" type="HBoxContainer" parent="StatusPanel" unique_id=1946855597]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Hearts" type="HBoxContainer" parent="StatusPanel/Row"]
+[node name="Hearts" type="HBoxContainer" parent="StatusPanel/Row" unique_id=797564649]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Heart1" type="TextureRect" parent="StatusPanel/Row/Hearts"]
+[node name="Heart1" type="TextureRect" parent="StatusPanel/Row/Hearts" unique_id=688077280]
 custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 mouse_filter = 2
@@ -80,7 +82,7 @@ texture = ExtResource("3_full")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Heart2" type="TextureRect" parent="StatusPanel/Row/Hearts"]
+[node name="Heart2" type="TextureRect" parent="StatusPanel/Row/Hearts" unique_id=591335790]
 custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 mouse_filter = 2
@@ -88,7 +90,7 @@ texture = ExtResource("3_full")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Heart3" type="TextureRect" parent="StatusPanel/Row/Hearts"]
+[node name="Heart3" type="TextureRect" parent="StatusPanel/Row/Hearts" unique_id=1119146805]
 custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 mouse_filter = 2
@@ -96,19 +98,19 @@ texture = ExtResource("3_full")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Separator" type="VSeparator" parent="StatusPanel/Row"]
+[node name="Separator" type="VSeparator" parent="StatusPanel/Row" unique_id=2118470556]
 layout_mode = 2
 
-[node name="Stats" type="VBoxContainer" parent="StatusPanel/Row"]
+[node name="Stats" type="VBoxContainer" parent="StatusPanel/Row" unique_id=1243312403]
 layout_mode = 2
 mouse_filter = 2
 alignment = 1
 
-[node name="WondersRow" type="HBoxContainer" parent="StatusPanel/Row/Stats"]
+[node name="WondersRow" type="HBoxContainer" parent="StatusPanel/Row/Stats" unique_id=1776744643]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="StarIcon" type="TextureRect" parent="StatusPanel/Row/Stats/WondersRow"]
+[node name="StarIcon" type="TextureRect" parent="StatusPanel/Row/Stats/WondersRow" unique_id=154130160]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
@@ -117,19 +119,22 @@ texture = ExtResource("6_star")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="WondersLabel" type="Label" parent="StatusPanel/Row/Stats/WondersRow"]
+[node name="WondersLabel" type="Label" parent="StatusPanel/Row/Stats/WondersRow" unique_id=327629345]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"StatLabel"
+theme = ExtResource("2_theme")
+theme_override_fonts/font = ExtResource("7_n5j44")
 text = "0 wonders"
 
-[node name="DistanceLabel" type="Label" parent="StatusPanel/Row/Stats"]
+[node name="DistanceLabel" type="Label" parent="StatusPanel/Row/Stats" unique_id=1453635428]
 unique_name_in_owner = true
 layout_mode = 2
+theme = ExtResource("2_theme")
 theme_type_variation = &"HintLabel"
+theme_override_fonts/font = ExtResource("7_n5j44")
 text = "0 m"
 
-[node name="PauseButton" type="Button" parent="."]
+[node name="PauseButton" type="Button" parent="." unique_id=806971706]
 unique_name_in_owner = true
 modulate = Color(1, 1, 1, 0)
 layout_mode = 1
@@ -144,7 +149,7 @@ grow_horizontal = 0
 focus_mode = 0
 text = "PAUSE"
 
-[node name="ToastPanel" type="PanelContainer" parent="."]
+[node name="ToastPanel" type="PanelContainer" parent="." unique_id=458508085]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -162,19 +167,18 @@ grow_vertical = 0
 mouse_filter = 2
 theme_type_variation = &"HudPanel"
 
-[node name="ToastLabel" type="Label" parent="ToastPanel"]
+[node name="ToastLabel" type="Label" parent="ToastPanel" unique_id=222504809]
 unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
+theme = ExtResource("2_theme")
+theme_override_fonts/font = ExtResource("7_n5j44")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ToastTimer" type="Timer" parent="."]
+[node name="ToastTimer" type="Timer" parent="." unique_id=835279854]
 unique_name_in_owner = true
 wait_time = 3.5
 one_shot = true
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_hud")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1384543274]
+libraries/ = SubResource("AnimationLibrary_hud")
