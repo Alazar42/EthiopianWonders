@@ -47,6 +47,8 @@ func get_bus_volume(bus: StringName) -> float:
 	return db_to_linear(AudioServer.get_bus_volume_db(index))
 
 func _loop(stream: AudioStream) -> void:
+	if stream is AudioStreamOggVorbis:
+		(stream as AudioStreamOggVorbis).loop = true
 	if stream is AudioStreamWAV:
 		var wav := stream as AudioStreamWAV
 		wav.loop_mode = AudioStreamWAV.LOOP_FORWARD

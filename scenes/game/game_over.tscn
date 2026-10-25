@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/game_over.gd" id="1_gameover"]
 [ext_resource type="Theme" path="res://assets/ui/game_theme.tres" id="2_theme"]
+[ext_resource type="PackedScene" path="res://scenes/ui/leaderboard_panel.tscn" id="3_board"]
 
 [node name="GameOverScreen" type="Control"]
 process_mode = 3
@@ -39,8 +40,9 @@ layout_mode = 2
 theme_type_variation = &"CardPanel"
 
 [node name="Content" type="VBoxContainer" parent="Center/Card"]
-custom_minimum_size = Vector2(460, 0)
+custom_minimum_size = Vector2(500, 0)
 layout_mode = 2
+theme_override_constants/separation = 6
 
 [node name="Header" type="Label" parent="Center/Card/Content"]
 custom_minimum_size = Vector2(0, 34)
@@ -52,7 +54,22 @@ vertical_alignment = 1
 
 [node name="Stats" type="GridContainer" parent="Center/Card/Content"]
 layout_mode = 2
+theme_override_constants/v_separation = 0
 columns = 2
+
+[node name="ScoreName" type="Label" parent="Center/Card/Content/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"StatLabel"
+text = "SCORE"
+
+[node name="ScoreLabel" type="Label" parent="Center/Card/Content/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"NumberLabel"
+text = "0"
+horizontal_alignment = 2
 
 [node name="WondersName" type="Label" parent="Center/Card/Content/Stats"]
 unique_name_in_owner = true
@@ -107,15 +124,68 @@ theme_type_variation = &"NumberLabel"
 text = "00:00"
 horizontal_alignment = 2
 
+[node name="NameEntry" type="VBoxContainer" parent="Center/Card/Content"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="RankLabel" type="Label" parent="Center/Card/Content/NameEntry"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"StatLabel"
+text = "NEW HIGH SCORE!"
+horizontal_alignment = 1
+
+[node name="NameRow" type="HBoxContainer" parent="Center/Card/Content/NameEntry"]
+layout_mode = 2
+
+[node name="NameField" type="LineEdit" parent="Center/Card/Content/NameEntry/NameRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Your name"
+max_length = 12
+alignment = 1
+caret_blink = true
+
+[node name="SaveButton" type="Button" parent="Center/Card/Content/NameEntry/NameRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"RedButton"
+text = "SAVE"
+
+[node name="StatusLabel" type="Label" parent="Center/Card/Content"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"HintLabel"
+text = ""
+horizontal_alignment = 1
+
 [node name="Separator" type="HSeparator" parent="Center/Card/Content"]
 layout_mode = 2
 
-[node name="RestartButton" type="Button" parent="Center/Card/Content"]
+[node name="ButtonRow" type="HBoxContainer" parent="Center/Card/Content"]
+layout_mode = 2
+
+[node name="RestartButton" type="Button" parent="Center/Card/Content/ButtonRow"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 text = "FLY AGAIN"
+
+[node name="ScoresButton" type="Button" parent="Center/Card/Content/ButtonRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"GreyButton"
+text = "LEADERBOARD"
 
 [node name="MainMenuButton" type="Button" parent="Center/Card/Content"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "MAIN MENU"
+
+[node name="LeaderboardPanel" parent="." instance=ExtResource("3_board")]
+unique_name_in_owner = true

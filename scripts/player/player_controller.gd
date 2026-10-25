@@ -1,13 +1,17 @@
 class_name PlayerController
 extends Node3D
-## Runs the route automatically. Position and orientation come from the route frame, lane offset
-## and local gravity, so the runner is always upright relative to the planet it is standing on.
+## Flies along the route. The pilot steers freely sideways across a wide band and can throttle up
+## or brake; position and orientation come from the route frame, the sideways offset and local
+## gravity, so the ship is always upright relative to the planet it is flying over.
 ## The controller knows nothing about menus, popups or landmarks.
 
-signal lane_changed(lane: int)
-
 @export var run_speed: float = 12.0
+## Throttle range as a multiple of `run_speed`.
+@export var min_speed_scale: float = 0.65
+@export var max_speed_scale: float = 1.4
+## Width of one "lane" unit, used to size obstacle spacing and the steering band.
 @export var lane_width: float = 2.4
+@export var steer_band: float = 7.0
 ## Distance from the ground to the middle of the ship (it hovers).
 @export var body_height: float = 1.0
 @export var gravity_strength: float = 30.0
@@ -38,6 +42,8 @@ var frame := RouteFrame.new()
 var _run_time: float = 0.0
 
 var invulnerable: float = 0.0
+## Current throttle as a multiple of `run_speed`.
+var speed_scale: float = 1.0
 var _kick: float = 0.0
 var _next_cannon: int = 0
 
@@ -45,14 +51,15 @@ var _next_cannon: int = 0
 @onready var _cannons: Array[Node] = $Visuals/Cannons.get_children()
 
 func _ready() -> void:
-	lane.lane_changed.connect(func(l: int) -> void: lane_changed.emit(l))
+	lane.max_offset = steer_band
 
 func begin_run(p_route: RouteGenerator) -> void:
 	route = p_route
 	distance = 0.0
 	_run_time = 0.0
-	lane.lane_width = lane_width
+	lane.max_offset = steer_band
 	lane.reset()
+	speed_scale = 1.0
 	invulnerable = 0.0
 	_kick = 0.0
 	gravity.reset(spawn_drop)
@@ -63,20 +70,21 @@ func begin_run(p_route: RouteGenerator) -> void:
 func stop() -> void:
 	running = false
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not running or not input_enabled:
-		return
-	if event.is_action_pressed("move_left"):
-		lane.shift(-1)
-	elif event.is_action_pressed("move_right"):
-		lane.shift(1)
+## Forward speed along the route right now.
+func current_speed() -> float:
+	return run_speed * speed_scale
 
 ## One simulation step. Driven by the game manager so tests can step it deterministically.
 func advance(delta: float) -> void:
 	if route == null:
 		return
 	if running:
-		distance += run_speed * delta
+		var pilot: bool = input_enabled and is_inside_tree() and not get_tree().paused
+		lane.steer = Input.get_axis("move_left", "move_right") if pilot else 0.0
+		var throttle: float = Input.get_axis("move_back", "move_forward") if pilot else 0.0
+		var target_scale: float = lerpf(1.0, max_speed_scale, throttle) if throttle > 0.0 else lerpf(1.0, min_speed_scale, -throttle)
+		speed_scale = move_toward(speed_scale, target_scale, 2.2 * delta)
+		distance += current_speed() * delta
 		_run_time += delta
 	route.sample(distance, frame)
 	lane.update(delta)

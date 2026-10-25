@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_menu"]
 [ext_resource type="Texture2D" path="res://assets/textures/skybox_galaxy.png" id="2_sky"]
@@ -9,6 +9,7 @@
 [ext_resource type="Theme" path="res://assets/ui/game_theme.tres" id="7_theme"]
 [ext_resource type="ArrayMesh" path="res://assets/meshes/props/spaceship.res" id="8_ship"]
 [ext_resource type="Material" path="res://assets/materials/terrain.tres" id="9_mat"]
+[ext_resource type="PackedScene" path="res://scenes/ui/leaderboard_panel.tscn" id="10_board"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_menu"]
 panorama = ExtResource("2_sky")
@@ -205,12 +206,21 @@ layout_mode = 2
 theme_type_variation = &"RedButton"
 text = "PLAY"
 
+[node name="BoardButton" type="Button" parent="Center/MenuCard"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+text = "LEADERBOARD"
+
 [node name="QuitButton" type="Button" parent="Center/MenuCard"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 theme_type_variation = &"GreyButton"
 text = "QUIT"
+
+[node name="LeaderboardPanel" parent="." instance=ExtResource("10_board")]
+unique_name_in_owner = true
 
 [node name="Fade" type="ColorRect" parent="."]
 layout_mode = 1

@@ -1,6 +1,6 @@
 # Ethiopian Wonders
 
-An endless three-lane runner across a chain of small spherical planets, built for a **Tourism + AI** game jam. You run around real spheres (local gravity, no flat track), jump from planet to planet, and shoot glowing targets with your laser to discover Ethiopian wonders. Miss three and the run ends.
+An endless runner across a chain of small spherical planets, built for a **Tourism + AI** game jam. You run around real spheres (local gravity, no flat track), jump from planet to planet, and shoot glowing targets with your laser to discover Ethiopian wonders. Miss three and the run ends.
 
 Godot **4.7**, Compatibility renderer, GDScript only. No plugins, no network, no API keys.
 
@@ -11,19 +11,20 @@ Godot **4.7**, Compatibility renderer, GDScript only. No plugins, no network, no
 
 | Action | Input |
 |---|---|
-| Move one lane left / right | `A` / `D`, arrow keys, or gamepad D-pad / left stick |
+| Steer left / right (hold) | `A` / `D`, arrow keys, or gamepad D-pad / left stick |
+| Speed up / slow down | `W` / `S` or up / down arrow |
 | Discover a wonder | Left mouse click on the glowing target |
 | Pause / resume | `Esc`, `P`, or gamepad Start |
 
-The mouse never moves the camera or the runner; it only clicks targets and menus.
+You pilot the ship: it flies freely sideways across a wide band of the planet (not three fixed lanes) and you set your own speed. The mouse never moves the camera or the ship; it only aims the laser and clicks menus.
 
 ## How it plays
 
-- The runner moves forward automatically along the surface of a planet. Gravity is `-normalize(P - C)`, the runner's up is always the local surface normal, and the three lanes bend with the sphere.
+- The runner moves forward automatically along the surface of a planet. Gravity is `-normalize(P - C)`, the runner's up is always the local surface normal, and the steering band bends with the sphere.
 - The route is generated ahead of you from a seeded, weighted table of segments: straights, gentle curves, 60 degree turns, sharp 90 degree turns, landmark approaches, recovery stretches, and planet-to-planet hops. Segments behind you are freed.
 - Each planet's route is a fixed amount of surface; then a glowing gate marks the launch and you fly to the next planet, which is visible ahead before you leave. In flight the runner's up vector blends between the two planets' outward directions (weighted by distance to each surface), so you stay feet-first toward whatever ground is nearest and land upright.
 - You fly a small spaceship. A wonder appears beside the route with a floating target. The target's click window is measured in **route distance**: it opens shortly before you reach the landmark and closes just after you pass it. Shoot it inside the window (click, or press Space to lock on) to unlock the achievement and read a short fact. Let the window close and you lose a heart.
-- Three hearts, counted in halves. Missing a wonder costs a whole heart. Rocks (boulders, stone piles and spires) sit across the lanes: flying into one costs half a heart, but you can dodge it by changing lane or blast it with your laser first. After a crash the ship blinks and cannot be hurt again for a moment.
+- Three hearts, counted in halves. Missing a wonder costs a whole heart. Rocks (boulders, stone piles and spires) are scattered across the whole band, always leaving a gap you can fly through: flying into one costs half a heart, but you can steer around it or blast it with your laser first. After a crash the ship blinks and cannot be hurt again for a moment.
 - Game over shows wonders found, rocks destroyed, distance and time, with Fly Again and Main Menu.
 
 ## Look and sound
@@ -45,7 +46,7 @@ Everything moves. All animation lives in one small library, `scripts/ui/ui_motio
 
 The mouse cursor is Kenney's arrow in menus and a crosshair while flying.
 
-Every sound is synthesised by `tools/make_audio.py` (lasers, impacts, explosions, a crash, a discovery fanfare, a launch whoosh, an engine hum and a looping music track in the Ethiopian pentatonic mode Ambassel), apart from the interface clicks, which are Kenney's. Sounds play through the `GameAudio` autoload (`scenes/audio/game_audio.tscn`); the pause menu has music and effects volume sliders.
+Every effect is synthesised by `tools/make_audio.py` (lasers, impacts, explosions, a crash, a discovery fanfare, a launch whoosh, and an engine hum), apart from the interface clicks, which are Kenney's, and the music, which is `audio/videoplayback.ogg` (looped). Sounds play through the `GameAudio` autoload (`scenes/audio/game_audio.tscn`); the pause menu has music and effects volume sliders.
 
 Regenerate with `python tools/make_audio.py` (needs numpy), `python tools/fetch_kenney_ui.py` and `python tools/make_ui_assets.py`.
 
@@ -67,9 +68,15 @@ The universe never runs out: a backdrop of 18 far-away planets (one ringed, some
 
 ## The wonders
 
-Fifteen wonders appear as scenery beside the route, each with a clickable target. Three use your supplied FBX models; the rest are low-poly models built in the game's own style from photographs of the real places:
+Twenty-two wonders appear as scenery beside the route, each with a clickable target. Three use your supplied FBX models; the rest are low-poly models built in the game's own style from photographs of the real places:
 
-Lalibela, Aksum, Fasil Ghebbi (Gondar), Fasilides' Bath, Yeha, Debre Damo, Abuna Yemata Guh, Ura Kidane Mehret, Konso, Harar, Tiya, Simien, Bale, the Blue Nile Falls, and Erta Ale / Danakil.
+Lalibela, Aksum, Fasil Ghebbi (Gondar), Fasilides' Bath, Yeha, Debre Damo, Abuna Yemata Guh, Ura Kidane Mehret, Konso, Harar, Tiya, Simien, Bale, the Blue Nile Falls, Erta Ale / Danakil, the Victory of Adwa, Lake Tana, the Sof Omar Caves, Wenchi Crater Lake, the Entoto Observatory, Hadar and Lucy, and the Dorze houses.
+
+Between the planets the flights are long (56 to 84 units of open space), and Ethiopian craft drift beside the path: the imagined **NSS-12** space station, **ETRSS-1** (Ethiopia's first satellite, launched in 2019) and a **Selam relay** buoy (`scenes/space`, `scripts/world/space_object.gd`).
+
+## Score and leaderboard
+
+Score = 500 per wonder + 150 per planet reached + 25 per rock destroyed + 1 per metre. When a run ends, a score that makes the local top ten asks for a name and is saved to `user://leaderboard.json` (this device only); a score outside the top ten is not recorded and the card says what it would take. The table is on the main menu and the game-over card (`scripts/managers/leaderboard.gd`). Every run uses a new random seed, a randomly turned start planet and a random first wonder, so no two runs open alike.
 
 ## Project layout
 

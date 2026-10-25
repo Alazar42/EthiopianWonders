@@ -1,12 +1,14 @@
 class_name MainMenu
 extends Control
-## Title screen, kept minimal: the title words pop in one after another, then the two buttons rise.
+## Title screen, kept minimal: the title words pop in one after another, then the buttons rise.
 
 @export_file("*.tscn") var game_scene: String = "res://scenes/game/game_world.tscn"
 @export var planet_spin_speed: float = 0.12
 
 @onready var _play_button: Button = %PlayButton
 @onready var _quit_button: Button = %QuitButton
+@onready var _board_button: Button = %BoardButton
+@onready var _board_panel: LeaderboardPanel = %LeaderboardPanel
 @onready var _planet: Node3D = %MenuPlanet
 @onready var _animation: AnimationPlayer = $AnimationPlayer
 @onready var _title_items: Array[Control] = [%TitleTop, %TitleBottom]
@@ -14,6 +16,8 @@ extends Control
 
 func _ready() -> void:
 	_play_button.pressed.connect(_on_play_pressed)
+	_board_button.pressed.connect(func() -> void: _board_panel.show_board(Leaderboard.new()))
+	_board_panel.closed.connect(func() -> void: _board_button.grab_focus())
 	_quit_button.pressed.connect(func() -> void: get_tree().quit())
 	_quit_button.visible = not OS.has_feature("web")
 	GameSound.start_music()

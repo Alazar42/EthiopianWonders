@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scripts/managers/game_manager.gd" id="1_manager"]
 [ext_resource type="Script" path="res://scripts/route/route_generator.gd" id="2_route"]
@@ -22,6 +22,9 @@
 [ext_resource type="PackedScene" path="res://scenes/obstacles/obstacle_boulder.tscn" id="19_boulder"]
 [ext_resource type="PackedScene" path="res://scenes/obstacles/obstacle_stones.tscn" id="20_stones"]
 [ext_resource type="PackedScene" path="res://scenes/obstacles/obstacle_spire.tscn" id="21_spire"]
+[ext_resource type="PackedScene" path="res://scenes/space/space_nss12.tscn" id="30_nss12"]
+[ext_resource type="PackedScene" path="res://scenes/space/space_etrss1.tscn" id="31_etrss1"]
+[ext_resource type="PackedScene" path="res://scenes/space/space_selam_relay.tscn" id="32_selam"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_world"]
 panorama = ExtResource("5_sky")
@@ -68,6 +71,7 @@ planet_scenes = Array[PackedScene]([ExtResource("7_highland"), ExtResource("8_ri
 target_scene = ExtResource("11_target")
 gate_scene = ExtResource("12_gate")
 obstacle_scenes = Array[PackedScene]([ExtResource("19_boulder"), ExtResource("20_stones"), ExtResource("21_spire")])
+traffic_scenes = Array[PackedScene]([ExtResource("30_nss12"), ExtResource("31_etrss1"), ExtResource("32_selam")])
 
 [node name="Player" parent="." instance=ExtResource("6_player")]
 

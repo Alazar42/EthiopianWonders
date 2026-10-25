@@ -63,3 +63,18 @@ static func _build() -> void:
 		"The Blue Nile Falls in South Gondar are called Tis Abay, which means 'great smoke' in Amharic.")
 	_add("danakil", "Erta Ale and the Danakil", "Gateway to the Abyss",
 		"Erta Ale is a continuously active shield volcano in the Afar region, and the Danakil Depression around it lies below sea level.", 0.9)
+
+	_add("adwa", "Victory of Adwa", "Independence Won",
+		"At the Battle of Adwa on 1 March 1896, Ethiopian forces under Emperor Menelik II defeated an invading Italian army and kept the country independent.")
+	_add("lake_tana", "Lake Tana", "Source of the Blue Nile",
+		"Lake Tana is Ethiopia's largest lake and the source of the Blue Nile. Medieval monasteries stand on its islands, and it became a UNESCO biosphere reserve in 2015.")
+	_add("sof_omar", "Sof Omar Caves", "River Through the Rock",
+		"The Weyib River flows through the Sof Omar Caves in the Bale region, one of the longest cave systems in Africa.")
+	_add("wenchi", "Wenchi Crater Lake", "Lake in a Volcano",
+		"Wenchi is a volcanic crater lake in the highlands southwest of Addis Ababa, with an island monastery on its water.")
+	_add("entoto", "Entoto Observatory", "Eyes on the Sky",
+		"The Entoto Observatory and Research Center, high above Addis Ababa, is home to Ethiopia's space science research. Ethiopia's first satellite, ETRSS-1, launched in December 2019.")
+	_add("lucy", "Hadar and Lucy", "Cradle of Humanity",
+		"In 1974 scientists found the skeleton of Lucy at Hadar, in the Afar region. She was an Australopithecus afarensis who lived about 3.2 million years ago, and Ethiopians call her Dinknesh.")
+	_add("dorze", "Dorze Houses", "Beehive Homes",
+		"The Dorze people of the Gamo highlands weave tall bamboo houses shaped like beehives, some rising to around twelve metres.")

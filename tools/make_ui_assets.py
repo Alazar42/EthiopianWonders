@@ -88,6 +88,16 @@ for name, sprite in (('brown', 'button_brown'), ('grey', 'button_grey'), ('red',
     style('BtnDisabled_' + name, path, (16, 16, 16, 16), (32, 12, 32, 16), '(0.62, 0.62, 0.62, 0.85)')
 
 style('Ribbon', K + 'adventure/button_red.png', (16, 16, 16, 16), (24, 4, 24, 8))
+for fname, border in (('Field', '(0.45, 0.28, 0.12, 1)'), ('FieldFocus', '(0.95, 0.64, 0.2, 1)')):
+    add(f'[sub_resource type="StyleBoxFlat" id="{fname}"]')
+    add('bg_color = Color(1, 0.97, 0.88, 1)')
+    for side in ('left', 'top', 'right', 'bottom'):
+        add(f'border_width_{side} = 3')
+        add(f'content_margin_{side} = 10')
+    add(f'border_color = Color{border}')
+    for corner in ('top_left', 'top_right', 'bottom_right', 'bottom_left'):
+        add(f'corner_radius_{corner} = 8')
+    add('')
 flat_bar('SliderTrack', '(0.43, 0.29, 0.15, 1)', '(0.25, 0.15, 0.07, 1)')
 flat_bar('SliderFill', '(0.95, 0.64, 0.2, 1)', '(0.6, 0.33, 0.08, 1)')
 
@@ -176,6 +186,16 @@ add('HudPanel/base_type = &"PanelContainer"')
 add('HudPanel/styles/panel = SubResource("HudPanel")')
 add('CardPanel/base_type = &"PanelContainer"')
 add('CardPanel/styles/panel = SubResource("Card")')
+add('')
+add('LineEdit/colors/font_color = Color%s' % BROWN)
+add('LineEdit/colors/font_placeholder_color = Color(0.5, 0.35, 0.2, 0.55)')
+add('LineEdit/colors/caret_color = Color(0.6, 0.33, 0.08, 1)')
+add('LineEdit/colors/selection_color = Color(0.95, 0.64, 0.2, 0.5)')
+add('LineEdit/font_sizes/font_size = 28')
+add('LineEdit/fonts/font = SubResource("Font_Bold")')
+add('LineEdit/styles/normal = SubResource("Field")')
+add('LineEdit/styles/focus = SubResource("FieldFocus")')
+add('LineEdit/styles/read_only = SubResource("Field")')
 add('')
 add('HSlider/styles/slider = SubResource("SliderTrack")')
 add('HSlider/styles/grabber_area = SubResource("SliderFill")')

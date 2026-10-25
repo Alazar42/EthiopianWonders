@@ -6,6 +6,7 @@ extends SceneTree
 const DT: float = 1.0 / 60.0
 const MENU_SCENE: String = "res://scenes/menus/main_menu.tscn"
 const SPLASH_SCENE: String = "res://scenes/menus/splash.tscn"
+const TEST_BOARD: String = "user://test_leaderboard.json"
 const WORLD_SCENE: String = "res://scenes/game/game_world.tscn"
 
 var _passed: int = 0
@@ -41,6 +42,8 @@ func _run() -> void:
 	await _test_screen_animations()
 	await _test_layout()
 	await _test_missing_and_game_over()
+	await _test_leaderboard_and_score()
+	await _test_space_and_wonders()
 	await _test_restart_and_popup()
 	await _test_worlds_and_backdrop()
 	_test_resources_load()
@@ -52,6 +55,8 @@ func _run() -> void:
 
 func _new_world(with_obstacles: bool = false) -> GameManager:
 	var world := (load(WORLD_SCENE) as PackedScene).instantiate() as GameManager
+	world.random_seed_each_run = false # the fixed route the tests rely on
+	world.leaderboard_path = TEST_BOARD
 	root.add_child(world)
 	world.set_process(false) # tests drive tick() themselves
 	await process_frame
@@ -92,9 +97,15 @@ func _test_menu_and_loading() -> void:
 	var logo := splash.get_node("%Logo") as TextureRect
 	check("the first splash is Techawach on white", splash.index == 0 and logo.texture.resource_path.ends_with("techawach.jpg")
 		and splash.get_node("%Background").color == Color.WHITE)
+	var view_height: float = splash.get_viewport_rect().size.y
+	check("the logo is shown small enough to stay sharp", splash.logo_size().y <= view_height * 0.55 and splash.logo_size().y >= view_height * 0.2)
+	await create_timer(1.2).timeout
+	check("the logo fades in rather than popping", logo.modulate.a > 0.2 and logo.scale.x > 0.9)
 	splash.skip()
-	check("the second splash is Melkam, full screen", splash.index == 1 and logo.texture.resource_path.ends_with("melkam.jpg")
-		and logo.stretch_mode == TextureRect.STRETCH_KEEP_ASPECT_COVERED)
+	check("the second splash is Melkam", splash.index == 1 and logo.texture.resource_path.ends_with("melkam.jpg"))
+	await create_timer(0.3).timeout
+	var blended: Color = splash.get_node("%Background").color
+	check("the background dissolves between logos instead of cutting", blended.r < 0.99 and blended.r > 0.1, str(blended))
 	check("the splash scene leads to the main menu", splash.next_scene == MENU_SCENE)
 	splash.set_process(false)
 	splash.queue_free()
@@ -131,25 +142,41 @@ func _test_movement_basics() -> void:
 	check("player keeps feet toward the planet center", player.get_up().dot(radial) > 0.0 and (-player.global_basis.y).dot(-radial) > 0.99)
 
 	var start_offset: float = player.lane.offset
-	var ev := InputEventAction.new()
-	ev.action = "move_right"
-	ev.pressed = true
-	player._unhandled_input(ev)
-	check("right input selects the right lane", player.lane.target_lane == 1)
-	check("lane change is smooth, not a teleport", is_equal_approx(player.lane.offset, start_offset))
+	_key(KEY_D, true)
+	await process_frame
+	check("holding D steers right", Input.get_axis("move_left", "move_right") > 0.5)
+	_step(world, 0.1)
+	check("steering is smooth, not a teleport", player.lane.offset > start_offset and player.lane.offset < 2.0, str(player.lane.offset))
 	_step(world, 0.5)
 	var lateral: float = (player.global_position - player.center_transform().origin).dot(player.frame.right)
-	check("player moved right along the surface", lateral > player.lane_width * 0.9, "lateral %f" % lateral)
-	ev.action = "move_right"
-	player._unhandled_input(ev)
-	player._unhandled_input(ev)
-	check("lanes clamp at the right edge", player.lane.target_lane == 1)
-	ev.action = "move_left"
-	for i in 5:
-		player._unhandled_input(ev)
-	check("lanes clamp at the left edge", player.lane.target_lane == -1)
+	check("the ship slid right along the surface", lateral > player.lane_width * 1.5, "lateral %f" % lateral)
+	_step(world, 2.0)
+	check("the ship stops at the edge of the band", is_equal_approx(player.lane.offset, player.steer_band) and player.lane.velocity == 0.0)
+	_key(KEY_D, false)
+	await process_frame
+	_step(world, 0.3)
+	check("releasing the key stops the ship where it is", is_equal_approx(player.lane.offset, player.steer_band))
+	_key(KEY_LEFT, true)
+	await process_frame
 	_step(world, 0.5)
-	check("outer lane offset never exceeds one lane width", absf(player.lane.offset) <= player.lane_width + 0.001)
+	check("the ship can rest anywhere, not only on three lanes", player.lane.offset < player.steer_band - 3.0 and player.lane.offset > -player.steer_band)
+	_step(world, 3.0)
+	check("the band is wide on the left too", is_equal_approx(player.lane.offset, -player.steer_band))
+	_key(KEY_LEFT, false)
+	await process_frame
+	player.lane.reset()
+	_key(KEY_W, true)
+	await process_frame
+	var d0: float = player.distance
+	_step(world, 1.5)
+	check("W speeds the ship up", player.speed_scale > 1.2 and player.distance - d0 > player.run_speed * 1.5 * 1.1, "scale %f" % player.speed_scale)
+	_key(KEY_W, false)
+	_key(KEY_S, true)
+	await process_frame
+	_step(world, 2.0)
+	check("S slows the ship down but never stops it", player.speed_scale < 0.8 and player.speed_scale >= player.min_speed_scale - 0.001)
+	_key(KEY_S, false)
+	await process_frame
 
 	var camera_before: Transform3D = world.gameplay_camera.global_transform
 	var motion := InputEventMouseMotion.new()
@@ -279,7 +306,7 @@ func _test_planet_transitions() -> void:
 			sharp_turns.append(rad_to_deg(c.forward.angle_to(b.forward))))
 	var clearances: Array[float] = []
 	route.planet_spawned.connect(func(_p: PlanetController) -> void: clearances.append(route.last_transition_clearance))
-	for i in int(150.0 / DT):
+	for i in int(240.0 / DT):
 		world.tick(DT)
 		for target in route.targets:
 			if is_instance_valid(target) and target.is_active():
@@ -330,7 +357,7 @@ func _test_planet_transitions() -> void:
 	check("runner orientation changes smoothly in flight", flight_up_steps < 0.06, "worst step %f rad" % flight_up_steps)
 	check("every flight lands upright on the destination surface", landed_checks >= 1 and landing_ok,
 		"landings %d" % landed_checks)
-	check("lane offset survives a flight", absf(player.lane.offset) <= player.lane_width)
+	check("sideways offset survives a flight", absf(player.lane.offset) <= player.steer_band + 0.001)
 	await _free_world(world)
 
 func _test_clicking() -> void:
@@ -393,27 +420,25 @@ func _test_input_pipeline() -> void:
 	var player := world.player
 	_key(KEY_D, true)
 	await process_frame
+	_step(world, 0.4, false)
 	_key(KEY_D, false)
-	check("D key moves one lane right", player.lane.target_lane == 1)
-	_key(KEY_RIGHT, true)
-	await process_frame
-	_key(KEY_RIGHT, false)
-	check("right arrow cannot pass the right lane", player.lane.target_lane == 1)
+	check("D key steers right", player.lane.offset > 2.0)
 	_key(KEY_A, true)
 	await process_frame
+	_step(world, 1.5, false)
 	_key(KEY_A, false)
-	_key(KEY_LEFT, true)
-	await process_frame
-	_key(KEY_LEFT, false)
-	check("A and left arrow reach the left lane", player.lane.target_lane == -1)
+	check("A key steers left", player.lane.offset < -2.0)
 	_key(KEY_ESCAPE, true)
 	await process_frame
 	_key(KEY_ESCAPE, false)
 	check("Escape pauses", world.state == GameState.State.PAUSED and paused)
+	var offset_paused: float = player.lane.offset
 	_key(KEY_D, true)
 	await process_frame
+	world.tick(DT)
 	_key(KEY_D, false)
-	check("lane input is ignored while paused", player.lane.target_lane == -1)
+	await process_frame
+	check("steering is ignored while paused", is_equal_approx(player.lane.offset, offset_paused))
 	check("pausing stops the world's processing", not world.player.can_process() and not world.route.can_process())
 	_key(KEY_ESCAPE, true)
 	await process_frame
@@ -531,10 +556,9 @@ func _first_obstacle(world: GameManager) -> Obstacle:
 			first = obstacle
 	return first
 
-## Moves the ship straight into a lane without waiting for the slide.
-func _snap_to_lane(world: GameManager, lane_index: int) -> void:
-	world.player.lane.target_lane = lane_index
-	world.player.lane.offset = float(lane_index) * world.player.lane_width
+## Moves the ship straight to a sideways offset without waiting for the slide.
+func _snap_to_offset(world: GameManager, offset: float) -> void:
+	world.player.lane.place(offset)
 
 func _test_obstacles() -> void:
 	print("obstacles")
@@ -544,34 +568,41 @@ func _test_obstacles() -> void:
 	check("rocks are generated ahead of the ship", route.obstacles.size() >= 3, "%d rocks" % route.obstacles.size())
 	var too_early: int = 0
 	var blocked_rows: int = 0
+	var min_offset: float = 0.0
+	var max_offset: float = 0.0
 	var in_calm_segments: int = 0
 	for obstacle in route.obstacles:
 		if obstacle.route_distance < route.obstacle_min_start:
 			too_early += 1
-		var lanes: Dictionary = {}
+		var row_offsets: Array[float] = []
 		for other in route.obstacles:
 			if absf(other.route_distance - obstacle.route_distance) < 2.0:
-				lanes[roundi(other.lane_offset / route.lane_width)] = true
-		if lanes.size() >= 3:
+				row_offsets.append(other.lane_offset)
+		row_offsets.sort()
+		if route._widest_gap(row_offsets).y < route.passable_gap - 0.01:
 			blocked_rows += 1
+		min_offset = minf(min_offset, obstacle.lane_offset)
+		max_offset = maxf(max_offset, obstacle.lane_offset)
 		for seg in route.segments:
 			if seg.contains(obstacle.route_distance) and seg.type in [RouteTypes.SegmentType.LANDMARK_APPROACH,
 					RouteTypes.SegmentType.RECOVERY, RouteTypes.SegmentType.PLANET_ARRIVAL, RouteTypes.SegmentType.PLANET_TRANSITION]:
 				in_calm_segments += 1
 	check("the tutorial stretch has no rocks", too_early == 0, "%d too early" % too_early)
-	check("no row of rocks ever blocks all three lanes", blocked_rows == 0, "%d blocked rows" % blocked_rows)
+	check("every row of rocks leaves a gap wide enough to fly through", blocked_rows == 0, "%d blocked rows" % blocked_rows)
+	check("rocks are scattered across the whole band, not three lanes", max_offset - min_offset > 2.0 * route.lane_width * 1.5,
+		"offsets %f to %f" % [min_offset, max_offset])
 	check("no rocks in landmark, recovery, arrival or flight segments", in_calm_segments == 0, "%d" % in_calm_segments)
 
 	# Flying into a rock costs half a heart, and the rock breaks.
 	var rock := _first_obstacle(world)
-	_snap_to_lane(world, roundi(rock.lane_offset / route.lane_width))
+	_snap_to_offset(world, rock.lane_offset)
 	var guard: int = 0
 	while rock.is_active() and world.is_playing() and guard < int(30.0 / DT):
 		world.tick(DT)
 		for target in route.targets:
 			if is_instance_valid(target) and target.is_active():
 				target.attempt_interact(world.player.distance)
-		_snap_to_lane(world, roundi(rock.lane_offset / route.lane_width))
+		_snap_to_offset(world, rock.lane_offset)
 		guard += 1
 	check("crashing into a rock costs half a heart", dm.obstacles_hit >= 1 and dm.health_halves == 6 - dm.obstacles_hit - 2 * dm.missed_count,
 		"hits %d halves %d" % [dm.obstacles_hit, dm.health_halves])
@@ -584,28 +615,29 @@ func _test_obstacles() -> void:
 	check("invulnerability wears off", not world.player.is_invulnerable())
 	await _free_world(world)
 
-	# Dodging: switching to a free lane avoids the rock completely.
+	# Dodging: steering through the gap in a row avoids the rocks completely.
 	world = await _new_world(true)
 	var target_rock := _first_obstacle(world)
-	var rock_lane: int = roundi(target_rock.lane_offset / world.route.lane_width)
-	var free_lane: int = -1 if rock_lane != -1 else 1
+	var row: Array[float] = []
 	for other in world.route.obstacles:
-		if absf(other.route_distance - target_rock.route_distance) < 2.0 and roundi(other.lane_offset / world.route.lane_width) == free_lane:
-			free_lane = 0 if rock_lane != 0 else 1
-	_snap_to_lane(world, free_lane)
+		if absf(other.route_distance - target_rock.route_distance) < 2.0:
+			row.append(other.lane_offset)
+	row.sort()
+	var free_offset: float = world.route._widest_gap(row).x
+	_snap_to_offset(world, free_offset)
 	var hits_before: int = world.discovery_manager.obstacles_hit
 	while world.player.distance < target_rock.route_distance + 3.0 and world.is_playing():
 		world.tick(DT)
 		for target in world.route.targets:
 			if is_instance_valid(target) and target.is_active():
 				target.attempt_interact(world.player.distance)
-		_snap_to_lane(world, free_lane)
+		_snap_to_offset(world, free_offset)
 		if world.player.distance > target_rock.route_distance - 15.0:
 			break
 	while world.player.distance < target_rock.route_distance + 3.0 and world.is_playing():
 		world.tick(DT)
-		_snap_to_lane(world, free_lane)
-	check("switching lanes dodges a rock", world.discovery_manager.obstacles_hit == hits_before and target_rock.is_active())
+		_snap_to_offset(world, free_offset)
+	check("steering through the gap dodges a rock", world.discovery_manager.obstacles_hit == hits_before and target_rock.is_active())
 	await _free_world(world)
 
 	# Lasers: clicking a rock destroys it, with no damage.
@@ -617,7 +649,7 @@ func _test_obstacles() -> void:
 		for target in world.route.targets:
 			if is_instance_valid(target) and target.is_active():
 				target.attempt_interact(world.player.distance)
-		_snap_to_lane(world, 0)
+		_snap_to_offset(world, 0.0)
 	await physics_frame
 	await physics_frame
 	world.gameplay_camera.snap()
@@ -637,7 +669,7 @@ func _test_obstacles() -> void:
 		for target in world.route.targets:
 			if is_instance_valid(target) and target.is_active():
 				target.attempt_interact(world.player.distance)
-		_snap_to_lane(world, 0)
+		_snap_to_offset(world, lock_rock.lane_offset)
 	world.discovery_popup.hide_popup(false) # an open popup would take the Space press
 	_key(KEY_SPACE, true)
 	await process_frame
@@ -657,7 +689,8 @@ func _test_ui_and_audio() -> void:
 		if player == null or player.stream == null:
 			missing.append(sound)
 	check("every sound is present", missing.is_empty(), str(missing))
-	check("the music loops", ((audio.get_node("music") as AudioStreamPlayer).stream as AudioStreamWAV).loop_mode == AudioStreamWAV.LOOP_FORWARD)
+	var music_stream: AudioStream = (audio.get_node("music") as AudioStreamPlayer).stream
+	check("the music is videoplayback.ogg and loops", music_stream.resource_path.ends_with("videoplayback.ogg") and (music_stream as AudioStreamOggVorbis).loop)
 	check("the Music and Effects buses exist", AudioServer.get_bus_index(&"Music") >= 0 and AudioServer.get_bus_index(&"Effects") >= 0)
 	audio.set_bus_volume(&"Music", 0.5)
 	check("bus volume can be changed", absf(audio.get_bus_volume(&"Music") - 0.5) < 0.01)
@@ -1038,6 +1071,178 @@ func _test_missing_and_game_over() -> void:
 	check("targets are disabled at game over", not any_clickable)
 	await _free_world(world)
 
+func _test_leaderboard_and_score() -> void:
+	print("score and leaderboard")
+	var world := await _new_world()
+	var dm := world.discovery_manager
+	dm.reset_run()
+	dm.update_stats(1.0, 100.0)
+	check("a fresh run scores its distance only", dm.score() == 100, str(dm.score()))
+	dm.register_discovery(LandmarkCatalog.get_by_id("lalibela"))
+	dm.register_planet_arrival()
+	dm.register_obstacle_destroyed()
+	check("wonders, planets, rocks and metres all score",
+		dm.score() == DiscoveryManager.POINTS_PER_WONDER + DiscoveryManager.POINTS_PER_PLANET + DiscoveryManager.POINTS_PER_ROCK + 100,
+		str(dm.score()))
+	check("the stats carry the score", int(dm.stats()["score"]) == dm.score() and int(dm.stats()["planets"]) == 1)
+	world.tick(DT)
+	check("the HUD shows the score", world.game_hud.get_node("%DistanceLabel").text.contains("pts"))
+	await _free_world(world)
+
+	# The table itself.
+	var board := Leaderboard.new(TEST_BOARD)
+	board.clear()
+	check("an empty board has no entries", board.entries.is_empty())
+	check("a score of zero never qualifies", not board.qualifies(0))
+	check("any score qualifies while there is room", board.qualifies(1) and board.rank_for(1) == 1)
+	for i in 10:
+		board.add("P%d" % i, (i + 1) * 100, i, i * 10)
+	check("the board keeps ten entries, best first", board.entries.size() == 10 and int(board.entries[0]["score"]) == 1000
+		and int(board.entries[9]["score"]) == 100)
+	check("a score below the tenth place does not qualify", not board.qualifies(100) and not board.qualifies(50) and board.rank_for(50) == 0)
+	check("a better score takes its place in the order", board.rank_for(550) == 6 and board.rank_for(5000) == 1)
+	check("a tie ranks below the run already there", board.rank_for(1000) == 2)
+	check("adding a non-qualifying score does nothing", board.add("LOW", 50, 0, 0) == 0 and board.entries.size() == 10)
+	check("a top score is placed first and pushes the last one out", board.add("ACE", 5000, 9, 900) == 1
+		and board.entries.size() == 10 and str(board.entries[0]["name"]) == "ACE" and int(board.entries[9]["score"]) == 200)
+	var reloaded := Leaderboard.new(TEST_BOARD)
+	check("the board is saved and loads back the same", reloaded.entries.size() == 10 and str(reloaded.entries[0]["name"]) == "ACE"
+		and int(reloaded.entries[3]["score"]) == int(board.entries[3]["score"]))
+	check("blank names become PILOT", Leaderboard.clean_name("   ") == "PILOT")
+	check("long names are cut to twelve characters", Leaderboard.clean_name("A very long pilot name").length() <= Leaderboard.NAME_LIMIT)
+	check("scores are written with thousands separators",
+		Leaderboard.format_score(1234567) == "1,234,567" and Leaderboard.format_score(12) == "12" and Leaderboard.format_score(1000) == "1,000")
+	var broken := FileAccess.open(TEST_BOARD, FileAccess.WRITE)
+	broken.store_string("this is not json {")
+	broken.close()
+	check("a damaged file loads as an empty board", Leaderboard.new(TEST_BOARD).entries.is_empty())
+
+	# Game over, top ten: the player is asked for a name and the score is saved.
+	board = Leaderboard.new(TEST_BOARD)
+	board.clear()
+	world = await _new_world()
+	_force_game_over(world, 3, 2, 1200.0)
+	await create_timer(2.8).timeout
+	var screen := world.game_over_screen
+	check("a run that makes the board asks for a name", screen.get_node("%NameEntry").visible)
+	check("the card shows the score", screen.get_node("%ScoreLabel").text == Leaderboard.format_score(world.discovery_manager.score()),
+		screen.get_node("%ScoreLabel").text)
+	(screen.get_node("%NameField") as LineEdit).text = "Almaz"
+	check("saving returns the place", screen.save_score() == 1)
+	check("the score is on the board under that name", str(world.leaderboard.entries[0]["name"]) == "Almaz"
+		and int(world.leaderboard.entries[0]["score"]) == world.discovery_manager.score())
+	check("the name box goes away once saved", not screen.get_node("%NameEntry").visible)
+	check("the leaderboard opens with the new score", (screen.get_node("%LeaderboardPanel") as Control).visible
+		and (screen.get_node("%LeaderboardPanel/Center/Card/Content/Rows") as Control).get_child_count() == 10)
+	check("a saved score cannot be saved twice", screen.save_score() == 0 and world.leaderboard.entries.size() == 1)
+	await _free_world(world)
+
+	# Game over, outside the top ten: no name box and no entry.
+	board = Leaderboard.new(TEST_BOARD)
+	board.clear()
+	for i in 10:
+		board.add("TOP%d" % i, 90000 + i, 1, 1)
+	world = await _new_world()
+	_force_game_over(world, 0, 0, 50.0)
+	await create_timer(2.8).timeout
+	screen = world.game_over_screen
+	check("a score below the tenth place gets no name box", not screen.get_node("%NameEntry").visible)
+	check("the card says what it would take", (screen.get_node("%StatusLabel") as Label).visible
+		and (screen.get_node("%StatusLabel") as Label).text.contains("90,000"), (screen.get_node("%StatusLabel") as Label).text)
+	check("nothing was added to the board", world.leaderboard.entries.size() == 10 and str(world.leaderboard.entries[0]["name"]).begins_with("TOP"))
+	await _free_world(world)
+
+	# The menu can open the table.
+	var menu := (load(MENU_SCENE) as PackedScene).instantiate() as MainMenu
+	root.add_child(menu)
+	await process_frame
+	check("the menu has a leaderboard button", menu.get_node("%BoardButton") is Button)
+	(menu.get_node("%BoardButton") as Button).pressed.emit()
+	await process_frame
+	check("pressing it shows ten places", (menu.get_node("%LeaderboardPanel") as Control).visible
+		and (menu.get_node("%LeaderboardPanel/Center/Card/Content/Rows") as Control).get_child_count() == 10)
+	(menu.get_node("%LeaderboardPanel") as LeaderboardPanel).close()
+	check("it closes again", not (menu.get_node("%LeaderboardPanel") as Control).visible)
+	menu.free()
+	DirAccess.remove_absolute(TEST_BOARD)
+
+	# Every run is different, but a fixed seed still repeats.
+	var firsts: Dictionary = {}
+	var orientations: Dictionary = {}
+	world = await _new_world()
+	for seed_number in [11, 22, 33, 44, 55, 66, 77, 88]:
+		world.route.begin_run(seed_number)
+		firsts[world.route.targets[0].landmark_data.id] = true
+		orientations[str(world.route.start_planet.global_basis.get_euler().snapped(Vector3.ONE * 0.05))] = true
+	check("random seeds open with different wonders", firsts.size() >= 3, str(firsts.keys()))
+	check("random seeds turn the start planet to different sides", orientations.size() >= 6, str(orientations.size()))
+	world.route.begin_run()
+	check("the fixed seed still opens with Lalibela", world.route.targets[0].landmark_data.id == "lalibela")
+	await _free_world(world)
+
+## Ends the run with the given discoveries, rocks destroyed and distance.
+func _force_game_over(world: GameManager, wonders: int, rocks: int, distance: float) -> void:
+	var dm := world.discovery_manager
+	var all: Array[LandmarkData] = LandmarkCatalog.get_all()
+	for i in wonders:
+		dm.register_discovery(all[i])
+	for i in rocks:
+		dm.register_obstacle_destroyed()
+	dm.update_stats(1.0, distance)
+	dm.health_halves = 1
+	dm.register_obstacle_hit()
+
+func _test_space_and_wonders() -> void:
+	print("space traffic, flight length and wonders")
+	var missing: Array[String] = []
+	for landmark in LandmarkCatalog.get_all():
+		if landmark.load_scene() == null:
+			missing.append(landmark.id)
+		if landmark.get_fact().length() < 40 or landmark.name.is_empty() or landmark.achievement_title.is_empty():
+			missing.append(landmark.id + " text")
+	check("all 22 wonders have a scene, a name, a title and a fact", missing.is_empty(), str(missing))
+	var tags: Array[String] = []
+	for path in ["res://scenes/space/space_nss12.tscn", "res://scenes/space/space_etrss1.tscn", "res://scenes/space/space_selam_relay.tscn"]:
+		var craft := (load(path) as PackedScene).instantiate() as SpaceObject
+		tags.append((craft.get_node("%Tag") as Label3D).text)
+		craft.free()
+	check("the Ethiopian craft are NSS-12, ETRSS-1 and the Selam relay", tags == ["NSS-12", "ETRSS-1", "SELAM RELAY"], str(tags))
+
+	var world := await _new_world()
+	var route := world.route
+	var flights: int = 0
+	var with_traffic: int = 0
+	var short_flights: int = 0
+	var inside_planet: int = 0
+	var kinds: Dictionary = {}
+	var distance: float = 0.0
+	var seen_flights: Dictionary = {}
+	while route.planet_index < 8 and distance < 4000.0:
+		distance += 20.0
+		route.update(distance)
+		for seg in route.segments:
+			if seg.type != RouteTypes.SegmentType.PLANET_TRANSITION or seen_flights.has(seg.start_distance):
+				continue
+			seen_flights[seg.start_distance] = true
+			flights += 1
+			if seg.length < 50.0:
+				short_flights += 1
+			var crafts: int = 0
+			for prop in seg.props:
+				if prop is SpaceObject:
+					crafts += 1
+					kinds[(prop as SpaceObject).display_name] = true
+					for planet in route.planets:
+						if prop.global_position.distance_to(planet.global_position) < planet.radius + 10.0:
+							inside_planet += 1
+			if crafts > 0:
+				with_traffic += 1
+	check("flights between planets were generated", flights >= 3, "%d flights" % flights)
+	check("planets are much further apart", short_flights == 0, "%d short flights" % short_flights)
+	check("most flights pass space stations or satellites", with_traffic >= maxi(1, flights - 1), "%d of %d" % [with_traffic, flights])
+	check("space traffic never sits inside a planet", inside_planet == 0, "%d inside" % inside_planet)
+	await _free_world(world)
+
 func _test_restart_and_popup() -> void:
 	print("popup content and restart")
 	var world := await _new_world()
@@ -1146,7 +1351,7 @@ func _test_worlds_and_backdrop() -> void:
 	var ids: Dictionary = {}
 	for landmark in LandmarkCatalog.get_all():
 		ids[landmark.id] = true
-	check("the catalog holds 15 unique wonders", LandmarkCatalog.get_all().size() == 15 and ids.size() == 15,
+	check("the catalog holds 22 unique wonders", LandmarkCatalog.get_all().size() == 22 and ids.size() == 22,
 		"%d wonders, %d ids" % [LandmarkCatalog.get_all().size(), ids.size()])
 	await _free_world(world)
 

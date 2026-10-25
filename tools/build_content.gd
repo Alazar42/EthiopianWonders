@@ -13,6 +13,8 @@ extends SceneTree
 
 const PropMeshes = preload("res://tools/prop_meshes.gd")
 const LandmarkMeshes = preload("res://tools/landmark_meshes.gd")
+const LandmarkMeshesExtra = preload("res://tools/landmark_meshes_extra.gd")
+const SpaceMeshes = preload("res://tools/space_meshes.gd")
 
 const KENNEY: String = "res://assets/kenney_mini-forest_1.0/Models/GLB format/"
 const TERRAIN_MATERIAL: String = "res://assets/materials/terrain.tres"
@@ -96,7 +98,7 @@ const CLOUD_VARIANTS: int = 3
 
 func _init() -> void:
 	for dir in ["res://assets/meshes/props", "res://assets/meshes/landmarks", "res://scenes/planets",
-			"res://scenes/landmarks", "res://scenes/game"]:
+			"res://scenes/landmarks", "res://scenes/game", "res://assets/meshes/space", "res://scenes/space"]:
 		DirAccess.make_dir_recursive_absolute(dir)
 	_save_prop_meshes()
 	_save_landmark_meshes()
@@ -104,6 +106,7 @@ func _init() -> void:
 		_build_planet(biome_id, BIOMES[biome_id])
 	_build_backdrop()
 	_build_landmarks()
+	_build_space_objects()
 	print("build_content: done")
 	quit()
 
@@ -142,6 +145,7 @@ func _build_prop(builder: String) -> ArrayMesh:
 const LANDMARK_MESHES: Array = [
 	"aksum_stele", "fasil_castle", "fasilides_bath", "yeha_temple", "church_small", "ura_kidane",
 	"abuna_yemata", "konso_village", "blue_nile_falls", "harar_gate", "tiya_stelae", "simien_crag", "danakil_salt",
+	"adwa_monument", "lake_tana", "sof_omar", "wenchi_crater", "entoto_observatory", "lucy_hadar", "dorze_huts",
 ]
 
 func _save_landmark_meshes() -> void:
@@ -164,6 +168,13 @@ func _landmark_mesh(mesh_id: String) -> ArrayMesh:
 		"tiya_stelae": return LandmarkMeshes.tiya_stelae()
 		"simien_crag": return LandmarkMeshes.simien_crag()
 		"danakil_salt": return LandmarkMeshes.danakil_salt()
+		"adwa_monument": return LandmarkMeshesExtra.adwa_monument()
+		"lake_tana": return LandmarkMeshesExtra.lake_tana()
+		"sof_omar": return LandmarkMeshesExtra.sof_omar()
+		"wenchi_crater": return LandmarkMeshesExtra.wenchi_crater()
+		"entoto_observatory": return LandmarkMeshesExtra.entoto_observatory()
+		"lucy_hadar": return LandmarkMeshesExtra.lucy_hadar()
+		"dorze_huts": return LandmarkMeshesExtra.dorze_huts()
 	push_error("unknown landmark mesh " + mesh_id)
 	return null
 
@@ -788,6 +799,73 @@ func _build_landmarks() -> void:
 		var angle: float = TAU * float(i) / 10.0
 		bale_parts.append(["prop:helichrysum", Vector3(cos(angle) * 7.2, 0.2, sin(angle) * 7.2), Vector3.ONE * 1.6])
 	_write_scene("bale", _mesh_landmark("bale", [], Color(0.48, 0.52, 0.38), 9.5, bale_parts))
+
+	_write_scene("adwa", _mesh_landmark("adwa", [["adwa_monument", Vector3.ZERO, 1.0]], Color(0.56, 0.52, 0.40), 0.0, []))
+	_write_scene("lake_tana", _mesh_landmark("lake_tana", [["lake_tana", Vector3.ZERO, 1.0]], Color(0.30, 0.50, 0.50), 0.0, []))
+	_write_scene("sof_omar", _mesh_landmark("sof_omar", [["sof_omar", Vector3.ZERO, 1.0]], Color(0.50, 0.44, 0.36), 0.0, []))
+	_write_scene("wenchi", _mesh_landmark("wenchi", [["wenchi_crater", Vector3.ZERO, 1.0]], Color(0.36, 0.50, 0.28), 0.0, []))
+	_write_scene("entoto", _mesh_landmark("entoto", [["entoto_observatory", Vector3.ZERO, 1.0]], Color(0.54, 0.58, 0.44), 0.0, [
+		["prop:eucalyptus", Vector3(-7.4, 0.3, -1.0), Vector3(1.6, 1.6, 1.6)],
+		["prop:eucalyptus", Vector3(7.8, 0.3, -3.2), Vector3(1.4, 1.4, 1.4)],
+	]))
+	_write_scene("lucy", _mesh_landmark("lucy", [["lucy_hadar", Vector3.ZERO, 1.0]], Color(0.80, 0.66, 0.46), 0.0, []))
+	_write_scene("dorze", _mesh_landmark("dorze", [["dorze_huts", Vector3.ZERO, 1.0]], Color(0.52, 0.62, 0.32), 0.0, [
+		["prop:eucalyptus", Vector3(8.6, 0.3, -1.0), Vector3(1.5, 1.5, 1.5)],
+	]))
+
+# --- space objects ------------------------------------------------------------------------------------
+
+## Ethiopian spacecraft that drift between the planets: [id, mesh builder, label, spin axis, spin rate, label height].
+const SPACE_OBJECTS: Array = [
+	["nss12", "nss12_station", "NSS-12", Vector3(1, 0, 0), 0.22, 7.5],
+	["etrss1", "etrss1_satellite", "ETRSS-1", Vector3(0, 1, 0), 0.35, 4.2],
+	["selam_relay", "selam_relay", "SELAM RELAY", Vector3(0, 1, 0), 0.5, 7.0],
+]
+
+func _space_mesh(mesh_id: String) -> ArrayMesh:
+	match mesh_id:
+		"nss12_station": return SpaceMeshes.nss12_station()
+		"etrss1_satellite": return SpaceMeshes.etrss1_satellite()
+		"selam_relay": return SpaceMeshes.selam_relay()
+	push_error("unknown space mesh " + mesh_id)
+	return null
+
+func _build_space_objects() -> void:
+	for entry in SPACE_OBJECTS:
+		var mesh_path: String = "res://assets/meshes/space/%s.res" % entry[1]
+		ResourceSaver.save(_space_mesh(entry[1]), mesh_path)
+		var axis: Vector3 = entry[3]
+		var lines: PackedStringArray = [
+			"[gd_scene load_steps=4 format=3]", "",
+			'[ext_resource type="Script" path="res://scripts/world/space_object.gd" id="1_script"]',
+			'[ext_resource type="ArrayMesh" path="%s" id="2_mesh"]' % mesh_path,
+			'[ext_resource type="Material" path="%s" id="3_mat"]' % TERRAIN_MATERIAL, "",
+			'[node name="%s" type="Node3D"]' % String(entry[0]).capitalize().replace(" ", ""),
+			'script = ExtResource("1_script")',
+			'display_name = "%s"' % entry[2],
+			'spin_axis = Vector3(%s, %s, %s)' % [axis.x, axis.y, axis.z],
+			'spin_speed = %s' % entry[4], "",
+			'[node name="Model" type="MeshInstance3D" parent="."]',
+			'unique_name_in_owner = true',
+			'material_override = ExtResource("3_mat")',
+			'mesh = ExtResource("2_mesh")', "",
+			'[node name="Tag" type="Label3D" parent="."]',
+			'unique_name_in_owner = true',
+			'transform = %s' % var_to_str(Transform3D(Basis.IDENTITY, Vector3(0, entry[5], 0))),
+			'pixel_size = 0.014',
+			'billboard = 1',
+			'no_depth_test = true',
+			'fixed_size = false',
+			'modulate = Color(1, 0.95, 0.75, 1)',
+			'outline_modulate = Color(0.05, 0.05, 0.1, 1)',
+			'text = "%s"' % entry[2],
+			'font_size = 56',
+			'outline_size = 18', "",
+		]
+		var file := FileAccess.open("res://scenes/space/space_%s.tscn" % entry[0], FileAccess.WRITE)
+		file.store_string("\n".join(lines))
+		file.close()
+		print("space_%s written" % entry[0])
 
 func _write_scene(id: String, text: String) -> void:
 	var file := FileAccess.open("res://scenes/landmarks/landmark_%s.tscn" % id, FileAccess.WRITE)

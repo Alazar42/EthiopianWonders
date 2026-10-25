@@ -26,6 +26,8 @@ const TOAST_OFFSET: Vector2 = Vector2(0, 40)
 var _last_halves: int = -1
 var _shown_wonders: int = 0
 var _toast_open: bool = false
+var _distance: int = 0
+var _score: int = 0
 
 func _ready() -> void:
 	_pause_button.pressed.connect(func() -> void: pause_requested.emit())
@@ -70,7 +72,17 @@ func update_wonders(count: int) -> void:
 	_shown_wonders = count
 
 func update_distance(distance_m: float) -> void:
-	_distance_label.text = "%d m" % int(distance_m)
+	if int(distance_m) != _distance:
+		_distance = int(distance_m)
+		_refresh_progress()
+
+func update_score(score: int) -> void:
+	if score != _score:
+		_score = score
+		_refresh_progress()
+
+func _refresh_progress() -> void:
+	_distance_label.text = "%s pts   |   %d m" % [Leaderboard.format_score(_score), _distance]
 
 func show_toast(text: String) -> void:
 	_toast_label.text = text

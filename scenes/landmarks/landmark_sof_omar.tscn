@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/meshes/landmarks/sof_omar.res" id="ext_0"]
+[ext_resource type="Material" path="res://assets/materials/terrain.tres" id="ext_1"]
+
+
+[node name="LandmarkSof Omar" type="Node3D"]
+metadata/graybox = true
+
+[node name="ModelSofOmar" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+material_override = ExtResource("ext_1")
+mesh = ExtResource("ext_0")

@@ -25,13 +25,19 @@ extends Node3D
 
 ## The ship stops while a discovery popup is open so it can be read; off for long automated runs.
 @export var pause_on_discovery: bool = true
+## Where the local high-score table is kept.
+@export var leaderboard_path: String = "user://leaderboard.json"
+## Every run gets its own random world; turn off for a fixed seed (tests, debugging).
+@export var random_seed_each_run: bool = true
 
 var state: GameState.State = GameState.State.MAIN_MENU
 var _state_before_pause: GameState.State = GameState.State.RUNNING
 var _mood_tween: Tween
 var _runs_started: int = 0
+var leaderboard: Leaderboard
 
 func _ready() -> void:
+	leaderboard = Leaderboard.new(leaderboard_path)
 	route.target_spawned.connect(_on_target_spawned)
 	route.segment_entered.connect(_on_segment_entered)
 	discovery_manager.wonder_discovered.connect(_on_wonder_discovered)
@@ -71,7 +77,7 @@ func start_new_run() -> void:
 	if not set_state(GameState.State.STARTING_RUN):
 		return
 	discovery_manager.reset_run()
-	route.begin_run()
+	route.begin_run(randi() if random_seed_each_run else -1)
 	apply_mood(route.start_planet, true)
 	player.begin_run(route)
 	gameplay_camera.snap()
@@ -83,7 +89,7 @@ func start_new_run() -> void:
 	game_hud.update_wonders(0)
 	game_hud.update_distance(0.0)
 	game_hud.play_intro()
-	game_hud.show_toast("Shoot the glowing target, and blast the rocks in your way!")
+	game_hud.show_toast("Steer with A and D, speed with W and S. Shoot the glowing targets and rocks!")
 	if _runs_started > 0:
 		screen_fade.blink()
 	else:
@@ -124,7 +130,7 @@ func tick(delta: float) -> void:
 	if not is_playing():
 		return
 	# Generate before moving so the ship can never reach the end of the route.
-	route.update(player.distance + player.run_speed * delta)
+	route.update(player.distance + player.current_speed() * delta)
 	player.advance(delta)
 	route.update(player.distance)
 	for target in route.targets:
@@ -135,6 +141,7 @@ func tick(delta: float) -> void:
 		return
 	discovery_manager.update_stats(delta, player.distance)
 	game_hud.update_distance(player.distance)
+	game_hud.update_score(discovery_manager.score())
 
 func _check_obstacle_collisions() -> void:
 	for obstacle in route.obstacles:
@@ -286,6 +293,7 @@ func _on_segment_entered(segment: RouteSegment) -> void:
 		apply_mood(segment.destination_planet as PlanetController)
 		GameSound.play(&"launch")
 	if segment.type == RouteTypes.SegmentType.PLANET_ARRIVAL and segment.planet is PlanetController:
+		discovery_manager.register_planet_arrival()
 		game_hud.show_toast("Arrived at %s" % (segment.planet as PlanetController).planet_name)
 		GameSound.play(&"arrive")
 
@@ -297,4 +305,4 @@ func _on_game_over(stats: Dictionary) -> void:
 	game_hud.visible = false
 	GameSound.set_engine(false)
 	GameSound.play(&"game_over")
-	game_over_screen.show_game_over(stats)
+	game_over_screen.show_game_over(stats, leaderboard)

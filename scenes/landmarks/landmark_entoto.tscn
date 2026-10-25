@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="ArrayMesh" path="res://assets/meshes/landmarks/entoto_observatory.res" id="ext_0"]
+[ext_resource type="Material" path="res://assets/materials/terrain.tres" id="ext_1"]
+[ext_resource type="ArrayMesh" path="res://assets/meshes/props/eucalyptus.res" id="ext_2"]
+
+
+[node name="LandmarkEntoto" type="Node3D"]
+metadata/graybox = true
+
+[node name="ModelEntotoObservatory" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+material_override = ExtResource("ext_1")
+mesh = ExtResource("ext_0")
+
+[node name="Eucalyptus_01" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.6, 0, 0, 0, 1.6, 0, 0, 0, 1.6, -7.4, 0.3, -1)
+material_override = ExtResource("ext_1")
+mesh = ExtResource("ext_2")
+
+[node name="Eucalyptus_02" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, 7.8, 0.3, -3.2)
+material_override = ExtResource("ext_1")
+mesh = ExtResource("ext_2")

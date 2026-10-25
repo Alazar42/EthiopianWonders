@@ -15,6 +15,13 @@ const HALVES_PER_HEART: int = 2
 const MISS_COST: int = 2
 const OBSTACLE_COST: int = 1
 
+## Points: a wonder is worth the most, then reaching a new planet; every metre and every rock
+## blasted adds a little.
+const POINTS_PER_WONDER: int = 500
+const POINTS_PER_PLANET: int = 150
+const POINTS_PER_ROCK: int = 25
+const POINTS_PER_METRE: int = 1
+
 @export var max_hearts: int = 3
 
 var health_halves: int = 6
@@ -22,6 +29,7 @@ var discovered_wonders: Array[LandmarkData] = []
 var missed_count: int = 0
 var obstacles_hit: int = 0
 var obstacles_destroyed: int = 0
+var planets_reached: int = 0
 var run_distance: float = 0.0
 var elapsed_time: float = 0.0
 var is_active: bool = false
@@ -40,6 +48,7 @@ func reset_run() -> void:
 	missed_count = 0
 	obstacles_hit = 0
 	obstacles_destroyed = 0
+	planets_reached = 0
 	run_distance = 0.0
 	elapsed_time = 0.0
 	is_active = true
@@ -77,6 +86,15 @@ func register_obstacle_hit() -> void:
 	obstacle_hit.emit(current_hearts)
 	_check_game_over()
 
+func register_planet_arrival() -> void:
+	if is_active:
+		planets_reached += 1
+
+## The run's score so far.
+func score() -> int:
+	return discovered_wonders.size() * POINTS_PER_WONDER + planets_reached * POINTS_PER_PLANET \
+		+ obstacles_destroyed * POINTS_PER_ROCK + int(run_distance) * POINTS_PER_METRE
+
 func register_obstacle_destroyed() -> void:
 	if not is_active:
 		return
@@ -88,6 +106,8 @@ func stats() -> Dictionary:
 		"wonders": discovered_wonders.size(),
 		"obstacles_destroyed": obstacles_destroyed,
 		"obstacles_hit": obstacles_hit,
+		"planets": planets_reached,
+		"score": score(),
 		"distance": run_distance,
 		"time": elapsed_time,
 	}
